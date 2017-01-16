@@ -513,7 +513,7 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
 
           if((current!=0. || (current==0. && isZero)) && timeStamp>8000000.){
             //printf("%f %c=%d %d %d %.17f\n\n",timeStamp,InsideOutside,(InsideOutside=='I'?0:1),MT,RPC,current);
-            cout<<timeStamp<<endl;
+            //cout<<timeStamp<<endl;
             AliRPCValueCurrent *currentBuffer = new AliRPCValueCurrent(0, timeStamp, current, 0., kFALSE, 0, kTRUE);
             currentBuffer->SetIsAMANDA(kTRUE);
             // //if (timeStamp<8000000) continue;

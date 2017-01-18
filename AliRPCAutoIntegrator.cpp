@@ -557,10 +557,11 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 if (cdbIDYear->GetPath() == "GRP/GRP/Data") {hasGRP = kTRUE; break;}
             }
             if(!hasGRP){
-                printf("\n\nCan't find run %d\n\n",(*runIteratorYearChecker).runNumber);
+                printf("\n\n### Can't find run %d\n\n",(*runIteratorYearChecker).runNumber);
                 (*runIteratorYearChecker).year = 0000;
                 continue;
             } else {
+                printf("\n\n### Run %d belongs to year %d\n\n",(*runIteratorYearChecker).runNumber,year);
                 (*runIteratorYearChecker).year = year;
                 break;
             }

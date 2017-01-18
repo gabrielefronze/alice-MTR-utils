@@ -13,18 +13,21 @@
 #include "TFile.h"
 #include <vector>
 
+typedef struct OCDBRun {
+    Int_t runNumber;
+    Int_t year;
+} OCDBRun;
+
 class AliRPCAutoIntegrator : public TObject{
 public:
     AliRPCAutoIntegrator();
-    AliRPCAutoIntegrator(TString RunListFileName, TString AMANDAInputFileName, TString OutputFileName, Int_t AnalyzedYear, Bool_t updateOCDB=kTRUE, Bool_t updateAMANDA=kTRUE);
+    AliRPCAutoIntegrator(TString RunListFileName, TString AMANDAInputFileName, TString OutputFileName, Bool_t updateOCDB=kTRUE, Bool_t updateAMANDA=kTRUE);
 	AliRPCAutoIntegrator(const AliRPCAutoIntegrator &obj)  : TObject(obj){};
 	~AliRPCAutoIntegrator();
     void RunAutoIntegrator();
 
 private:
-    Int_t fAnalyzedYear;
-
-    std::vector<Int_t> fOCDBRunList;
+    std::vector<OCDBRun> fOCDBRunList;
 
     TString fRunListFileName;
     TString fAMANDAInputFileName;

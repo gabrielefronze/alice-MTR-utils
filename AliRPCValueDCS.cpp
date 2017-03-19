@@ -53,3 +53,9 @@ TString* AliRPCValueDCS::WhatIsThis(){
     }
 
 };
+
+
+void AliRPCValueDCS::SetRunNumber(UInt_t RunNumber){
+    //AMANDA needs to be set, OCDB run Rumber are set when created
+    if(this->IsAMANDA()) fRunNumber=RunNumber;
+};

@@ -32,6 +32,7 @@ public:
     inline Bool_t IsOverflow(){return (TString*)(this->WhatIsThis())->Contains("overflow");};
     inline Bool_t IsAMANDA(){return fIsAMANDA;};
     inline void SetIsAMANDA(Bool_t isAMANDA){fIsAMANDA = isAMANDA;};
+    void SetRunNumber(UInt_t RunNumber);
 
 private:
     UInt_t fRunNumber;

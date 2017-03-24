@@ -165,26 +165,26 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     // If user wants to update the data then the macro has to connect to OCDB.
     // Note that if data are already in the file there is nothing else to do.
     if (fUpdateOCDB){
-        cout<<"Starting OCDB data retrieving... ";
+        cout<<"Starting OCDB data retrieving...\n";
         OCDBDataToCParser();
         cout<<"DONE\n"<<endl;
     }
 
     if (fUpdateAMANDA){
-        cout<<"Starting AMANDA data parsing... ";
+        cout<<"Starting AMANDA data parsing...\n";
         AMANDATextToCParser();
         cout<<"DONE\n"<<endl;
     }
 
-    cout<<"Starting data aggregation... ";
+    cout<<"Starting data aggregation...\n";
     Aggregator();
     cout<<"DONE\n"<<endl;
 
-    cout<<"Starting data elaboration... ";
+    cout<<"Starting data elaboration...\n";
     Subtractor();
     cout<<"DONE\n"<<endl;
 
-    cout<<"Starting integrated charge calculation... ";
+    cout<<"Starting integrated charge calculation...\n";
     Integrator();
     cout<<"DONE\n"<<endl;
 

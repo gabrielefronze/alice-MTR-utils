@@ -976,3 +976,11 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
     printf("\n\n\nDark currents setting complete\n\n\n");
 }
+/*
+ * print which RPC corresponds to iSide, iPlane, iRPC
+ */
+void AliRPCAutoIntegrator::whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
+  Int_t NTot=kNRPC*kNPlanes*kNSides;
+  printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
+  return;
+}

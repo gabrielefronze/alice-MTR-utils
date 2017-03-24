@@ -976,6 +976,98 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
     printf("\n\n\nDark currents setting complete\n\n\n");
 }
+
+void AliRPCAutoIntegrator::AMANDASetRunNumber(){
+    TList *listBufferAMANDA=0x0;
+    TList *listBufferOCDB=0x0;
+    TList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
+    //fGlobalDataContainer->mkdir("TLists/AMANDA_DATA_withRunnumber");
+
+
+    for(Int_t iSide=0;iSide<kNSides;iSide++){
+        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
+                fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferOCDB);
+                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferAMANDA);
+
+                DataWithRunNumber[iSide][iPlane][iRPC]=new TList();
+                DataWithRunNumber[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
+                // if any data list is missing, then the channel
+                // (aka {iSide,iPlane,iRPC}) is skipped
+                if (!listBufferAMANDA) {
+                    printf("AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    continue;
+                }
+                if (!listBufferOCDB) {
+                    printf("OCDB_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    continue;
+                }
+
+                TIter iterValueOCDB(listBufferOCDB);
+                UInt_t runNumberBuffer=0;
+                //it is intended as runnumber extends from runbegin to runend then
+                //at newbegin begins another run
+                UInt_t runBeginBuffer=0;
+                UInt_t newRunBeginBuffer=runBeginBuffer;
+                UInt_t runEndBuffer=0;
+                //iter on OCDB until runnumber changes
+                while(iterValueOCDB()){
+                    UInt_t OCDBRunNumber= ((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
+                    UInt_t OCDBTimeStamp= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
+
+                    //chaeck if OCDBTimestamp is updated
+                    if(OCDBRunNumber>runNumberBuffer){
+                        //if is updated im in a new begin and last endbuffer should not be updated
+                        newRunBeginBuffer=OCDBTimeStamp;
+
+                        //printf("run: %d, start %d, stop %d \n",OCDBRunNumber,runBeginBuffer,runEndBuffer);
+
+                        //iter over amanda to update the run from start to stop then look for next run
+                        TIter iterValueAMANDA(listBufferAMANDA);
+                        while(iterValueAMANDA()){
+                            UInt_t AMANDATimeStamp=((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
+                            if((AMANDATimeStamp>=runBeginBuffer)&&(AMANDATimeStamp<=runEndBuffer)){
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
+                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                            }
+
+                            //when the run is passed exit the cycle
+                            if(((AliRPCValueDCS *) *iterValueAMANDA)->GetRunNumber()>runEndBuffer) continue;
+                        }
+
+                        runBeginBuffer=newRunBeginBuffer;
+                        runNumberBuffer=OCDBRunNumber;
+
+                    }else{
+                        runEndBuffer=OCDBTimeStamp;
+                    }
+
+                }
+
+                //now I add data with runnumber =0 (values get between two different runs)
+                TIter iterValueAMANDA(listBufferAMANDA);
+                while(iterValueAMANDA()){
+                    if(((AliRPCValueDCS *) *iterValueAMANDA)->GetRunNumber()==0){
+                        DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                    }
+                }
+                DataWithRunNumber[iSide][iPlane][iRPC]->Sort();
+
+                //Update File
+                fAMANDADataContainer->cd();
+                DataWithRunNumber[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
+
+                whichRPC(iRPC,iSide,iPlane);
+
+                listBufferAMANDA = 0x0;
+                listBufferOCDB = 0x0;
+
+            }
+        }
+    }
+
+}
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC
  */

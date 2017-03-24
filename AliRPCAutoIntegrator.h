@@ -70,6 +70,7 @@ private:
     void Subtractor();
     void Integrator();
 
+    void AMANDASetRunNumber();
     static void whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     ClassDef(AliRPCAutoIntegrator,3);
 };

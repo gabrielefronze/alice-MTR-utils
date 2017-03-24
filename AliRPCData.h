@@ -20,22 +20,22 @@ public:
 	~AliRPCData();
 	Bool_t AddRunStatistics(Int_t plane, Int_t side, Int_t RPC, AliRPCRunStatistics *stats);
 	Double_t GetMeanDarkCurrent(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetMeanTotalCurrent(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetMeanNetCurrent(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetMeanHV(UInt_t runNumber);
-    Double_t GetTotalScalerCountsBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetTotalScalerCountsNotBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanTotalCurrent(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanNetCurrent(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanHV(UInt_t runNumber);
+	Double_t GetTotalScalerCountsBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetTotalScalerCountsNotBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
 
-    Double_t GetMeanRateBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetMeanRateNotBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetMeanIntegratedCharge(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
-    Double_t GetMeanTimeStampStart(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanRateBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanRateNotBending(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanIntegratedCharge(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
+	Double_t GetMeanTimeStampStart(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
 
-		Double_t GetAverageTotalCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
-		Double_t GetAverageNetCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
-		Double_t GetAverageHV(Int_t plane, Int_t side, Int_t RPC);
-		Double_t GetAverageRateBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
-		Double_t GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
+	Double_t GetAverageTotalCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
+	Double_t GetAverageNetCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
+	Double_t GetAverageHV(Int_t plane, Int_t side, Int_t RPC);
+	Double_t GetAverageRateBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
+	Double_t GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 
     TSortedList* operator()(Int_t iPlane,Int_t iSides,Int_t iRPC){return fRunStatistics[iPlane][iSides][iRPC];};
 
@@ -58,7 +58,7 @@ private:
 
     Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
     Double_t GetMeanSomething(UInt_t runNumber, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
-		Double_t GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
+    Double_t GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
 
     ClassDef(AliRPCData,2);
 };

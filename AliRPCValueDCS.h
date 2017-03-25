@@ -34,6 +34,9 @@ public:
     inline void SetIsAMANDA(Bool_t isAMANDA){fIsAMANDA = isAMANDA;};
     void SetRunNumber(UInt_t RunNumber);
 
+    inline virtual Double_t GetIDark()const {return -1;};
+    inline virtual Double_t GetVSupp()const {return -1;};
+
 private:
     UInt_t fRunNumber;
     ULong64_t fTimeStamp;

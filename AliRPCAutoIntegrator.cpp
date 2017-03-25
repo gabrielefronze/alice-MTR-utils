@@ -307,6 +307,8 @@ void AliRPCAutoIntegrator::Aggregator(){
                 OCDBPlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
                 OCDBPlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
+                whichRPC(iRPC,iSide,iPlane);
+
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
             }
@@ -401,6 +403,9 @@ void AliRPCAutoIntegrator::Subtractor(){
                         startTimeStamp = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
                     }
                 }
+
+                whichRPC(iRPC,iSide,iPlane);
+
                 fGlobalDataContainer->cd("AMANDA_iNet_Graphs");
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("AMANDA_iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
             }
@@ -466,6 +471,9 @@ void AliRPCAutoIntegrator::Integrator(){
 
                 fGlobalDataContainer->cd("AMANDA_integrated_charge_Graphs");
                 AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("AMANDA_integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
+                whichRPC(iRPC,iSide,iPlane);
+
             }
         }
     }

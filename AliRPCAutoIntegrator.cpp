@@ -1077,6 +1077,72 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
     }
 
 }
+
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis){
+    std::vector<UInt_t> RunDummyList;
+    RunDummyList.push_back(RunNumber);
+    PlotSomethingVersusTime(RunDummyList, funky, GetFunky, WhatIsThis);
+return;
+}
+
+
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis){
+    TList *listBuffer;
+    TGraph *Plot[kNSides][kNPlanes][kNRPC];
+    fGlobalDataContainer->cd();
+    fGlobalDataContainer->mkdir(Form("OCDB_AMANDA_%s_%u_Graphs",WhatIsThis.Data(),RunNumberList.at(0)));
+
+    Int_t counter=0;
+
+    for(Int_t iSide=0;iSide<kNSides;iSide++){
+        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++) {
+                //check if analysis is already done
+                TObject *checkBuffer;
+                fGlobalDataContainer->GetObject(Form("OCDB_AMANDA_%s_Graphs/OCDB_AMANDA_%s_Graph_%u_MTR_%s_MT%d_RPC%d",WhatIsThis.Data(),WhatIsThis.Data(),RunNumberList.at(0),(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),checkBuffer);
+
+                if(checkBuffer) continue;
+
+                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
+
+                if (!listBuffer) {
+                    printf("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    continue;
+                }
+
+
+                TIter iterValue(listBuffer);
+                Plot[iSide][iPlane][iRPC]=new TGraph();
+                Plot[iSide][iPlane][iRPC]->SetTitle(WhatIsThis);
+                Plot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+                Plot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+                Plot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+
+                counter=0;
+
+                while (iterValue()) {
+                    if(IsRunInList(RunNumberList,((AliRPCValueDCS *) *iterValue)->GetRunNumber())) {
+                        if ((((AliRPCValueDCS *) *iterValue)->*funky)() &&
+                            ((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000) {
+                            Plot[iSide][iPlane][iRPC]->SetPoint(counter++,
+                                                                ((AliRPCValueDCS *) *iterValue)->GetTimeStamp(),
+                                                                (((AliRPCValueDCS *) *iterValue)->*GetFunky)());
+
+                        }
+                    }
+                }
+
+                fGlobalDataContainer->cd(Form("OCDB_AMANDA_%s_%u_Graphs",WhatIsThis.Data(),RunNumberList.at(0)));
+                Plot[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_%s_Graph_MTR_%s_MT%d_RPC%d",WhatIsThis.Data(),(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite);
+
+                whichRPC(iRPC,iSide,iPlane);
+
+                listBuffer=0x0;
+            }
+        }
+    }
+    return;
+}
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC
  */

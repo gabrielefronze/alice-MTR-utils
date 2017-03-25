@@ -70,6 +70,8 @@ private:
     void Subtractor();
     void Integrator();
 
+    void PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const, TString WhatIsThis);
+    void PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis);
     void AMANDASetRunNumber();
     static void whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     ClassDef(AliRPCAutoIntegrator,3);

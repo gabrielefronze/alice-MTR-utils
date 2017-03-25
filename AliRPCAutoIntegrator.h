@@ -11,6 +11,10 @@
 #include "TNamed.h"
 #include "TString.h"
 #include "TFile.h"
+#include "AliRPCValueDCS.h"
+#include "AliRPCRunStatistics.h"
+#include "AliRPCValueCurrent.h"
+#include "AliRPCData.h"
 #include <vector>
 
 typedef struct OCDBRun {

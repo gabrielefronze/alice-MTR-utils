@@ -24,6 +24,7 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TGraph.h"
+#include "TH1F.h"
 
 using namespace std;
 

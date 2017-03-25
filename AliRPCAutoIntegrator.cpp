@@ -1147,6 +1147,94 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumber
     }
     return;
 }
+
+void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis,Bool_t normalizedToArea ,Int_t nbins, Double_t xlow, Double_t xup){
+    //exit if the analysis is already there
+    TObject *checkBuffer;
+    fGlobalDataContainer->GetObject(Form("Distributions/%s_%u_Graph_All_RPCs", WhatIsThis.Data(),RunNumber),checkBuffer);
+
+    if(checkBuffer) return;
+
+    //creates a TH1F for each RPC and a global one
+    TH1F *SingleRPCPlot[kNSides][kNSides][kNRPC];
+    TH1F *GlobalRPCPlot=new TH1F(Form("%s_%u_Graph_All_RPCs",WhatIsThis.Data(),RunNumber),WhatIsThis,nbins,xlow,xup);
+    fGlobalDataContainer->cd();
+    fGlobalDataContainer->mkdir(Form("Distributions"));
+    TList *listBuffer;
+
+    for (Int_t iSide = 0; iSide < kNSides; iSide++) {
+        for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
+            for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
+
+                //get Object from merged data
+                fGlobalDataContainer->GetObject(
+                        Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d", (fSides[iSide]).Data(),
+                             fPlanes[iPlane], iRPC + 1),
+                        listBuffer);
+
+                if (!listBuffer) {
+                    printf("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n", (fSides[iSide]).Data(),
+                           fPlanes[iPlane],
+                           iRPC + 1);
+                    continue;
+                }
+
+
+                TIter iterValue(listBuffer);
+                SingleRPCPlot[iSide][iPlane][iRPC] = new TH1F(Form("%s_distributions_%u_MTR_%s_MT%d_RPC%d", WhatIsThis.Data(),RunNumber,(fSides[iSide]).Data(),
+                                                                   fPlanes[iPlane],
+                                                                   iRPC + 1),WhatIsThis,nbins,xlow,xup);
+                SingleRPCPlot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+                SingleRPCPlot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+
+
+                while (iterValue()) {
+                    if(((AliRPCValueDCS *) *iterValue)->GetRunNumber()==RunNumber){
+                    if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 &&
+                        (((AliRPCValueDCS *) *iterValue)->*funky)()) {
+                        if (((AliRPCValueDCS *) *iterValue)->IsCurrent()) {
+                            //if current cast to AliRPCSValueCurrent
+                            SingleRPCPlot[iSide][iPlane][iRPC]->Fill(
+                                    (((AliRPCValueCurrent *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                            GlobalRPCPlot->Fill(
+                                    (((AliRPCValueCurrent *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                            continue;
+                        }
+                        if (((AliRPCValueDCS *) *iterValue)->IsVoltage()) {
+                            //if voltage cast to AliRPCSValueVoltage
+                            SingleRPCPlot[iSide][iPlane][iRPC]->Fill(
+                                    (((AliRPCValueVoltage *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                            GlobalRPCPlot->Fill(
+                                    (((AliRPCValueVoltage *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                        continue;
+                        }
+                    }
+                }
+                    //when run is finished exit the cycle
+                    if (((AliRPCValueDCS *) *iterValue)->GetRunNumber() > RunNumber) break;
+                }
+
+                fGlobalDataContainer->cd("Distributions");
+                SingleRPCPlot[iSide][iPlane][iRPC]->Write(
+                        Form("%s_%u_distribution_Graph_MTR_%s_MT%d_RPC%u", WhatIsThis.Data(),RunNumber,(fSides[iSide]).Data(),
+                             fPlanes[iPlane],
+                             iRPC + 1),TObject::kSingleKey | TObject::kOverwrite);
+
+                listBuffer = 0x0;
+                whichRPC(iRPC,iSide,iPlane);
+            }
+        }
+    }
+    fGlobalDataContainer->cd("Distributions");
+    GlobalRPCPlot->Write(
+            Form("%s_%u_Graph_All_RPCs", WhatIsThis.Data(),RunNumber),TObject::kSingleKey | TObject::kOverwrite);
+}
+
+void AliRPCAutoIntegrator::CreateDarkCurrentDistribution(UInt_t RunNumber) {
+    AliRPCAutoIntegrator::CreateDistributionSomething(RunNumber,&AliRPCValueDCS::IsCurrent,&AliRPCValueDCS::GetIDark,"Dark_Current",kTRUE,15,0,0.001);
+    return;
+}
+
 void AliRPCAutoIntegrator::VoltagePlotter(UInt_t RunNumber){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumber,&AliRPCValueDCS::IsVoltage,&AliRPCValueDCS::GetVSupp,"Voltage");
     return;

@@ -1021,17 +1021,17 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
                 UInt_t runNumberBuffer=0;
                 //it is intended as runnumber extends from runbegin to runend then
                 //at newbegin begins another run
-                UInt_t runBeginBuffer=0;
-                UInt_t newRunBeginBuffer=runBeginBuffer;
-                UInt_t runEndBuffer=0;
+                ULong64_t runBeginBuffer=0;
+                ULong64_t newRunBeginBuffer=runBeginBuffer;
+                ULong64_t runEndBuffer=0;
                 //iter on OCDB until runnumber changes
                 while(iterValueOCDB()){
                     UInt_t OCDBRunNumber= ((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
-                    UInt_t OCDBTimeStamp= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
+                    ULong64_t OCDBTimeStamp= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
 
-                    //chaeck if OCDBTimestamp is updated
+                    //check if OCDBTimestamp is updated
                     if(OCDBRunNumber>runNumberBuffer){
-                        //if is updated im in a new begin and last endbuffer should not be updated
+                        //if is updated iterator is in a new run and last endbuffer should not be updated
                         newRunBeginBuffer=OCDBTimeStamp;
 
                         //printf("run: %d, start %d, stop %d \n",OCDBRunNumber,runBeginBuffer,runEndBuffer);

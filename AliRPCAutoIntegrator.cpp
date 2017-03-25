@@ -1164,3 +1164,9 @@ void AliRPCAutoIntegrator::whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;
 }
+
+Bool_t AliRPCAutoIntegrator::IsRunInList(std::vector<UInt_t> RunList, UInt_t RunNumber) {
+    return std::find(RunList.begin(), RunList.end(), RunNumber) != RunList.end();
+}
+
+

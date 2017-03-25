@@ -26,6 +26,8 @@ public:
 	~AliRPCAutoIntegrator();
     void RunAutoIntegrator();
 
+    void VoltagePlotter(UInt_t RunNumber);
+    void VoltagePlotter(std::vector<UInt_t> RunNumberList);
 private:
     std::vector<OCDBRun> fOCDBRunList;
 

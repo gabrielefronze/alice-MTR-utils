@@ -1147,6 +1147,15 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumber
     }
     return;
 }
+void AliRPCAutoIntegrator::VoltagePlotter(UInt_t RunNumber){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumber,&AliRPCValueDCS::IsVoltage,&AliRPCValueDCS::GetVSupp,"Voltage");
+    return;
+}
+
+void AliRPCAutoIntegrator::VoltagePlotter(std::vector<UInt_t> RunNumberList){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumberList,&AliRPCValueDCS::IsVoltage,&AliRPCValueDCS::GetVSupp,"Voltage");
+    return;
+}
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC
  */

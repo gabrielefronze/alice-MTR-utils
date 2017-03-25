@@ -26,6 +26,8 @@ public:
 	~AliRPCAutoIntegrator();
     void RunAutoIntegrator();
 
+    void VoltagePlotter(UInt_t RunNumber);
+    void VoltagePlotter(std::vector<UInt_t> RunNumberList);
 private:
     std::vector<OCDBRun> fOCDBRunList;
 
@@ -70,7 +72,17 @@ private:
     void Subtractor();
     void Integrator();
 
-    ClassDef(AliRPCAutoIntegrator,3);
+    void CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis, Bool_t normalizedToArea=kTRUE,Int_t nbins=10, Double_t xlow=0., Double_t xup=1.);
+    void PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const, TString WhatIsThis);
+    void PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis);
+
+    void AMANDASetRunNumber();
+
+    static void whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
+    Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
+
+
+ClassDef(AliRPCAutoIntegrator,4);
 };
 
 #endif

@@ -21,7 +21,7 @@ public:
     ~AliRPCValueDCS(){};
     inline UInt_t GetRunNumber() const { return fRunNumber; };
     inline ULong64_t GetTimeStamp() const { return fTimeStamp; };
-    inline Bool_t GetIsCalib() const { return fIsCalib; };
+    inline Bool_t IsCalib() const { return fIsCalib; };
     Bool_t IsEqual (const TObject *obj) const;
     Int_t Compare(const TObject *obj) const;
     Bool_t IsSortable() const { return kTRUE; };

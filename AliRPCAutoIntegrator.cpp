@@ -102,7 +102,8 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     } else {
         //fOCDBDataContainer= new TFile("OCDBDataContainer.root","READ");
-        fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
+        //fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
+        fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
     fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");

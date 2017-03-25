@@ -28,6 +28,7 @@ public:
 
     void VoltagePlotter(UInt_t RunNumber);
     void VoltagePlotter(std::vector<UInt_t> RunNumberList);
+    void CreateDarkCurrentDistribution(UInt_t RunNumber);
 private:
     std::vector<OCDBRun> fOCDBRunList;
 

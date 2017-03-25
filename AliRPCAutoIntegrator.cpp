@@ -175,12 +175,11 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     if (fUpdateAMANDA){
         cout<<"Starting AMANDA data parsing...\n";
         AMANDATextToCParser();
+
+        cout<<"Setting Amanda RunNumbers...\n";
+        AMANDASetRunNumber();
         cout<<"DONE\n"<<endl;
     }
-
-    cout<<"Setting Amanda RunNumbers...\n";
-    AMANDASetRunNumber();
-    cout<<"DONE\n"<<endl;
 
     cout<<"Starting data aggregation...\n";
     Aggregator();

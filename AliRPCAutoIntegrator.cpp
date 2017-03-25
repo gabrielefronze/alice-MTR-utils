@@ -943,7 +943,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         //cast a corrente
                         AliRPCValueCurrent* valueCurrent=(AliRPCValueCurrent*)valueDCS;
                         //se è un run di calibrazione fatto a tensione di lavoro
-                        if (valueCurrent->GetIsCalib()==kTRUE && voltageOkFlag==kTRUE) {
+                        if (valueCurrent->IsCalib()==kTRUE && voltageOkFlag==kTRUE) {
                             //rimangono alcune letture a 0.0A, così si tolgono ###GIUSTO?###
                             if(valueCurrent->GetIDark()!=0.){
                                 iDarkCalib=valueCurrent->GetIDark();
@@ -957,7 +957,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         }
                         valueCurrent=0x0;
                     }
-                    //cout<<valueDCS->GetIsCalib()<<endl;
+                    //cout<<valueDCS->IsCalib()<<endl;
                     valueDCS=0x0;
                 }
 

@@ -107,7 +107,9 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
-    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
+
     fGlobalDataContainer->cd();
     fGlobalDataContainer->mkdir("TLists");
     fGlobalDataContainer->mkdir("AMANDA_iTot_Graphs");

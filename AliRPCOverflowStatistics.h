@@ -16,10 +16,10 @@ class AliRPCOverflowStatistics : public AliRPCValueDCS{
 public:
 	AliRPCOverflowStatistics();
     AliRPCOverflowStatistics(const AliRPCOverflowStatistics &obj)  : AliRPCValueDCS(obj){};
-    AliRPCOverflowStatistics(UInt_t runNumber,ULong64_t timeStamp,UInt_t overflowLBCount,UInt_t underflowLBCount,Bool_t isCalib);
+    AliRPCOverflowStatistics(UInt_t runNumber,ULong64_t timeStamp,UInt_t overflowLBCount,UInt_t underflowLBCount,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus);
     ~AliRPCOverflowStatistics(){};
-    inline UInt_t GetOverflowNumber(){return fOverflowLBCount;};
-    inline UInt_t GetUnderNumber(){return fUnderflowLBCount;};
+    inline UInt_t GetOverflowNumber() const {return fOverflowLBCount;};
+    inline UInt_t GetUnderNumber() const {return fUnderflowLBCount;};
 
 
 private:

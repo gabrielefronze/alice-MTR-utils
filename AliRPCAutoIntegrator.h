@@ -72,6 +72,7 @@ private:
         return output;
     }
 
+public:
     void OCDBRunListReader();
     void OCDBDataToCParser();
     void AMANDATextToCParser();
@@ -79,9 +80,10 @@ private:
     void Subtractor();
     void Integrator();
 
-    void CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis, Bool_t normalizedToArea=kTRUE,Int_t nbins=10, Double_t xlow=0., Double_t xup=1.);
-    void PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const, TString WhatIsThis);
-    void PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)(), Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis);
+private:
+    void CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis, Bool_t normalizedToArea=kTRUE,Int_t nbins=10, Double_t xlow=0., Double_t xup=1.);
+    void PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const, TString WhatIsThis);
+    void PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis);
 
     void AMANDASetRunNumber();
     void FillAliRPCData();

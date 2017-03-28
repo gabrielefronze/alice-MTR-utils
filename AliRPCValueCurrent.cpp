@@ -14,7 +14,7 @@ AliRPCValueCurrent::AliRPCValueCurrent() : AliRPCValueDCS(){
     fIDark=0.;
 };
 
-AliRPCValueCurrent::AliRPCValueCurrent(UInt_t runNumber,ULong64_t timeStamp,Double_t iTot,Double_t iDark,Bool_t isCalib,UInt_t calibRunNumber,Bool_t isAMANDA) : AliRPCValueDCS(runNumber,timeStamp,isCalib,isAMANDA){
+AliRPCValueCurrent::AliRPCValueCurrent(UInt_t runNumber,ULong64_t timeStamp,Double_t iTot,Double_t iDark,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus, UInt_t calibRunNumber,Bool_t isAMANDA) : AliRPCValueDCS(runNumber, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, isAMANDA) {
     fCalibRunNumber=calibRunNumber;
     fITot=iTot;
     fIDark=iDark;

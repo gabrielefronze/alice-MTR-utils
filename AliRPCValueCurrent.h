@@ -16,7 +16,7 @@ class AliRPCValueCurrent : public AliRPCValueDCS{
 public:
     AliRPCValueCurrent();
     AliRPCValueCurrent(const AliRPCValueCurrent &obj)  : AliRPCValueDCS(obj){};
-    AliRPCValueCurrent(UInt_t runNumber,ULong64_t timeStamp,Double_t iTot,Double_t iDark,Bool_t isCalib,UInt_t calibRunNumber,Bool_t isAMANDA=kFALSE);
+    AliRPCValueCurrent(UInt_t runNumber,ULong64_t timeStamp,Double_t iTot,Double_t iDark,Bool_t isCalib, TString beamType, Float_t beamEnergy,                       TString LHCStatus, UInt_t calibRunNumber,Bool_t isAMANDA=kFALSE);
     ~AliRPCValueCurrent(){};
     inline Double_t GetITot() const { return fITot; };
     inline void SetITot(Double_t iTot) { fITot=iTot; };

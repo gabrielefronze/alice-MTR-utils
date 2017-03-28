@@ -14,13 +14,48 @@ AliRPCValueDCS::AliRPCValueDCS() : TObject(){
     fTimeStamp=0;
     fIsCalib=kFALSE;
     fIsAMANDA=kFALSE;
+    fBeamType=kNone;
+    fBeamEnergy=0.;
+    fLHCStatus=kNONE;
 };
 
-AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber,ULong64_t timeStamp,Bool_t isCalib, Bool_t isAMANDA) : TObject(){
+AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, Bool_t isCalib, TString beamType, Float_t beamEnergy,
+                               TString LHCStatus, Bool_t isAMANDA) : TObject(){
     fRunNumber=runNumber;
     fTimeStamp=timeStamp;
     fIsCalib=isCalib;
     fIsAMANDA=isAMANDA;
+    fBeamType = kNone;
+
+    if(LHCStatus.Contains("BEAM")){
+        if(LHCStatus.Contains("NO")){
+            fLHCStatus = kNOBEAM;
+        } else if(LHCStatus.Contains("DUMP")){
+            fLHCStatus = kDUMP;
+        } else {
+            fLHCStatus = kBEAM;
+        }
+    } else if(LHCStatus.Contains("RAMP")){
+        fLHCStatus = kRAMP;
+    } else {
+        fLHCStatus = kNONE;
+    }
+
+    if(fLHCStatus == 0) {
+        if (beamType.Contains("p")) {
+            if (beamType.Contains("A")) {
+                fBeamType = kpA;
+            } else {
+                fBeamType = kpp;
+            }
+        } else if (beamType.Contains("A")) {
+            fBeamType = kAA;
+        }
+        fBeamEnergy=beamEnergy;
+    } else {
+        fBeamType = kNone;
+        fBeamEnergy=0.;
+    }
 };
 
 Bool_t AliRPCValueDCS::IsEqual (const TObject *obj) const {
@@ -33,7 +68,7 @@ Int_t AliRPCValueDCS::Compare(const TObject *obj) const {
     else return 1;
 };
 
-TString* AliRPCValueDCS::WhatIsThis(){
+TString* AliRPCValueDCS::WhatIsThis() const {
     TString *className =new TString(((TClass*)this->IsA())->GetName());
     if (className->Contains("AliRPCValueCurrent")) {
         delete className;

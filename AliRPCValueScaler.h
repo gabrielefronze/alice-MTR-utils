@@ -16,7 +16,7 @@ class AliRPCValueScaler : public AliRPCValueDCS{
 public:
     AliRPCValueScaler();
     AliRPCValueScaler(const AliRPCValueScaler &obj)  : AliRPCValueDCS(obj){};
-    AliRPCValueScaler(UInt_t runNumber,ULong64_t timeStamp, Long64_t scalerCounts,Bool_t isCalib,Double_t deltaT=-1., Bool_t overflow=kFALSE);
+    AliRPCValueScaler(UInt_t runNumber,ULong64_t timeStamp, Long64_t scalerCounts,Bool_t isCalib,TString beamType, Float_t beamEnergy, TString LHCStatus, Double_t deltaT=-1., Bool_t overflow=kFALSE);
     ~AliRPCValueScaler(){};
     inline Double_t GetScalerCounts() const { return fScalerCounts; };
     inline void SetScalerCounts(Long64_t scalerCounts) { fScalerCounts=scalerCounts; };

@@ -79,6 +79,7 @@ public:
     void OCDBDataToCParser();
     void AMANDATextToCParser();
     void Aggregator();
+    void PlotIDarkAndITot();
     void Subtractor();
     void Integrator();
 
@@ -86,6 +87,8 @@ private:
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<OCDBRun> RunNumberList, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, Int_t whichValue);
 
     void AMANDASetRunNumber();
     void FillAliRPCData();

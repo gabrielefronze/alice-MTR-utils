@@ -188,6 +188,10 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     Aggregator();
     cout<<"DONE\n"<<endl;
 
+    cout<<"Starting plot generation...\n";
+    PlotIDarkAndITot();
+    cout<<"DONE\n"<<endl;
+
     cout<<"Starting data elaboration...\n";
     Subtractor();
     cout<<"DONE\n"<<endl;
@@ -228,8 +232,6 @@ void AliRPCAutoIntegrator::Aggregator(){
     TList *listBufferAMANDA = 0x0;
     TList *listBufferOCDB = 0x0;
     TList *mergedData[kNSides][kNPlanes][kNRPC];
-//    TGraph *AMANDAPlotsITot[kNSides][kNPlanes][kNRPC];
-//    TGraph *OCDBPlotsIDark[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -253,26 +255,13 @@ void AliRPCAutoIntegrator::Aggregator(){
                 mergedData[iSide][iPlane][iRPC]=new TList();
                 mergedData[iSide][iPlane][iRPC]->SetName(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-//                AMANDAPlotsITot[iSide][iPlane][iRPC]=new TGraph();
-//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
-//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
-//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
-//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
-//                Int_t counter = 0;
+               Int_t counter = 0;
                 TIter iterValueAMANDA(listBufferAMANDA);
                 while(iterValueAMANDA()){
                     //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-//                    if (((AliRPCValueCurrent*)*iterValueAMANDA)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueAMANDA)->GetITot()>0.)
-//                        AMANDAPlotsITot[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueAMANDA)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueAMANDA)->GetITot());
                 }
 
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]=new TGraph();
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
-//                counter = 0;
 
                 TIter iterValueOCDB(listBufferOCDB);
                 // UInt_t previousRun = 0;
@@ -300,11 +289,7 @@ void AliRPCAutoIntegrator::Aggregator(){
                 while(iterValueOCDB()){
                     //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kFALSE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
-//                    if ( ((AliRPCValueCurrent*)*iterValueOCDB)->IsCurrent() ){
-//                        if (((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot()>0.)
-//                            OCDBPlotsIDark[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot());
-//                    }
-                }
+}
 
                 // the sorting will take place with respect to the timestamp of
                 // each entry
@@ -312,16 +297,52 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 fGlobalDataContainer->cd("TLists");
                 mergedData[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
-//                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
-//                AMANDAPlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-//                fGlobalDataContainer->cd("OCDB_iDark_Graphs");
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
-//                OCDBPlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-
                 WhichRPC(iRPC, iSide, iPlane);
 
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
+            }
+        }
+    }
+}
+
+void AliRPCAutoIntegrator::PlotIDarkAndITot() {
+    TGraph *PlotsITot[kNSides][kNPlanes][kNRPC];
+    TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
+    TList *listBuffer;
+
+    for(Int_t iSide=0;iSide<kNSides;iSide++){
+        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
+                fOCDBDataContainer->GetObject(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
+
+                if (!listBuffer) {
+                    printf("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    continue;
+                }
+
+                TIter iterValueGlobal(listBuffer);
+                PlotsITot[iSide][iPlane][iRPC] = new TGraph();
+                PlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
+                PlotsITot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+                PlotsITot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+                PlotsITot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+
+                PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForITot,AliRPCValueCurrent::kITot);
+
+                PlotsIDark[iSide][iPlane][iRPC]=new TGraph();
+                PlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
+                PlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+                PlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+                PlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+                PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark,AliRPCValueCurrent::kIDark);
+
+                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
+                PlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                fGlobalDataContainer->cd("OCDB_iDark_Graphs");
+                PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
+
+                listBuffer=0x0;
             }
         }
     }
@@ -1226,17 +1247,9 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
 
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue){
-    std::vector<UInt_t> RunDummyList;
-    RunDummyList.push_back(RunNumber);
-    PlotSomethingVersusTime(Graph, funky, RunDummyList, whichValue);
-return;
-}
 
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<UInt_t> RunNumberList, Int_t whichValue){
     TList *listBuffer;
-    fGlobalDataContainer->cd();
-
     Int_t counter=0;
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
@@ -1250,19 +1263,16 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
                     continue;
                 }
 
-
                 TIter iterValue(listBuffer);
-                                counter=0;
+                counter=0;
                 while (iterValue()) {
                     if(IsRunInList(RunNumberList,((AliRPCValueDCS *) *iterValue)->GetRunNumber())) {
                         if ((((AliRPCValueDCS *) *iterValue)->*funky)() &&
                             ((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000) {
                             Graph->SetPoint(counter++, ((AliRPCValueDCS *) *iterValue)->GetTimeStamp(),(((AliRPCValueDCS *) *iterValue)->GetValue(whichValue)));
-
                         }
                     }
                 }
-
 
                 WhichRPC(iRPC, iSide, iPlane);
 
@@ -1270,6 +1280,28 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
             }
         }
     }
+    return;
+}
+
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue){
+    std::vector<UInt_t> RunDummyList;
+    RunDummyList.push_back(RunNumber);
+    PlotSomethingVersusTime(Graph, funky, RunDummyList, whichValue);
+    return;
+}
+
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<OCDBRun> RunNumberList, Int_t whichValue){
+    std::vector<UInt_t> RunDummyList;
+    for(OCDBRun iter :RunNumberList){
+        UInt_t temp=((UInt_t)iter.runNumber);
+        RunDummyList.push_back(temp);
+    }
+    PlotSomethingVersusTime(Graph,funky,RunDummyList,whichValue);
+    return;
+}
+
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, Int_t whichValue){
+    PlotSomethingVersusTime(Graph,funky,fOCDBRunList,whichValue);
     return;
 }
 
@@ -1315,8 +1347,7 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRP
 }
 
 void AliRPCAutoIntegrator::CreateDarkCurrentDistribution(TH1 *Graph, UInt_t RunNumber) {
-    AliRPCAutoIntegrator::CreateDistributionSomething(Graph, &AliRPCValueDCS::IsCurrent, RunNumber,
-                                                      AliRPCValueCurrent::kIDark, kTRUE);
+    AliRPCAutoIntegrator::CreateDistributionSomething(Graph, &AliRPCValueDCS::IsCurrent, RunNumber, AliRPCValueCurrent::kIDark, kTRUE);
     return;
 }
 

@@ -14,8 +14,8 @@ AliRPCValueDCS::AliRPCValueDCS() : TObject(){
     fTimeStamp=0;
     fIsCalib=kFALSE;
     fIsAMANDA=kFALSE;
+    fBeamEnergy=0.f;
     fBeamType=knone;
-    fBeamEnergy=0.;
     fLHCStatus=kNONE;
 };
 
@@ -54,7 +54,7 @@ AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, Bool_t isC
         fBeamEnergy=beamEnergy;
     } else {
         fBeamType = knone;
-        fBeamEnergy=0.;
+        fBeamEnergy=0.f;
     }
 };
 

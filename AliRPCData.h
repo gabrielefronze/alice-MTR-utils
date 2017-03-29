@@ -57,6 +57,7 @@ private:
     Bool_t fIsDarkRun;
 
     Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
+	Bool_t IsThereThisRunStupido(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
     Double_t GetMeanSomething(UInt_t runNumber, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
     Double_t GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
 

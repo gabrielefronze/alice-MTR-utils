@@ -168,7 +168,23 @@ Double_t AliRPCData::GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC
   return AliRPCData::GetAverageSomething(plane,side,RPC,normalizeToArea,&AliRPCRunStatistics::GetMeanRateNotBending);
 };
 
+
+
 Bool_t AliRPCData::IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber,  Int_t &index){
+    TIter iterValue(fRunStatistics[plane][side][RPC]);
+    index = 0;
+    while (iterValue()){
+        index++;
+        if(((AliRPCRunStatistics*)*iterValue)->GetRunNumber()==runNumber){
+            return kTRUE;
+        }
+    }
+
+    index = -1;
+    return kFALSE;
+};
+
+Bool_t AliRPCData::IsThereThisRunStupido(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber,  Int_t &index){
     for(Int_t iEntries=0;iEntries<fRunStatistics[plane][side][RPC]->GetEntries();iEntries++){
         if(((AliRPCRunStatistics*)fRunStatistics[plane][side][RPC]->At(iEntries))->GetRunNumber()==runNumber){
             index=iEntries;
@@ -178,3 +194,4 @@ Bool_t AliRPCData::IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t run
     index=-1;
     return kFALSE;
 };
+

@@ -228,8 +228,8 @@ void AliRPCAutoIntegrator::Aggregator(){
     TList *listBufferAMANDA = 0x0;
     TList *listBufferOCDB = 0x0;
     TList *mergedData[kNSides][kNPlanes][kNRPC];
-    TGraph *AMANDAPlotsITot[kNSides][kNPlanes][kNRPC];
-    TGraph *OCDBPlotsIDark[kNSides][kNPlanes][kNRPC];
+//    TGraph *AMANDAPlotsITot[kNSides][kNPlanes][kNRPC];
+//    TGraph *OCDBPlotsIDark[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -253,26 +253,26 @@ void AliRPCAutoIntegrator::Aggregator(){
                 mergedData[iSide][iPlane][iRPC]=new TList();
                 mergedData[iSide][iPlane][iRPC]->SetName(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-                AMANDAPlotsITot[iSide][iPlane][iRPC]=new TGraph();
-                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
-                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
-                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
-                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
-                Int_t counter = 0;
+//                AMANDAPlotsITot[iSide][iPlane][iRPC]=new TGraph();
+//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
+//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+//                AMANDAPlotsITot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+//                Int_t counter = 0;
                 TIter iterValueAMANDA(listBufferAMANDA);
                 while(iterValueAMANDA()){
                     //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-                    if (((AliRPCValueCurrent*)*iterValueAMANDA)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueAMANDA)->GetITot()>0.)
-                        AMANDAPlotsITot[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueAMANDA)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueAMANDA)->GetITot());
+//                    if (((AliRPCValueCurrent*)*iterValueAMANDA)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueAMANDA)->GetITot()>0.)
+//                        AMANDAPlotsITot[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueAMANDA)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueAMANDA)->GetITot());
                 }
 
-                OCDBPlotsIDark[iSide][iPlane][iRPC]=new TGraph();
-                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
-                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
-                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
-                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
-                counter = 0;
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]=new TGraph();
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+//                counter = 0;
 
                 TIter iterValueOCDB(listBufferOCDB);
                 // UInt_t previousRun = 0;
@@ -300,10 +300,10 @@ void AliRPCAutoIntegrator::Aggregator(){
                 while(iterValueOCDB()){
                     //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kFALSE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
-                    if ( ((AliRPCValueCurrent*)*iterValueOCDB)->IsCurrent() ){
-                    if (((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot()>0.)
-                        OCDBPlotsIDark[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot());
-                    }
+//                    if ( ((AliRPCValueCurrent*)*iterValueOCDB)->IsCurrent() ){
+//                        if (((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot()>0.)
+//                            OCDBPlotsIDark[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot());
+//                    }
                 }
 
                 // the sorting will take place with respect to the timestamp of
@@ -312,11 +312,11 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 fGlobalDataContainer->cd("TLists");
                 mergedData[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
-                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
-                AMANDAPlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-                fGlobalDataContainer->cd("OCDB_iDark_Graphs");
-                OCDBPlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
-                OCDBPlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+//                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
+//                AMANDAPlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+//                fGlobalDataContainer->cd("OCDB_iDark_Graphs");
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
+//                OCDBPlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
                 whichRPC(iRPC,iSide,iPlane);
 

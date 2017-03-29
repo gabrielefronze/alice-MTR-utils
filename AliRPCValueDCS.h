@@ -29,6 +29,18 @@ typedef enum{
 } TLHCStatus;
 
 class AliRPCValueDCS : public TObject{
+private:
+    UInt_t fRunNumber;
+    TBeamType fBeamType;
+    Float_t fBeamEnergy;
+    TLHCStatus fLHCStatus;
+    ULong64_t fTimeStamp;
+    Bool_t fIsCalib;
+    Bool_t fIsAMANDA;
+
+    TString fHumanBeamType() const;
+    TString fHumanLHCStatusType() const;
+
 public:
     AliRPCValueDCS();
     AliRPCValueDCS(const AliRPCValueDCS &obj)  : TObject(obj){};
@@ -56,18 +68,9 @@ public:
     inline virtual Double_t GetIDark()const {return -1;};
     inline virtual Double_t GetVSupp()const {return -1;};
 
-    inline void PrintBeamStatus() const {printf("%d sqrt(s)=%fGeV %d\n",fBeamType,fBeamEnergy,fLHCStatus); };
+    inline void PrintBeamStatus() const {printf("%s sqrt(s)=%fGeV %s\n",fHumanBeamType().Data(),fBeamEnergy,fHumanLHCStatusType().Data()); };
 
-private:
-    UInt_t fRunNumber;
-    TBeamType fBeamType;
-    Float_t fBeamEnergy;
-    TLHCStatus fLHCStatus;
-    ULong64_t fTimeStamp;
-    Bool_t fIsCalib;
-    Bool_t fIsAMANDA;
-
-    ClassDef(AliRPCValueDCS,4);
+ClassDef(AliRPCValueDCS,4);
 };
 
 #endif /* AliRPCValueDCS_h */

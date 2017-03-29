@@ -93,4 +93,34 @@ TString* AliRPCValueDCS::WhatIsThis() const {
 void AliRPCValueDCS::SetRunNumber(UInt_t RunNumber){
     //AMANDA needs to be set, OCDB run Rumber are set when created
     if(this->IsAMANDA()) fRunNumber=RunNumber;
+}
+
+TString AliRPCValueDCS::fHumanBeamType() const {
+    switch (fBeamType){
+        case kpp: return "p-p";
+
+        case kpA: return "p-A";
+
+        case kAA: return "A-A";
+
+        case kNone: return "None";
+
+        default: return "Unknown";
+    }
 };
+
+TString AliRPCValueDCS::fHumanLHCStatusType() const {
+    switch (fLHCStatus){
+        case kBEAM: return "STABLE BEAMS";
+
+        case kNONE: return "UNKNOWN";
+
+        case kNOBEAM: return "NO BEAM";
+
+        case kDUMP: return "BEAM DUMP";
+
+        case kRAMP: return "RAMP DOWN";
+
+        default: return "UNKNOWN";
+    }
+}

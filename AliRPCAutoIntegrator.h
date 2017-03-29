@@ -15,6 +15,7 @@
 #include "AliRPCRunStatistics.h"
 #include "AliRPCValueCurrent.h"
 #include "AliRPCData.h"
+#include "TGraph.h"
 #include <vector>
 
 typedef struct OCDBRun {
@@ -30,8 +31,8 @@ public:
 	~AliRPCAutoIntegrator();
     void RunAutoIntegrator();
 
-    void VoltagePlotter(UInt_t RunNumber);
-    void VoltagePlotter(std::vector<UInt_t> RunNumberList);
+    void VoltagePlotter(TGraph *Graph, UInt_t RunNumber);
+    void VoltagePlotter(TGraph *Graph, std::vector<UInt_t> RunNumberList);
     void CreateDarkCurrentDistribution(UInt_t RunNumber);
 private:
     std::vector<OCDBRun> fOCDBRunList;
@@ -81,14 +82,14 @@ public:
     void Integrator();
 
 private:
-    void CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis, Bool_t normalizedToArea=kTRUE,Int_t nbins=10, Double_t xlow=0., Double_t xup=1.);
-    void PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const, TString WhatIsThis);
-    void PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis);
+    void CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Int_t whichValue=0 ,TString WhatIsThis="", Bool_t normalizedToArea=kTRUE,Int_t nbins=10, Double_t xlow=0., Double_t xup=1.);
+    void PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)() const, TGraph * Graph, Int_t whichValue=0);
+    void PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, TGraph * Graph, Int_t whichValue=0);
 
     void AMANDASetRunNumber();
     void FillAliRPCData();
 
-    static void whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
+    static void WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 

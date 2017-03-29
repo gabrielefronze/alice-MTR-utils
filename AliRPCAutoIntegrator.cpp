@@ -318,7 +318,7 @@ void AliRPCAutoIntegrator::Aggregator(){
 //                OCDBPlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
 //                OCDBPlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
 
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
@@ -415,7 +415,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                     }
                 }
 
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
 
                 fGlobalDataContainer->cd("AMANDA_iNet_Graphs");
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("AMANDA_iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
@@ -483,7 +483,7 @@ void AliRPCAutoIntegrator::Integrator(){
                 fGlobalDataContainer->cd("AMANDA_integrated_charge_Graphs");
                 AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("AMANDA_integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
 
             }
         }
@@ -1106,7 +1106,7 @@ void AliRPCAutoIntegrator::FillAliRPCData() {
 
                 }
 
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
 
                 listBuffer = 0x0;
             }
@@ -1147,7 +1147,14 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
                     continue;
                 }
 
+                if(!listBufferOCDB->IsSorted()) listBufferOCDB->Sort();
+                if(!listBufferAMANDA->IsSorted()) listBufferAMANDA->Sort();
+
                 TIter iterValueOCDB(listBufferOCDB);
+                TIter iterValueAMANDA(listBufferAMANDA);
+                TIter iterValueAMANDANext(listBufferAMANDA);
+                iterValueAMANDANext();
+
                 UInt_t runNumberBuffer=0;
                 //it is intended as runnumber extends from runbegin to runend then
                 //at newbegin begins another run
@@ -1156,31 +1163,38 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
                 ULong64_t runEndBuffer=0;
                 //iter on OCDB until runnumber changes
                 while(iterValueOCDB()){
-                    UInt_t OCDBRunNumber= ((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
+                    TBeamType OCDBCurrentRunType=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamType();
+                    float_t OCDBCurrentBeamEnergy=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamEnergy();
+                    TLHCStatus OCDBCurrentLHCStatus=((AliRPCValueDCS *) *iterValueOCDB)->GetfLHCStatus();
+                    UInt_t OCDBCurrentRunNumber=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
                     ULong64_t OCDBTimeStamp= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
 
                     //check if OCDBTimestamp is updated
-                    if(OCDBRunNumber>runNumberBuffer){
+                    if(OCDBCurrentRunNumber>runNumberBuffer){
                         //if is updated iterator is in a new run and last endbuffer should not be updated
                         newRunBeginBuffer=OCDBTimeStamp;
 
                         //printf("run: %d, start %d, stop %d \n",OCDBRunNumber,runBeginBuffer,runEndBuffer);
 
                         //iter over amanda to update the run from start to stop then look for next run
-                        TIter iterValueAMANDA(listBufferAMANDA);
                         while(iterValueAMANDA()){
                             UInt_t AMANDATimeStamp=((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
                             if((AMANDATimeStamp>=runBeginBuffer)&&(AMANDATimeStamp<=runEndBuffer)){
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamType(OCDBCurrentRunType);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamEnergy(OCDBCurrentBeamEnergy);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfLHCStatus(OCDBCurrentLHCStatus);
                                 DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
                             }
 
                             //when the run is passed exit the cycle
-                            if(((AliRPCValueDCS *) *iterValueAMANDA)->GetRunNumber()>runEndBuffer) continue;
+                            if(iterValueAMANDANext()){
+                                if(((AliRPCValueDCS *) *iterValueAMANDANext)->GetRunNumber()>runEndBuffer) break;
+                            } else break;
                         }
 
                         runBeginBuffer=newRunBeginBuffer;
-                        runNumberBuffer=OCDBRunNumber;
+                        runNumberBuffer=OCDBCurrentRunNumber;
 
                     }else{
                         runEndBuffer=OCDBTimeStamp;
@@ -1188,9 +1202,9 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
 
                 }
 
-                //now I add data with runnumber =0 (values get between two different runs)
-                TIter iterValueAMANDA(listBufferAMANDA);
-                while(iterValueAMANDA()){
+//                //now I add data with runnumber =0 (values get between two different runs)
+                TIter iterValueAMANDAzero(listBufferAMANDA);
+                while(iterValueAMANDAzero()){
                     if(((AliRPCValueDCS *) *iterValueAMANDA)->GetRunNumber()==0){
                         DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
                     }
@@ -1201,7 +1215,7 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
                 fAMANDADataContainer->cd();
                 DataWithRunNumber[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
 
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
@@ -1212,29 +1226,22 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
 
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, TGraph * Graph, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
     RunDummyList.push_back(RunNumber);
-    PlotSomethingVersusTime(RunDummyList, funky, GetFunky, WhatIsThis);
+    PlotSomethingVersusTime(RunDummyList, funky, Graph, whichValue);
 return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const, TString WhatIsThis){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)() const, TGraph * Graph,Int_t whichValue){
     TList *listBuffer;
-    TGraph *Plot[kNSides][kNPlanes][kNRPC];
     fGlobalDataContainer->cd();
-    fGlobalDataContainer->mkdir(Form("OCDB_AMANDA_%s_%u_Graphs",WhatIsThis.Data(),RunNumberList.at(0)));
 
     Int_t counter=0;
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++) {
-                //check if analysis is already done
-                TObject *checkBuffer;
-                fGlobalDataContainer->GetObject(Form("OCDB_AMANDA_%s_Graphs/OCDB_AMANDA_%s_Graph_%u_MTR_%s_MT%d_RPC%d",WhatIsThis.Data(),WhatIsThis.Data(),RunNumberList.at(0),(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),checkBuffer);
-
-                if(checkBuffer) continue;
 
                 fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
 
@@ -1245,30 +1252,19 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumber
 
 
                 TIter iterValue(listBuffer);
-                Plot[iSide][iPlane][iRPC]=new TGraph();
-                Plot[iSide][iPlane][iRPC]->SetTitle(WhatIsThis);
-                Plot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
-                Plot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
-                Plot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
-
-                counter=0;
-
+                                counter=0;
                 while (iterValue()) {
                     if(IsRunInList(RunNumberList,((AliRPCValueDCS *) *iterValue)->GetRunNumber())) {
                         if ((((AliRPCValueDCS *) *iterValue)->*funky)() &&
                             ((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000) {
-                            Plot[iSide][iPlane][iRPC]->SetPoint(counter++,
-                                                                ((AliRPCValueDCS *) *iterValue)->GetTimeStamp(),
-                                                                (((AliRPCValueDCS *) *iterValue)->*GetFunky)());
+                            Graph->SetPoint(counter++, ((AliRPCValueDCS *) *iterValue)->GetTimeStamp(),(((AliRPCValueDCS *) *iterValue)->GetValue(whichValue)));
 
                         }
                     }
                 }
 
-                fGlobalDataContainer->cd(Form("OCDB_AMANDA_%s_%u_Graphs",WhatIsThis.Data(),RunNumberList.at(0)));
-                Plot[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_%s_Graph_MTR_%s_MT%d_RPC%d",WhatIsThis.Data(),(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite);
 
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
 
                 listBuffer=0x0;
             }
@@ -1277,7 +1273,8 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumber
     return;
 }
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Double_t (AliRPCValueDCS::*GetFunky)() const,TString WhatIsThis,Bool_t normalizedToArea ,Int_t nbins, Double_t xlow, Double_t xup){
+
+void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Int_t whichValue,TString WhatIsThis,Bool_t normalizedToArea ,Int_t nbins, Double_t xlow, Double_t xup){
     //exit if the analysis is already there
     TObject *checkBuffer;
     fGlobalDataContainer->GetObject(Form("Distributions/%s_%u_Graph_All_RPCs", WhatIsThis.Data(),RunNumber),checkBuffer);
@@ -1324,17 +1321,17 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t 
                         if (((AliRPCValueDCS *) *iterValue)->IsCurrent()) {
                             //if current cast to AliRPCSValueCurrent
                             SingleRPCPlot[iSide][iPlane][iRPC]->Fill(
-                                    (((AliRPCValueCurrent *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                                    (((AliRPCValueCurrent *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
                             GlobalRPCPlot->Fill(
-                                    (((AliRPCValueCurrent *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                                    (((AliRPCValueCurrent *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
                             continue;
                         }
                         if (((AliRPCValueDCS *) *iterValue)->IsVoltage()) {
                             //if voltage cast to AliRPCSValueVoltage
                             SingleRPCPlot[iSide][iPlane][iRPC]->Fill(
-                                    (((AliRPCValueVoltage *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                                    (((AliRPCValueVoltage *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
                             GlobalRPCPlot->Fill(
-                                    (((AliRPCValueVoltage *) *iterValue)->*GetFunky)()/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                                    (((AliRPCValueVoltage *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
                         continue;
                         }
                     }
@@ -1350,7 +1347,7 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t 
                              iRPC + 1),TObject::kSingleKey | TObject::kOverwrite);
 
                 listBuffer = 0x0;
-                whichRPC(iRPC,iSide,iPlane);
+                WhichRPC(iRPC, iSide, iPlane);
             }
         }
     }
@@ -1360,24 +1357,24 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t 
 }
 
 void AliRPCAutoIntegrator::CreateDarkCurrentDistribution(UInt_t RunNumber) {
-    AliRPCAutoIntegrator::CreateDistributionSomething(RunNumber,&AliRPCValueDCS::IsCurrent,&AliRPCValueDCS::GetIDark,"Dark_Current",kTRUE,15,0,0.001);
+    AliRPCAutoIntegrator::CreateDistributionSomething(RunNumber,&AliRPCValueDCS::IsCurrent,AliRPCValueCurrent::kIDark,"Dark_Current",kTRUE,15,0,0.001);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(UInt_t RunNumber){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumber,&AliRPCValueDCS::IsVoltage,&AliRPCValueDCS::GetVSupp,"Voltage");
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, UInt_t RunNumber){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumber,&AliRPCValueDCS::IsVoltage, Graph);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(std::vector<UInt_t> RunNumberList){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumberList,&AliRPCValueDCS::IsVoltage,&AliRPCValueDCS::GetVSupp,"Voltage");
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, std::vector<UInt_t> RunNumberList){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumberList,&AliRPCValueDCS::IsVoltage,Graph);
     return;
 }
 
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC
  */
-void AliRPCAutoIntegrator::whichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
+void AliRPCAutoIntegrator::WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
   printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;

@@ -1226,14 +1226,14 @@ void AliRPCAutoIntegrator::AMANDASetRunNumber(){
 
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, TGraph * Graph, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
     RunDummyList.push_back(RunNumber);
-    PlotSomethingVersusTime(RunDummyList, funky, Graph, whichValue);
+    PlotSomethingVersusTime(Graph, funky, RunDummyList, whichValue);
 return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumberList, Bool_t (AliRPCValueDCS::*funky)() const, TGraph * Graph,Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<UInt_t> RunNumberList, Int_t whichValue){
     TList *listBuffer;
     fGlobalDataContainer->cd();
 
@@ -1273,19 +1273,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(std::vector<UInt_t> RunNumber
     return;
 }
 
-
-void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t (AliRPCValueDCS::*funky)() const, Int_t whichValue,TString WhatIsThis,Bool_t normalizedToArea ,Int_t nbins, Double_t xlow, Double_t xup){
-    //exit if the analysis is already there
-    TObject *checkBuffer;
-    fGlobalDataContainer->GetObject(Form("Distributions/%s_%u_Graph_All_RPCs", WhatIsThis.Data(),RunNumber),checkBuffer);
-
-    if(checkBuffer) return;
-
-    //creates a TH1F for each RPC and a global one
-    TH1F *SingleRPCPlot[kNSides][kNSides][kNRPC];
-    TH1F *GlobalRPCPlot=new TH1F(Form("%s_%u_Graph_All_RPCs",WhatIsThis.Data(),RunNumber),WhatIsThis,nbins,xlow,xup);
-    fGlobalDataContainer->cd();
-    fGlobalDataContainer->mkdir(Form("Distributions"));
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue, Bool_t normalizedToArea){
     TList *listBuffer;
 
     for (Int_t iSide = 0; iSide < kNSides; iSide++) {
@@ -1307,67 +1295,38 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(UInt_t RunNumber, Bool_t 
 
 
                 TIter iterValue(listBuffer);
-                SingleRPCPlot[iSide][iPlane][iRPC] = new TH1F(Form("%s_distributions_%u_MTR_%s_MT%d_RPC%d", WhatIsThis.Data(),RunNumber,(fSides[iSide]).Data(),
-                                                                   fPlanes[iPlane],
-                                                                   iRPC + 1),WhatIsThis,nbins,xlow,xup);
-                SingleRPCPlot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
-                SingleRPCPlot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
-
-
                 while (iterValue()) {
                     if(((AliRPCValueDCS *) *iterValue)->GetRunNumber()==RunNumber){
-                    if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 &&
-                        (((AliRPCValueDCS *) *iterValue)->*funky)()) {
-                        if (((AliRPCValueDCS *) *iterValue)->IsCurrent()) {
-                            //if current cast to AliRPCSValueCurrent
-                            SingleRPCPlot[iSide][iPlane][iRPC]->Fill(
-                                    (((AliRPCValueCurrent *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
-                            GlobalRPCPlot->Fill(
-                                    (((AliRPCValueCurrent *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
-                            continue;
-                        }
-                        if (((AliRPCValueDCS *) *iterValue)->IsVoltage()) {
-                            //if voltage cast to AliRPCSValueVoltage
-                            SingleRPCPlot[iSide][iPlane][iRPC]->Fill(
-                                    (((AliRPCValueVoltage *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
-                            GlobalRPCPlot->Fill(
-                                    (((AliRPCValueVoltage *) *iterValue)->GetValue(0))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
-                        continue;
+                        if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 &&
+                            (((AliRPCValueDCS *) *iterValue)->*funky)()) {
+                                Graph->Fill(
+                                        (((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
                         }
                     }
-                }
                     //when run is finished exit the cycle
                     if (((AliRPCValueDCS *) *iterValue)->GetRunNumber() > RunNumber) break;
                 }
-
-                fGlobalDataContainer->cd("Distributions");
-                SingleRPCPlot[iSide][iPlane][iRPC]->Write(
-                        Form("%s_%u_distribution_Graph_MTR_%s_MT%d_RPC%u", WhatIsThis.Data(),RunNumber,(fSides[iSide]).Data(),
-                             fPlanes[iPlane],
-                             iRPC + 1),TObject::kSingleKey | TObject::kOverwrite);
 
                 listBuffer = 0x0;
                 WhichRPC(iRPC, iSide, iPlane);
             }
         }
     }
-    fGlobalDataContainer->cd("Distributions");
-    GlobalRPCPlot->Write(
-            Form("%s_%u_Graph_All_RPCs", WhatIsThis.Data(),RunNumber),TObject::kSingleKey | TObject::kOverwrite);
 }
 
-void AliRPCAutoIntegrator::CreateDarkCurrentDistribution(UInt_t RunNumber) {
-    AliRPCAutoIntegrator::CreateDistributionSomething(RunNumber,&AliRPCValueDCS::IsCurrent,AliRPCValueCurrent::kIDark,"Dark_Current",kTRUE,15,0,0.001);
+void AliRPCAutoIntegrator::CreateDarkCurrentDistribution(TH1 *Graph, UInt_t RunNumber) {
+    AliRPCAutoIntegrator::CreateDistributionSomething(Graph, &AliRPCValueDCS::IsCurrent, RunNumber,
+                                                      AliRPCValueCurrent::kIDark, kTRUE);
     return;
 }
 
 void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, UInt_t RunNumber){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumber,&AliRPCValueDCS::IsVoltage, Graph);
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, RunNumber, 0);
     return;
 }
 
 void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, std::vector<UInt_t> RunNumberList){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(RunNumberList,&AliRPCValueDCS::IsVoltage,Graph);
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, RunNumberList, 0);
     return;
 }
 

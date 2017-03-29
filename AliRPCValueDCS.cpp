@@ -14,7 +14,7 @@ AliRPCValueDCS::AliRPCValueDCS() : TObject(){
     fTimeStamp=0;
     fIsCalib=kFALSE;
     fIsAMANDA=kFALSE;
-    fBeamType=kNone;
+    fBeamType=knone;
     fBeamEnergy=0.;
     fLHCStatus=kNONE;
 };
@@ -25,7 +25,7 @@ AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, Bool_t isC
     fTimeStamp=timeStamp;
     fIsCalib=isCalib;
     fIsAMANDA=isAMANDA;
-    fBeamType = kNone;
+    fBeamType = knone;
 
     if(LHCStatus.Contains("BEAM")){
         if(LHCStatus.Contains("NO")){
@@ -53,7 +53,7 @@ AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, Bool_t isC
         }
         fBeamEnergy=beamEnergy;
     } else {
-        fBeamType = kNone;
+        fBeamType = knone;
         fBeamEnergy=0.;
     }
 };
@@ -103,7 +103,7 @@ TString AliRPCValueDCS::fHumanBeamType() const {
 
         case kAA: return "A-A";
 
-        case kNone: return "None";
+        case knone: return "None";
 
         default: return "Unknown";
     }

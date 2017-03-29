@@ -17,7 +17,7 @@ typedef enum{
     kpp,
     kpA,
     kAA,
-    kNone
+    knone
 } TBeamType;
 
 typedef enum{

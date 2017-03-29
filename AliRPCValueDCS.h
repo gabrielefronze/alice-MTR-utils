@@ -74,10 +74,10 @@ public:
     inline Bool_t IsCalib() const { return fIsCalib; };
     inline Bool_t IsBeamPresent() const { return fLHCStatus == kBEAM; };
     inline Bool_t IsOkForIDark() const { return  !fIsAMANDA && (fLHCStatus > 1); };
-    inline Bool_t IsOkForITot() const { return  (fIsAMANDA)||(!fIsAMANDA && fLHCStatus == 1); };
+    inline Bool_t IsOkForITot() const { return  (fIsAMANDA)||(!fIsAMANDA && fLHCStatus == 0); };
 
 
-    virtual Double_t GetValue(Int_t whichValue=0) const {return 0.;};
+    virtual Double_t GetValue(Int_t whichValue=0) const {if(whichValue){} return 0.;};
 
 //    inline virtual Double_t GetIDark()const {return -1;};
 //    inline virtual Double_t GetVSupp()const {return -1;};

@@ -21,7 +21,7 @@ public:
     inline Double_t GetVSupp() const { return fVSupp; };
     inline void SetVSupp(Double_t vSupp) { fVSupp=vSupp; };
 
-    Double_t GetValue(Int_t whichValue=0) const { return fVSupp; };
+    Double_t GetValue(Int_t whichValue=0) const {if(whichValue){} return fVSupp; };
     
 private:
     Double_t fVSupp;

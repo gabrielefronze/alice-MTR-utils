@@ -31,8 +31,8 @@ public:
 	~AliRPCAutoIntegrator();
     void RunAutoIntegrator();
 
-    void VoltagePlotter(TGraph *Graph, UInt_t RunNumber);
-    void VoltagePlotter(TGraph *Graph, std::vector<UInt_t> RunNumberList);
+    void VoltagePlotter(TGraph *Graph, TList* list, UInt_t RunNumber);
+    void VoltagePlotter(TGraph *Graph, TList* list, std::vector<UInt_t> RunNumberList);
     void CreateDarkCurrentDistribution(TH1 *Graph, UInt_t RunNumber);
 
 private:
@@ -85,10 +85,10 @@ public:
 
 private:
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<OCDBRun> RunNumberList, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, Int_t whichValue);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, UInt_t RunNumber, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<OCDBRun> RunNumberList, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, Int_t whichValue);
 
     void AMANDASetRunNumber();
     void FillAliRPCData();

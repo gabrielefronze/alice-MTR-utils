@@ -113,8 +113,6 @@ fUpdateAMANDA(updateAMANDA){
 
     fGlobalDataContainer->cd();
     fGlobalDataContainer->mkdir("TLists");
-    fGlobalDataContainer->mkdir("AMANDA_iTot_Graphs");
-    fGlobalDataContainer->mkdir("OCDB_iDark_Graphs");
     fGlobalDataContainer->mkdir("AMANDA_iNet_Graphs");
     fGlobalDataContainer->mkdir("AMANDA_integrated_charge_Graphs");
 
@@ -180,7 +178,7 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
         AMANDATextToCParser();
 
         cout<<"Setting Amanda RunNumbers...\n";
-        AMANDASetRunNumber();
+        AMANDASetDataMembers();
         cout<<"DONE\n"<<endl;
     }
 
@@ -189,7 +187,7 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     cout<<"DONE\n"<<endl;
 
     cout<<"Starting plot generation...\n";
-    PlotIDarkAndITot();
+    GeneratePlots();
     cout<<"DONE\n"<<endl;
 
     cout<<"Starting data elaboration...\n";
@@ -257,7 +255,7 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 TIter iterValueAMANDA(listBufferAMANDA);
                 while(iterValueAMANDA()){
-                    //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
+                    ((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
                 }
 
@@ -305,10 +303,16 @@ void AliRPCAutoIntegrator::Aggregator(){
     }
 }
 
-void AliRPCAutoIntegrator::PlotIDarkAndITot() {
+void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsITot[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
+    TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TList *listBuffer;
+
+    fGlobalDataContainer->mkdir("AMANDA_iTot_Graphs");
+    fGlobalDataContainer->mkdir("OCDB_iDark_Graphs");
+    fGlobalDataContainer->mkdir("Voltage_Graphs");
+
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -316,11 +320,10 @@ void AliRPCAutoIntegrator::PlotIDarkAndITot() {
                 fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
 
                 if (!listBuffer) {
-                    printf("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
 
-                TIter iterValueGlobal(listBuffer);
                 PlotsITot[iSide][iPlane][iRPC] = new TGraph();
                 PlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
                 PlotsITot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
@@ -329,18 +332,33 @@ void AliRPCAutoIntegrator::PlotIDarkAndITot() {
 
                 PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForITot, listBuffer, AliRPCValueCurrent::kITot);
 
+                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
+                PlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
+
                 PlotsIDark[iSide][iPlane][iRPC]=new TGraph();
                 PlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+
                 PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, listBuffer, AliRPCValueCurrent::kIDark);
 
-                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
-                PlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
                 fGlobalDataContainer->cd("OCDB_iDark_Graphs");
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
                 PlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
+
+                PlotsVoltage[iSide][iPlane][iRPC]=new TGraph();
+                PlotsVoltage[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
+                PlotsVoltage[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+                PlotsVoltage[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+                PlotsVoltage[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+
+                PlotSomethingVersusTime(PlotsVoltage[iSide][iPlane][iRPC],&AliRPCValueDCS::IsVoltage,listBuffer);
+
+                fGlobalDataContainer->cd("Voltage_Graphs");
+                PlotsVoltage[iSide][iPlane][iRPC]->Write(Form("Voltage_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
                 WhichRPC(iRPC,iSide,iPlane);
 
@@ -1143,7 +1161,7 @@ void AliRPCAutoIntegrator::FillAliRPCData() {
     AliRPCDataFile->Close();
 }
 
-void AliRPCAutoIntegrator::AMANDASetRunNumber(){
+void AliRPCAutoIntegrator::AMANDASetDataMembers(){
     TList *listBufferAMANDA=0x0;
     TList *listBufferOCDB=0x0;
     TList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
@@ -1348,6 +1366,11 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, UInt_t Run
 
 void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, std::vector<UInt_t> RunNumberList){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list,RunNumberList,0);
+    return;
+}
+
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
     return;
 }
 

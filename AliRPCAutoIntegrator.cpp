@@ -856,6 +856,13 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             for (Int_t side=0; side<kNSides; side++) {
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
+                    Int_t dummyIndex = 0;
+                    if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
+                        printf("Run %d already there for ",runIterator->fRunNumber);
+                        WhichRPC(RPC-1,side,plane);
+                        continue;
+                    }
+
                     //creazione di un pointer all'elemento della mappa delle tensioni
                     TObjArray *dataArrayVoltage;
                     dataArrayVoltage=(TObjArray*)(mapCurrent->GetValue(Form("MTR_%s_MT%d_RPC%d_HV.vEff",fSides[side].Data(),fPlanes[plane],RPC)));

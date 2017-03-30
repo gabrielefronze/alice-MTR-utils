@@ -37,6 +37,8 @@ public:
 	Double_t GetAverageRateBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 	Double_t GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 
+    Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
+
     TSortedList* operator()(Int_t iPlane,Int_t iSides,Int_t iRPC){return fRunStatistics[iPlane][iSides][iRPC];};
 
 private:
@@ -57,7 +59,6 @@ private:
 
     Bool_t fIsDarkRun;
 
-    Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
 	Bool_t IsThereThisRunStupido(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
     Double_t GetMeanSomething(UInt_t runNumber, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
     Double_t GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);

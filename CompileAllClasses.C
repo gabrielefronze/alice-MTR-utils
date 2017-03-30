@@ -10,6 +10,7 @@ void CompileAllClasses(TString myopt="fast"){
   else {
     opt = "kg";
   }
+  gSystem->CompileMacro("AliOCDBRun.h",opt);
   gSystem->CompileMacro("AliRPCValueDCS.cpp",opt);
   gSystem->CompileMacro("AliRPCValueCurrent.cpp",opt);
   gSystem->CompileMacro("AliRPCValueVoltage.cpp",opt);

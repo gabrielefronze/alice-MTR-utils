@@ -98,7 +98,7 @@ private:
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, Int_t whichValue=0);
 
     void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const);
-
+    void PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlanes][kNRPC], Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const);
 
     void AMANDASetDataMembers();
     void FillAliRPCData();

@@ -1350,6 +1350,18 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
     }
 }
 
+void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlanes][kNRPC], Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const){
+    Int_t counter=0;
+    for(Int_t iSide=0;iSide<kNSides;iSide++) {
+        for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
+            for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
+
+                Graph[iSide][iPlane][iRPC]->SetPoint(counter++,(fMeanDataContainer->*funkyX)(iSide,iPlane,iRPC),(fMeanDataContainer->*funkyY)(iSide,iPlane,iRPC));
+
+            }
+        }
+    }
+}
 
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue, Bool_t normalizedToArea){
     TList *listBuffer;

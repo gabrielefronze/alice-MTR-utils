@@ -23,6 +23,12 @@ typedef struct OCDBRun {
     Int_t year;
 } OCDBRun;
 
+typedef struct {
+    Int_t Side;
+    Int_t Plane;
+    Int_t RPC;
+} RPC;
+
 class AliRPCAutoIntegrator : public TObject{
 public:
     AliRPCAutoIntegrator();
@@ -90,6 +96,9 @@ private:
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, UInt_t RunNumber, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<OCDBRun> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, Int_t whichValue=0);
+
+    void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const);
+
 
     void AMANDASetDataMembers();
     void FillAliRPCData();

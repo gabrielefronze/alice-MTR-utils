@@ -9,6 +9,7 @@
 // #include "TClass.h"
 #include <fstream>
 #include <iostream>
+#include <TMultiGraph.h>
 #include "AliCDBManager.h"
 #include "AliGRPObject.h"
 #include "AliCDBStorage.h"
@@ -108,13 +109,13 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
-    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
+    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
 
     fGlobalDataContainer->cd();
     fGlobalDataContainer->mkdir("TLists");
-    fGlobalDataContainer->mkdir("AMANDA_iNet_Graphs");
-    fGlobalDataContainer->mkdir("AMANDA_integrated_charge_Graphs");
+    fGlobalDataContainer->mkdir("iNet_Graphs");
+    fGlobalDataContainer->mkdir("integrated_charge_Graphs");
 
     // Calling this method to preload the runs of which the OCDB data has to be
     // downloaded
@@ -335,7 +336,6 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 fGlobalDataContainer->cd("iTot_Graphs");
                 PlotsITot[iSide][iPlane][iRPC]->Write(Form("iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-
                 PlotsIDark[iSide][iPlane][iRPC]=new TGraph();
                 PlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
@@ -347,7 +347,6 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 fGlobalDataContainer->cd("iDark_Graphs");
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
                 PlotsIDark[iSide][iPlane][iRPC]->Write(Form("iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-
 
                 PlotsVoltage[iSide][iPlane][iRPC]=new TGraph();
                 PlotsVoltage[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -465,13 +464,18 @@ void AliRPCAutoIntegrator::Subtractor(){
     }
 }
 
+
 // This method integrates vs time the iNET valueDCS in order to get the
 // integrated charge for each channel. And plots it.
 void AliRPCAutoIntegrator::Integrator(){
     TGraph *buffer;
     TGraph *AMANDAPlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
 
-
+   //arrays contains {iSide, IPlane, IRPC, integratedCharge}
+    RPC RPCWhichIntegratedBest;
+    RPC RPCWhichIntegratedWorst;
+    Double_t MaxCharge=0.;
+    Double_t MinCharge=1000000.;
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -510,6 +514,18 @@ void AliRPCAutoIntegrator::Integrator(){
                     AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++, (timestamp0+timestamp1)/2., integratedCharge);
                 }
 
+                if(integratedCharge>MaxCharge){
+                    RPCWhichIntegratedBest.Plane=iPlane;
+                    RPCWhichIntegratedBest.Side=iSide;
+                    RPCWhichIntegratedBest.RPC=iRPC;
+                }
+
+                if(integratedCharge<MinCharge){
+                    RPCWhichIntegratedWorst.Plane=iPlane;
+                    RPCWhichIntegratedWorst.Side=iSide;
+                    RPCWhichIntegratedWorst.RPC=iRPC;
+                }
+
                 printf("MTR_%s_MT%d_RPC%d %f\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,integratedCharge);
 
                 // for(Int_t iPoint=0; iPoint<buffer->GetN(); iPoint++){
@@ -529,6 +545,17 @@ void AliRPCAutoIntegrator::Integrator(){
             }
         }
     }
+
+    //Plot the best and the worst chamber
+    TMultiGraph *BestAndWorstGraph=new TMultiGraph("BestAndWorstGraph","BestAndWorstGraph");
+    //GetBest
+    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC+1),buffer);
+    BestAndWorstGraph->Add(buffer);
+    //GetWorst
+    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC+1),buffer);
+    BestAndWorstGraph->Add(buffer);
+    fGlobalDataContainer->cd("integrated_charge_Graphs");
+    BestAndWorstGraph->Write(Form("integrated_charge_Graph"));
 }
 
 void AliRPCAutoIntegrator::AMANDATextToCParser(){
@@ -1204,16 +1231,17 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 ULong64_t runEndBuffer=0;
                 //iter on OCDB until runnumber changes
                 while(iterValueOCDB()){
-                    TBeamType OCDBCurrentRunType=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamType();
-                    float_t OCDBCurrentBeamEnergy=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamEnergy();
-                    TLHCStatus OCDBCurrentLHCStatus=((AliRPCValueDCS *) *iterValueOCDB)->GetfLHCStatus();
-                    UInt_t OCDBCurrentRunNumber=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
-                    ULong64_t OCDBTimeStamp= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
+                    TBeamType OCDBRunTypeBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamType();
+                    float_t OCDBBeamEnergyBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamEnergy();
+                    TLHCStatus OCDBLHCStatusBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfLHCStatus();
+                    UInt_t OCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
+                    ULong64_t OCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
+                    Bool_t OCDBIsCalibBuffer=((AliRPCValueDCS *) *iterValueOCDB)->IsCalib();
 
                     //check if OCDBTimestamp is updated
-                    if(OCDBCurrentRunNumber>runNumberBuffer){
+                    if(OCDBRunNumberBuffer>runNumberBuffer){
                         //if is updated iterator is in a new run and last endbuffer should not be updated
-                        newRunBeginBuffer=OCDBTimeStamp;
+                        newRunBeginBuffer=OCDBTimeStampBuffer;
 
                         //printf("run: %d, start %d, stop %d \n",OCDBRunNumber,runBeginBuffer,runEndBuffer);
 
@@ -1222,9 +1250,10 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                             UInt_t AMANDATimeStamp=((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
                             if((AMANDATimeStamp>=runBeginBuffer)&&(AMANDATimeStamp<=runEndBuffer)){
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamType(OCDBCurrentRunType);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamEnergy(OCDBCurrentBeamEnergy);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfLHCStatus(OCDBCurrentLHCStatus);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamType(OCDBRunTypeBuffer);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamEnergy(OCDBBeamEnergyBuffer);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetfLHCStatus(OCDBLHCStatusBuffer);
+                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetIsCalib(OCDBIsCalibBuffer);
                                 DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
                             }
 
@@ -1235,10 +1264,10 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                         }
 
                         runBeginBuffer=newRunBeginBuffer;
-                        runNumberBuffer=OCDBCurrentRunNumber;
+                        runNumberBuffer=OCDBRunNumberBuffer;
 
                     }else{
-                        runEndBuffer=OCDBTimeStamp;
+                        runEndBuffer=OCDBTimeStampBuffer;
                     }
 
                 }
@@ -1312,6 +1341,15 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     }
     return;
 }
+
+
+void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const){
+    Int_t counter=0;
+    for(OCDBRun iter:fOCDBRunList){
+        Graph->SetPoint(counter++,iter.runNumber,(fMeanDataContainer->*funky)(iter.runNumber));
+    }
+}
+
 
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue, Bool_t normalizedToArea){
     TList *listBuffer;

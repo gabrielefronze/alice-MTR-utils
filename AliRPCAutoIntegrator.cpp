@@ -309,8 +309,8 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TList *listBuffer;
 
-    fGlobalDataContainer->mkdir("AMANDA_iTot_Graphs");
-    fGlobalDataContainer->mkdir("OCDB_iDark_Graphs");
+    fGlobalDataContainer->mkdir("iTot_Graphs");
+    fGlobalDataContainer->mkdir("iDark_Graphs");
     fGlobalDataContainer->mkdir("Voltage_Graphs");
 
 
@@ -332,8 +332,8 @@ void AliRPCAutoIntegrator::GeneratePlots() {
 
                 PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForITot, listBuffer, AliRPCValueCurrent::kITot);
 
-                fGlobalDataContainer->cd("AMANDA_iTot_Graphs");
-                PlotsITot[iSide][iPlane][iRPC]->Write(Form("AMANDA_iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                fGlobalDataContainer->cd("iTot_Graphs");
+                PlotsITot[iSide][iPlane][iRPC]->Write(Form("iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
 
                 PlotsIDark[iSide][iPlane][iRPC]=new TGraph();
@@ -344,9 +344,9 @@ void AliRPCAutoIntegrator::GeneratePlots() {
 
                 PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, listBuffer, AliRPCValueCurrent::kIDark);
 
-                fGlobalDataContainer->cd("OCDB_iDark_Graphs");
+                fGlobalDataContainer->cd("iDark_Graphs");
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
-                PlotsIDark[iSide][iPlane][iRPC]->Write(Form("OCDB_iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                PlotsIDark[iSide][iPlane][iRPC]->Write(Form("iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
 
                 PlotsVoltage[iSide][iPlane][iRPC]=new TGraph();
@@ -413,13 +413,13 @@ void AliRPCAutoIntegrator::Subtractor(){
                     // interpolation, having stored the previous dark current
                     // reading in darkCurrentValue, one should look for the
                     // following dark current value and the interpolate.
-                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsAMANDA() ){
+                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForITot() ){
 
                         // Looking for the following not AMANDA (aka OCDB)
                         // dark current reading.
                         TIter iterValueGlobalNext = iterValueGlobal;
                         while ( iterValueGlobalNext() ){
-                            if ( !((AliRPCValueDCS*)*iterValueGlobalNext)->IsAMANDA() ) break;
+                            if ( !((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot() ) break;
                         }
 
                         // whenever a good OCDB reading is found then proceed
@@ -458,8 +458,8 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                 WhichRPC(iRPC, iSide, iPlane);
 
-                fGlobalDataContainer->cd("AMANDA_iNet_Graphs");
-                AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("AMANDA_iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                fGlobalDataContainer->cd("iNet_Graphs");
+                AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
             }
         }
     }
@@ -476,13 +476,13 @@ void AliRPCAutoIntegrator::Integrator(){
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("AMANDA_iNet_Graphs/AMANDA_iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
+                fGlobalDataContainer->GetObject(Form("iNet_Graphs/iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
 
                 // if any data list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
                 // analysis
                 if (!buffer){
-                    printf("AMANDA_iNet_Graphs/AMANDA_iNet_Graph_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("iNet_Graphs/iNet_Graph_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
 
@@ -521,8 +521,8 @@ void AliRPCAutoIntegrator::Integrator(){
                 //     AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++, timestamp, integratedCharge);
                 // }
 
-                fGlobalDataContainer->cd("AMANDA_integrated_charge_Graphs");
-                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("AMANDA_integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                fGlobalDataContainer->cd("integrated_charge_Graphs");
+                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
                 WhichRPC(iRPC, iSide, iPlane);
 

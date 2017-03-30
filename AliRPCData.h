@@ -53,6 +53,8 @@ private:
     Double_t fAreas[fNRPC][fNPlanes];
 
     TSortedList *fRunStatistics[fNPlanes][fNSides][fNRPC];
+    TSortedList *fRunNumbers[fNPlanes][fNSides][fNRPC];
+
 
     Bool_t fIsDarkRun;
 

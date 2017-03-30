@@ -8,6 +8,7 @@
 #include "AliRPCData.h"
 #include "TClass.h"
 #include "TList.h"
+#include "AliOCDBRun.h"
 
 AliRPCData::AliRPCData() : TObject(){
     for(Int_t iRPC=0;iRPC<fNRPC;iRPC++){
@@ -59,6 +60,7 @@ Bool_t AliRPCData::AddRunStatistics(Int_t plane, Int_t side, Int_t RPC, AliRPCRu
     if(RPC>=fNRPC) return kFALSE;
     if(!stats) return kFALSE;
     fRunStatistics[plane][side][RPC]->Add(stats);
+    fRunNumbers[plane][side][RPC]->Add(new AliOCDBRun(stats->GetRunNumber(),stats->GetYear()));
     return kTRUE;
 };
 

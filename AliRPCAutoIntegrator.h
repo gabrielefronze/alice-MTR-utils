@@ -15,13 +15,9 @@
 #include "AliRPCRunStatistics.h"
 #include "AliRPCValueCurrent.h"
 #include "AliRPCData.h"
+#include "AliOCDBRun.h"
 #include "TGraph.h"
 #include <vector>
-
-typedef struct OCDBRun {
-    Int_t runNumber;
-    Int_t year;
-} OCDBRun;
 
 typedef struct {
     Int_t Side;
@@ -44,7 +40,7 @@ public:
 
 
 private:
-    std::vector<OCDBRun> fOCDBRunList;
+    std::vector<AliOCDBRun> fOCDBRunListToAdd;
 
     TString fRunListFileName;
     TString fAMANDAInputFileName;
@@ -93,10 +89,10 @@ public:
 
 private:
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
-    void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<OCDBRun> RunNumberList, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
+    void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<AliOCDBRun> RunNumberList, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, UInt_t RunNumber, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<OCDBRun> RunNumberList, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<AliOCDBRun> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, Int_t whichValue=0);
 
     void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const);

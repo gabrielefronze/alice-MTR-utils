@@ -1166,7 +1166,7 @@ void AliRPCAutoIntegrator::FillAliRPCData() {
                             HVCumulus+=((AliRPCValueVoltage*)*iterValue)->GetVSupp();
                         }
 
-                        isDark=((AliRPCValueDCS*)*iterValue)->IsCalib();
+                        isDark=((AliRPCValueDCS*)*iterValue)->IsOkForIDark();
                         isCalib=((AliRPCValueDCS*)*iterValue)->IsCalib();
 
                         runEndBuffer=TimeStamp;
@@ -1346,7 +1346,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const){
     Int_t counter=0;
     for(OCDBRun iter:fOCDBRunList){
-        Graph->SetPoint(counter++,iter.runNumber,(fMeanDataContainer->*funky)(iter.runNumber));
+        Graph->SetPoint(counter++,(fMeanDataContainer->GetMeanTimeStampStart(iter.runNumber)),(fMeanDataContainer->*funky)(iter.runNumber));
     }
 }
 
@@ -1355,9 +1355,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlane
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
-
                 Graph[iSide][iPlane][iRPC]->SetPoint(counter++,(fMeanDataContainer->*funkyX)(iSide,iPlane,iRPC),(fMeanDataContainer->*funkyY)(iSide,iPlane,iRPC));
-
             }
         }
     }
@@ -1401,6 +1399,12 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRP
                 WhichRPC(iRPC, iSide, iPlane);
             }
         }
+    }
+}
+
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<OCDBRun> RunNumberList, Int_t whichValue, Bool_t normalizedToArea){
+    for(OCDBRun iter: RunNumberList){
+        AliRPCAutoIntegrator::CreateDistributionSomething(Graph, funky, iter.runNumber, whichValue, normalizedToArea);
     }
 }
 

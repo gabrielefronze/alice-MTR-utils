@@ -32,7 +32,7 @@ class AliRPCValueDCS : public TObject{
 public:
     AliRPCValueDCS();
     AliRPCValueDCS(const AliRPCValueDCS &obj)  : TObject(obj){};
-    AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA);
+    AliRPCValueDCS(UInt_t runNumber, UInt_t runYear, ULong64_t timeStamp, Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA);
     ~AliRPCValueDCS(){};
     inline UInt_t GetRunNumber() const { return fRunNumber; };
     inline ULong64_t GetTimeStamp() const { return fTimeStamp; };
@@ -49,6 +49,7 @@ public:
     inline void SetIsAMANDA(Bool_t isAMANDA){fIsAMANDA = isAMANDA;};
     inline void SetIsCalib(Bool_t isCalib){fIsCalib=isCalib;};
     void SetRunNumber(UInt_t RunNumber);
+    inline void SetRunYear(UInt_t RunYear){fRunYear=RunYear;};
     inline void SetfBeamType(TBeamType fBeamType) {AliRPCValueDCS::fBeamType = fBeamType;}
     inline void SetfBeamEnergy(Float_t fBeamEnergy) {AliRPCValueDCS::fBeamEnergy = fBeamEnergy;}
     inline void SetfLHCStatus(TLHCStatus fLHCStatus) {AliRPCValueDCS::fLHCStatus = fLHCStatus;}
@@ -57,6 +58,7 @@ public:
     TBeamType GetfBeamType() const {return fBeamType;}
     Float_t GetfBeamEnergy() const {return fBeamEnergy;}
     TLHCStatus GetfLHCStatus() const {return fLHCStatus;}
+    UInt_t GetYear(){return fRunYear;};
 
     inline Bool_t IsCalib() const { return fIsCalib; };
     inline Bool_t IsBeamPresent() const { return fLHCStatus == kBEAM; };
@@ -70,6 +72,7 @@ public:
 
 private:
     UInt_t fRunNumber;
+    UInt_t fRunYear;
     TBeamType fBeamType;
     Float_t fBeamEnergy;
     TLHCStatus fLHCStatus;

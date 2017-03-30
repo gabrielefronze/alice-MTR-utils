@@ -14,7 +14,8 @@ AliRPCValueScaler::AliRPCValueScaler() : AliRPCValueDCS(){
     fDeltaT=-1.;
 };
 
-AliRPCValueScaler::AliRPCValueScaler(UInt_t runNumber,ULong64_t timeStamp, Long64_t scalerCounts,Bool_t isCalib,TString beamType, Float_t beamEnergy, TString LHCStatus, Double_t deltaT, Bool_t overflow) : AliRPCValueDCS(runNumber, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
+AliRPCValueScaler::AliRPCValueScaler(UInt_t runNumber,ULong64_t timeStamp,UInt_t runYear, Long64_t scalerCounts,Bool_t isCalib,TString beamType, Float_t beamEnergy, TString LHCStatus, Double_t deltaT, Bool_t overflow) : AliRPCValueDCS(
+        runNumber, runYear, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
     fScalerCounts=scalerCounts;
     fOverflow=overflow;
     fDeltaT=deltaT;

@@ -12,6 +12,7 @@ AliRPCValueVoltage::AliRPCValueVoltage() : AliRPCValueDCS(){
     fVSupp=0.;
 };
 
-AliRPCValueVoltage::AliRPCValueVoltage(UInt_t runNumber,ULong64_t timeStamp,Double_t vSupp,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus) : AliRPCValueDCS(runNumber, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
+AliRPCValueVoltage::AliRPCValueVoltage(UInt_t runNumber,ULong64_t timeStamp,UInt_t runYear,Double_t vSupp,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus) : AliRPCValueDCS(
+        runNumber, runYear, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
     fVSupp=vSupp;
 };

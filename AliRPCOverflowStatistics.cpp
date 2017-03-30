@@ -13,7 +13,8 @@ AliRPCOverflowStatistics::AliRPCOverflowStatistics() : AliRPCValueDCS(){
     fUnderflowLBCount=0;
 };
 
-AliRPCOverflowStatistics::AliRPCOverflowStatistics(UInt_t runNumber,ULong64_t timeStamp,UInt_t overflowLBCount,UInt_t underflowLBCount,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus) :AliRPCValueDCS(runNumber, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
+AliRPCOverflowStatistics::AliRPCOverflowStatistics(UInt_t runNumber,ULong64_t timeStamp,UInt_t overflowLBCount,UInt_t underflowLBCount,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus) : AliRPCValueDCS(
+        runNumber, 0, timeStamp, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
     fOverflowLBCount=overflowLBCount;
     fUnderflowLBCount=underflowLBCount;
 };

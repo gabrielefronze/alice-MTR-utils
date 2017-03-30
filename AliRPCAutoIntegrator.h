@@ -53,7 +53,7 @@ private:
     Bool_t fUpdateOCDB;
     Bool_t fUpdateAMANDA;
 
-    AliRPCData *fMeanDataContainer;
+    AliRPCData *fAliRPCDataObject;
 
     static const Int_t kNSides=2;
     static const Int_t kNPlanes=4;

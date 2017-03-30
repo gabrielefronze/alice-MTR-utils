@@ -11,6 +11,7 @@
 
 AliRPCValueDCS::AliRPCValueDCS() : TObject(){
     fRunNumber=0;
+    fRunYear=0;
     fTimeStamp=0;
     fIsCalib=kFALSE;
     fIsAMANDA=kFALSE;
@@ -19,9 +20,10 @@ AliRPCValueDCS::AliRPCValueDCS() : TObject(){
     fLHCStatus=kNONE;
 };
 
-AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, Bool_t isCalib, TString beamType, Float_t beamEnergy,
-                               TString LHCStatus, Bool_t isAMANDA) : TObject(){
+AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, UInt_t runYear, ULong64_t timeStamp, Bool_t isCalib, TString beamType,
+                               Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA) : TObject(){
     fRunNumber=runNumber;
+    fRunYear=runYear;
     fTimeStamp=timeStamp;
     fIsCalib=isCalib;
     fIsAMANDA=isAMANDA;

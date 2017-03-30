@@ -16,9 +16,7 @@ class AliRPCRunStatistics : public TObject{
 public:
     AliRPCRunStatistics();
     AliRPCRunStatistics(const AliRPCRunStatistics &obj)  : TObject(obj){}; 
-    AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year,
-                            Bool_t isCalib, Bool_t isDark, Double_t meanDarkCurrent, Double_t meanTotalCurrent,
-                            Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending);
+    AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, Bool_t isDark, Double_t meanDarkCurrent, Double_t meanTotalCurrent, Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending);
     ~AliRPCRunStatistics(){};
     inline UInt_t GetRunNumber() const { return fRunNumber; };
     inline Double_t GetTimeStampStart() const { return (Double_t)fTimeStampStart; };

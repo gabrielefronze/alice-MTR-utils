@@ -16,7 +16,7 @@ class AliRPCValueVoltage : public AliRPCValueDCS{
 public:
     AliRPCValueVoltage();
     AliRPCValueVoltage(const AliRPCValueVoltage &obj)  : AliRPCValueDCS(obj){};
-    AliRPCValueVoltage(UInt_t runNumber,ULong64_t timeStamp,Double_t vSupp,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus);
+    AliRPCValueVoltage(UInt_t runNumber,ULong64_t timeStamp,UInt_t runYear,Double_t vSupp,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus);
     ~AliRPCValueVoltage(){};
     inline Double_t GetVSupp() const { return fVSupp; };
     inline void SetVSupp(Double_t vSupp) { fVSupp=vSupp; };

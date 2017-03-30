@@ -55,7 +55,6 @@ private:
     TSortedList *fRunStatistics[fNPlanes][fNSides][fNRPC];
     TSortedList *fRunNumbers[fNPlanes][fNSides][fNRPC];
 
-
     Bool_t fIsDarkRun;
 
     Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
@@ -63,7 +62,7 @@ private:
     Double_t GetMeanSomething(UInt_t runNumber, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
     Double_t GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
 
-    ClassDef(AliRPCData,2);
+    ClassDef(AliRPCData,3);
 };
 
 #endif

@@ -6,27 +6,6 @@
 //
 
 #include "AliRPCAutoIntegrator.h"
-// #include "TClass.h"
-#include <fstream>
-#include <iostream>
-#include <TMultiGraph.h>
-#include "AliCDBManager.h"
-#include "AliGRPObject.h"
-#include "AliCDBStorage.h"
-#include "AliMpCDB.h"
-#include "AliCDBEntry.h"
-#include "AliMpDDLStore.h"
-#include "AliDCSValue.h"
-#include "AliRPCValueDCS.h"
-#include "AliRPCValueCurrent.h"
-#include "AliRPCValueVoltage.h"
-#include "AliRPCValueScaler.h"
-#include "AliRPCOverflowStatistics.h"
-#include "AliMUONTriggerScalers.h"
-#include "TList.h"
-#include "TClonesArray.h"
-#include "TGraph.h"
-#include "TH1F.h"
 
 using namespace std;
 
@@ -1313,7 +1292,6 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
 }
 
-
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
     Int_t counter=0;
     TIter iterValue(list);
@@ -1404,8 +1382,8 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRP
                     if(((AliRPCValueDCS *) *iterValue)->GetRunNumber()==RunNumber){
                         if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 &&
                             (((AliRPCValueDCS *) *iterValue)->*funky)()) {
-                                Graph->Fill(
-                                        (((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
+                            Graph->Fill(
+                                    (((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
                         }
                     }
                     //when run is finished exit the cycle
@@ -1445,6 +1423,7 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
     return;
 }
 
+
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC
  */
@@ -1457,5 +1436,3 @@ void AliRPCAutoIntegrator::WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
 Bool_t AliRPCAutoIntegrator::IsRunInList(std::vector<UInt_t> RunList, UInt_t RunNumber) {
     return std::find(RunList.begin(), RunList.end(), RunNumber) != RunList.end();
 }
-
-

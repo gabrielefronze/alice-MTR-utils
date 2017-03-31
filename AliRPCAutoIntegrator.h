@@ -11,13 +11,33 @@
 #include "TNamed.h"
 #include "TString.h"
 #include "TFile.h"
+#include "AliRPCData.h"
+#include "AliOCDBRun.h"
+#include "AliCDBManager.h"
+#include "AliGRPObject.h"
+#include "AliCDBStorage.h"
+#include "AliMpCDB.h"
+#include "AliCDBEntry.h"
+#include "AliMpDDLStore.h"
+#include "AliMUONTriggerScalers.h"
+#include "AliDCSValue.h"
 #include "AliRPCValueDCS.h"
 #include "AliRPCRunStatistics.h"
 #include "AliRPCValueCurrent.h"
-#include "AliRPCData.h"
-#include "AliOCDBRun.h"
+#include "AliRPCValueVoltage.h"
+#include "AliRPCValueScaler.h"
+#include "AliRPCOverflowStatistics.h"
 #include "TGraph.h"
+#include "TMultiGraph.h"
+
+// #include "TClass.h"
+#include <fstream>
+#include <iostream>
 #include <vector>
+
+#include "TList.h"
+#include "TClonesArray.h"
+#include "TH1F.h"
 
 typedef struct {
     Int_t Side;

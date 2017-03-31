@@ -102,6 +102,7 @@ public:
     void OCDBRunListReader();
     void OCDBDataToCParser();
     void AMANDATextToCParser();
+    void FillAliRPCData();
     void Aggregator();
     void GeneratePlots();
     void Subtractor();
@@ -119,13 +120,13 @@ private:
     void PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlanes][kNRPC], Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const);
 
     void AMANDASetDataMembers();
-    void FillAliRPCData();
+
 
     static void WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 
-ClassDef(AliRPCAutoIntegrator,4);
+ClassDef(AliRPCAutoIntegrator,5);
 };
 
 #endif

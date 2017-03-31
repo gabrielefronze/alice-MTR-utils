@@ -162,8 +162,13 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
         cout<<"DONE\n"<<endl;
     }
 
+
     cout<<"Starting data aggregation...\n";
     Aggregator();
+    cout<<"DONE\n"<<endl;
+
+    cout<<"Starting filling AliRPCdata...\n";
+    FillAliRPCData();
     cout<<"DONE\n"<<endl;
 
     cout<<"Starting plot generation...\n";
@@ -178,10 +183,6 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     Integrator();
     cout<<"DONE\n"<<endl;
 
-    cout<<"Starting filling AliRPCdata...\n";
-    FillAliRPCData();
-    cout<<"DONE\n"<<endl;
-
     fOCDBDataContainer->Close();
     fAMANDADataContainer->Close();
     fGlobalDataContainer->Close();
@@ -194,9 +195,10 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
     runBuffer.fYear = 0000;
     fin.open(fRunListFileName.Data());
     while(kTRUE){
+        if(fin.eof()) break;
         fin >> runBuffer.fRunNumber;
         fOCDBRunListToAdd.push_back(runBuffer);
-        if(fin.eof())break;
+        //cout<<runBuffer.fRunNumber<<endl<<flush;
     }
     fin.close();
 }
@@ -645,13 +647,12 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 (*runIteratorYearChecker).fYear = 0000;
                 continue;
             } else {
-                printf("\n\n### Run %d belongs to fYear %d\n\n",(*runIteratorYearChecker).fRunNumber,year);
+                printf("\n\n### Run %d belongs to year %d\n\n",(*runIteratorYearChecker).fRunNumber,year);
                 (*runIteratorYearChecker).fYear = year;
                 break;
             }
         }
     }
-
 
     //manager per interfacciarsi con gli OCDB
     AliCDBManager *managerCurrent = AliCDBManager::Instance();
@@ -741,7 +742,6 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
     //loop sui run inseriti
     for (std::vector<AliOCDBRun>::iterator runIterator = fOCDBRunListToAdd.begin(); runIterator != fOCDBRunListToAdd.end(); ++runIterator) {
-        UInt_t runYear=runIterator->fYear;
 
         if ((*runIterator).fYear == 0) continue;
 
@@ -791,18 +791,19 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         //settaggio del flag isCalib
         if(runType->Contains("PHYSICS")){
             isCalib=kFALSE;
-            //cout<<(*runIterator).fRunNumber<<" is phys"<<endl;
+            //cout<<(*runIterator).runNumber<<" is phys"<<endl;
         } else if(runType->Contains("CALIBRATION")){
             isCalib=kTRUE;
-            //cout<<(*runIterator).fRunNumber<<" is calib"<<endl;
+            //cout<<(*runIterator).runNumber<<" is calib"<<endl;
         } else {
             continue;
         }
 
+
         //settaggio del flag beamPresence
         isBeamPresent = (beamEnergy > 1.) ? kTRUE : kFALSE ;
 
-        printf("-------------\n#####   Beam energy:%f Beam presence:%s Beam type:%s LHC State:%s \n-------------\n",beamEnergy,(isBeamPresent) ? "true" : "false",beamType->Data(), LHCState->Data());
+        //printf("-------------\n#####   Beam energy:%f Beam presence:%s Beam type:%s LHC State:%s \n-------------\n",beamEnergy,(isBeamPresent) ? "true" : "false",beamType->Data(), LHCState->Data());
 
         //cout<<isCalib<<endl;
 
@@ -835,13 +836,6 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             for (Int_t side=0; side<kNSides; side++) {
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-                    Int_t dummyIndex = 0;
-                    if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
-                        printf("Run %d already there for ",runIterator->fRunNumber);
-                        WhichRPC(RPC-1,side,plane);
-                        continue;
-                    }
-
                     //creazione di un pointer all'elemento della mappa delle tensioni
                     TObjArray *dataArrayVoltage;
                     dataArrayVoltage=(TObjArray*)(mapCurrent->GetValue(Form("MTR_%s_MT%d_RPC%d_HV.vEff",fSides[side].Data(),fPlanes[plane],RPC)));
@@ -864,10 +858,10 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                             break;
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
-                            dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),runYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
+                            dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),0,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
                         }
                         //cout<<"\t"<<value->GetFloat()<<endl;
-                        dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),runYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
+                        dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),0,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
                         delete value;
                     }
 
@@ -888,11 +882,11 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         AliDCSValue *value = (AliDCSValue*)dataArrayCurrents->At(arrayIndex);
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
-                            dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),runYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0));
+                            dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),0,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0));
                             ((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
-                            dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),runYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0));
+                            dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),0,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0));
                             ((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
@@ -948,14 +942,14 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         }
                         // se la lettura non è quella a fine run immagazzino il dato con timestamp pari a SOR+DeltaT
                         if(scalerEntry!=arrayScalersEntries-1){
-                            AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,runYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
+                            AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,0, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                             scalersDataList[cathode][iSide][plane][iRPC09-1]->Add(buffer);
                             scalersLocalBoardList[cathode][plane][localBoard]->Add(buffer);
                             //delete buffer;
                         }
-                        // altrimenti il timestamp è pari all'EOR
+                            // altrimenti il timestamp è pari all'EOR
                         else {
-                            AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, EOR,runYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
+                            AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, EOR, 0,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                             scalersDataList[cathode][iSide][plane][iRPC09-1]->Add(buffer);
                             scalersLocalBoardList[cathode][plane][localBoard]->Add(buffer);
                             //delete buffer;
@@ -976,7 +970,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
                     for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
                         scalersDataList[cathode][side][plane][RPC-1]->Add(new AliRPCOverflowStatistics((*runIterator).fRunNumber, EOR, overflowLB[cathode][side][plane][RPC-1], readLB[cathode][side][plane][RPC-1], isCalib,*beamType,beamEnergy,*LHCState ));
-                        //cout<<"RUN"<<(*runIterator).fRunNumber<<" side:"<<side<<" plane "<<plane<<" RPC "<<RPC<<" cathode "<<cathode<<" READ="<<readLB[cathode][side][plane][RPC-1]<<" OVERFLOW="<<overflowLB[cathode][side][plane][RPC-1]<<endl<<endl;
+                        //cout<<"RUN"<<(*runIterator).runNumber<<" side:"<<side<<" plane "<<plane<<" RPC "<<RPC<<" cathode "<<cathode<<" READ="<<readLB[cathode][side][plane][RPC-1]<<" OVERFLOW="<<overflowLB[cathode][side][plane][RPC-1]<<endl<<endl;
                     }
                 }
             }
@@ -1064,6 +1058,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
     printf("\n\n\nDark currents setting complete\n\n\n");
 }
 
+
 void AliRPCAutoIntegrator::FillAliRPCData() {
     //check if AliRPCData already exists
     TString AliRPCObjectName("AliRPCDataObj");
@@ -1072,8 +1067,10 @@ void AliRPCAutoIntegrator::FillAliRPCData() {
     fGlobalDataContainer->GetObject(AliRPCObjectName,AliRPCDataBuffer);
     if(!AliRPCDataBuffer){
         fAliRPCDataObject=new AliRPCData();
+        cout<<"Creating new AliRPCData"<<endl<<flush;
     }else{
         fAliRPCDataObject=AliRPCDataBuffer;
+        cout<<"Reading new AliRPCData"<<endl<<flush;
     }
 
     TList *listBuffer;

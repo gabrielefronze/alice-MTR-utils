@@ -108,6 +108,8 @@ public:
     void Subtractor();
     void Integrator();
 
+    void AMANDASetDataMembers();
+
 private:
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<AliOCDBRun> RunNumberList, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
@@ -118,9 +120,6 @@ private:
 
     void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const);
     void PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlanes][kNRPC], Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const);
-
-    void AMANDASetDataMembers();
-
 
     static void WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);

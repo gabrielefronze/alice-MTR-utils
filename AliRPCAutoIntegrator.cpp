@@ -399,7 +399,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                         // dark current reading.
                         TIter iterValueGlobalNext = iterValueGlobal;
                         while ( iterValueGlobalNext() ){
-                            if ( !((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot() ) break;
+                            if ( ((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForIDark() ) break;
                         }
 
                         // whenever a good OCDB reading is found then proceed
@@ -427,7 +427,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()/fRPCAreas[iRPC][iPlane]);
                         }
                     }
-                    // if a new dark current reding is found (non AMANDA = OCDB)
+                    // if a new dark current reading is found (non AMANDA = OCDB)
                     // then the dark current value is updated (as well as the
                     // timestamp)
                     else if( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ){
@@ -537,6 +537,9 @@ void AliRPCAutoIntegrator::Integrator(){
     BestAndWorstGraph->Add(buffer);
     fGlobalDataContainer->cd("integrated_charge_Graphs");
     BestAndWorstGraph->Write(Form("integrated_charge_Graph"));
+    printf("Best RPC: MTR_%s_MT%d_RPC%d \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Side],RPCWhichIntegratedBest.RPC);
+    printf("Worst RPC: MTR_%s_MT%d_RPC%d \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Side],RPCWhichIntegratedWorst.RPC);
+
 }
 
 void AliRPCAutoIntegrator::AMANDATextToCParser(){
@@ -746,7 +749,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         if ((*runIterator).fYear == 0) continue;
 
         //inizializzazione dei manager
-        managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+        managerCurrent->SetDefaultStorage(Form("aliGen://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerVoltage->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerRunType->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerScaler->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
@@ -836,6 +839,14 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             for (Int_t side=0; side<kNSides; side++) {
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
+
+                    Int_t dummyIndex = 0;
+                    if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
+                        printf("Run %d already there for ",runIterator->fRunNumber);
+                        WhichRPC(RPC-1,side,plane);
+                        continue;
+                    }
+
                     //creazione di un pointer all'elemento della mappa delle tensioni
                     TObjArray *dataArrayVoltage;
                     dataArrayVoltage=(TObjArray*)(mapCurrent->GetValue(Form("MTR_%s_MT%d_RPC%d_HV.vEff",fSides[side].Data(),fPlanes[plane],RPC)));
@@ -1061,114 +1072,140 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
 void AliRPCAutoIntegrator::FillAliRPCData() {
     //check if AliRPCData already exists
-    TString AliRPCObjectName("AliRPCDataObj");
     AliRPCData *AliRPCDataBuffer;
     fGlobalDataContainer->cd();
-    fGlobalDataContainer->GetObject(AliRPCObjectName,AliRPCDataBuffer);
-    if(!AliRPCDataBuffer){
-        fAliRPCDataObject=new AliRPCData();
-        cout<<"Creating new AliRPCData"<<endl<<flush;
-    }else{
+    fGlobalDataContainer->GetObject("AliRPCDataObj", AliRPCDataBuffer);
+
+    if (!AliRPCDataBuffer) {
+        AliRPCDataBuffer = new AliRPCData();
         fAliRPCDataObject=AliRPCDataBuffer;
-        cout<<"Reading new AliRPCData"<<endl<<flush;
+        cout << "Creating new AliRPCData" << endl << flush;
+    } else {
+        fAliRPCDataObject = AliRPCDataBuffer;
+        cout << "Reading new AliRPCData" << endl << flush;
     }
 
-    TList *listBuffer;
-    AliRPCRunStatistics *statsBuffer;
-    Double_t DarkCurrentCumulus=0.;
-    Int_t DarkCurrentCounter=0;
-    Double_t TotalCurrentCumulus=0.;
-    Int_t TotalCurrentCounter=0;
-    Double_t HVCumulus=0.;
-    Int_t HVCounter=0;
-    Bool_t isDark=kFALSE;
-    Bool_t isCalib=kFALSE;
 
-    for(Int_t iSide=0;iSide<kNSides;iSide++){
-        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
-            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBuffer);
+    TList *listBuffer;
+    AliRPCRunStatistics *statsBuffer=0x0;
+    Double_t DarkCurrentCumulus = 0.;
+    Int_t DarkCurrentCounter = 0;
+    Double_t TotalCurrentCumulus = 0.;
+    Int_t TotalCurrentCounter = 0;
+    Double_t HVCumulus = 0.;
+    Int_t HVCounter = 0;
+    Bool_t isDark = kFALSE;
+    Bool_t isCalib = kFALSE;
+
+    for (Int_t iSide = 0; iSide < kNSides; iSide++) {
+        for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
+            for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
+                fGlobalDataContainer->GetObject(
+                        Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d", (fSides[iSide]).Data(), fPlanes[iPlane],
+                             iRPC + 1), listBuffer);
 
                 // if any data list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped
                 if (!listBuffer) {
-                    printf("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n", (fSides[iSide]).Data(), fPlanes[iPlane],
+                           iRPC + 1);
                     continue;
                 }
 
-
                 TIter iterValue(listBuffer);
+
+                //search first non zero runnumber
                 UInt_t runNumberBuffer=0;
+                TIter searchNonZero(listBuffer);
+
+                while(searchNonZero()) {
+                    runNumberBuffer = ((AliRPCValueDCS *) *searchNonZero)->GetRunNumber();
+                    if(runNumberBuffer!=0) break;
+                }
+
+
                 //it is intended as runnumber extends from runbegin to runend then
                 //at newbegin begins another run
-                ULong64_t runBeginBuffer=0;
-                ULong64_t newRunBeginBuffer=runBeginBuffer;
-                ULong64_t runEndBuffer=0;
+                ULong64_t runBeginBuffer = ((AliRPCValueDCS *) listBuffer->At(0))->GetTimeStamp();
+                ULong64_t newRunBeginBuffer = 0;
+                ULong64_t runEndBuffer = 0;
+
+                WhichRPC(iRPC, iSide, iPlane);
+
 
                 //iter until runnumber changes
-                while(iterValue()){
-                    UInt_t RunNumber= ((AliRPCValueDCS *) *iterValue)->GetRunNumber();
-                    UInt_t RunYear=((AliRPCValueDCS *) *iterValue)->GetYear();
-                    ULong64_t TimeStamp= ((AliRPCValueDCS *) *iterValue)->GetTimeStamp();
+                while (iterValue()) {
+                    UInt_t RunNumber = ((AliRPCValueDCS *) *iterValue)->GetRunNumber();
+                    UInt_t RunYear = ((AliRPCValueDCS *) *iterValue)->GetYear();
+                    ULong64_t TimeStamp = ((AliRPCValueDCS *) *iterValue)->GetTimeStamp();
 
                     //check if Timestamp is updated and differs from zero (AMANDA data between two runs)
-                    if(RunNumber>runNumberBuffer&&RunNumber!=0.){
+                    if (RunNumber > runNumberBuffer) {
                         //if is updated im in a new run and last endbuffer should not be updated
-                        newRunBeginBuffer=TimeStamp;
+                        newRunBeginBuffer = TimeStamp;
 
-                        //printf("run: %d, start %d, stop %d \n",OCDBRunNumber,runBeginBuffer,runEndBuffer);
+                        //printf("run: %d, start %d, stop %d \n",RunNumber,runBeginBuffer,runEndBuffer);
 
-                        //calulate the means
-                        Double_t meanDarkCurrent=DarkCurrentCumulus/(Double_t)DarkCurrentCounter;
-                        Double_t meanTotalCurrent=TotalCurrentCumulus/(Double_t)TotalCurrentCounter;
-                        Double_t meanHV=HVCumulus/(Double_t)HVCounter;
+                        //calculate the means
+                        Double_t meanDarkCurrent = DarkCurrentCumulus / (Double_t) DarkCurrentCounter;
+                        Double_t meanTotalCurrent = TotalCurrentCumulus / (Double_t) TotalCurrentCounter;
+                        Double_t meanHV = HVCumulus / (Double_t) HVCounter;
+
+                        Int_t dummyIndex = 0;
+                        if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC,runNumberBuffer,dummyIndex)) {
+                            printf("Run %d already there for ",runNumberBuffer);
+                            WhichRPC(iRPC,iSide,iPlane);
+                            runBeginBuffer = newRunBeginBuffer;
+                            runNumberBuffer = RunNumber;
+                            continue;
+                        }
 
                         //save means in AliRPCData and resets all variable
-                        statsBuffer= new AliRPCRunStatistics(runNumberBuffer, runBeginBuffer, runEndBuffer, RunYear, isDark, isCalib, meanDarkCurrent, meanTotalCurrent, meanHV, 0, 0);
-                        fAliRPCDataObject->AddRunStatistics(iPlane,iSide,iPlane,statsBuffer);
+                        statsBuffer = new AliRPCRunStatistics(runNumberBuffer, runBeginBuffer, runEndBuffer, RunYear, isDark, isCalib, meanDarkCurrent, meanTotalCurrent, meanHV, 0, 0);
+                        fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
 
-                        statsBuffer=0x0;
-                        DarkCurrentCounter=0;
-                        DarkCurrentCumulus=0.;
-                        TotalCurrentCounter=0;
-                        TotalCurrentCumulus=0.;
-                        HVCounter=0;
-                        HVCumulus=0.;
+
+                        statsBuffer = 0x0;
+                        DarkCurrentCounter = 0;
+                        DarkCurrentCumulus = 0.;
+                        TotalCurrentCounter = 0;
+                        TotalCurrentCumulus = 0.;
+                        HVCounter = 0;
+                        HVCumulus = 0.;
 
                         //here all is done for this run
                         //printf("run: %u,\tmeanIDark: %f,\tmeanITot: %f,\tmeanHV: %f\n",runNumberBuffer,meanDarkCurrent,meanTotalCurrent,meanHV);
 
-                        runBeginBuffer=newRunBeginBuffer;
-                        runNumberBuffer=RunNumber;
-
-                    }else{
+                        runBeginBuffer = newRunBeginBuffer;
+                        runNumberBuffer = RunNumber;
+                    } else {
                         //if is a current value
-                        if(((AliRPCValueDCS*)*iterValue)->IsCurrent()){
+                        if (((AliRPCValueDCS *) *iterValue)->IsCurrent()) {
                             //Calculate mean dark current
                             DarkCurrentCounter++;
-                            DarkCurrentCumulus+=((AliRPCValueCurrent*)*iterValue)->GetIDark();
+                            DarkCurrentCumulus += ((AliRPCValueCurrent *) *iterValue)->GetIDark();
 
                             //Calculate mean total current
                             TotalCurrentCounter++;
-                            TotalCurrentCumulus+=((AliRPCValueCurrent*)*iterValue)->GetITot();
+                            TotalCurrentCumulus += ((AliRPCValueCurrent *) *iterValue)->GetITot();
                         }
 
                         //if is a voltage value
-                        if(!((AliRPCValueDCS*)*iterValue)->IsAMANDA()&&((AliRPCValueDCS*)*iterValue)->IsVoltage()){
+                        if (!((AliRPCValueDCS *) *iterValue)->IsAMANDA() &&
+                            ((AliRPCValueDCS *) *iterValue)->IsVoltage()) {
                             HVCounter++;
-                            HVCumulus+=((AliRPCValueVoltage*)*iterValue)->GetVSupp();
+                            HVCumulus += ((AliRPCValueVoltage *) *iterValue)->GetVSupp();
                         }
 
-                        isDark=((AliRPCValueDCS*)*iterValue)->IsOkForIDark();
-                        isCalib=((AliRPCValueDCS*)*iterValue)->IsCalib();
+                        isDark = ((AliRPCValueDCS *) *iterValue)->IsOkForIDark();
+                        isCalib = ((AliRPCValueDCS *) *iterValue)->IsCalib();
 
-                        runEndBuffer=TimeStamp;
+                        runEndBuffer = TimeStamp;
                     }
 
                 }
 
-                WhichRPC(iRPC, iSide, iPlane);
-
+                statsBuffer=0x0;
                 listBuffer = 0x0;
             }
         }
@@ -1176,13 +1213,14 @@ void AliRPCAutoIntegrator::FillAliRPCData() {
 
     //save AliRPCData on File
     fGlobalDataContainer->cd();
-    fAliRPCDataObject->Write(AliRPCObjectName,TObject::kSingleKey|TObject::kOverwrite);
+    fAliRPCDataObject->Write("AliRPCDataObj", TObject::kSingleKey | TObject::kOverwrite);
+
 }
 
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
     TList *listBufferAMANDA=0x0;
     TList *listBufferOCDB=0x0;
-    TList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
+    TSortedList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
     //fGlobalDataContainer->mkdir("TLists/AMANDA_DATA_withRunnumber");
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
@@ -1191,8 +1229,9 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferOCDB);
                 fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferAMANDA);
 
-                DataWithRunNumber[iSide][iPlane][iRPC]=new TList();
+                DataWithRunNumber[iSide][iPlane][iRPC]=new TSortedList();
                 DataWithRunNumber[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
 
                 // if any data list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped
@@ -1213,14 +1252,17 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 TIter iterValueAMANDANext(listBufferAMANDA);
                 iterValueAMANDANext();
 
-                UInt_t runNumberBuffer=0;
+
+                UInt_t runNumberBuffer=((AliRPCValueDCS *) listBufferOCDB->At(0))->GetRunNumber();
                 //it is intended as runnumber extends from runbegin to runend then
                 //at newbegin begins another run
-                ULong64_t runBeginBuffer=0;
-                ULong64_t newRunBeginBuffer=runBeginBuffer;
+                ULong64_t runBeginBuffer=((AliRPCValueDCS *) listBufferOCDB->At(0))->GetTimeStamp();
+                ULong64_t newRunBeginBuffer=0;
                 ULong64_t runEndBuffer=0;
+
                 //iter on OCDB until runnumber changes
                 while(iterValueOCDB()){
+
                     TBeamType OCDBRunTypeBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamType();
                     float_t OCDBBeamEnergyBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamEnergy();
                     TLHCStatus OCDBLHCStatusBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfLHCStatus();
@@ -1234,11 +1276,11 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                         //if is updated iterator is in a new run and last endbuffer should not be updated
                         newRunBeginBuffer=OCDBTimeStampBuffer;
 
-                        //printf("run: %d, start %d, stop %d \n",OCDBRunNumber,runBeginBuffer,runEndBuffer);
+                        //printf("run: %d, start %llu, stop %llu \n",OCDBRunNumberBuffer,runBeginBuffer,runEndBuffer);
 
                         //iter over amanda to update the run from start to stop then look for next run
                         while(iterValueAMANDA()){
-                            UInt_t AMANDATimeStamp=((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
+                            ULong64_t AMANDATimeStamp=((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
                             if((AMANDATimeStamp>=runBeginBuffer)&&(AMANDATimeStamp<=runEndBuffer)){
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamType(OCDBRunTypeBuffer);
@@ -1269,9 +1311,10 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 TIter iterValueAMANDAzero(listBufferAMANDA);
                 while(iterValueAMANDAzero()){
                     if(((AliRPCValueDCS *) *iterValueAMANDA)->GetRunNumber()==0){
-                        DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                        DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDAzero);
                     }
                 }
+
                 DataWithRunNumber[iSide][iPlane][iRPC]->Sort();
 
                 //Update File

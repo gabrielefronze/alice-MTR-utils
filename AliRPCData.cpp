@@ -39,6 +39,7 @@ AliRPCData::AliRPCData() : TObject(){
         for(Int_t iSide=0;iSide<fNSides;iSide++){
             for(Int_t iRPC=0;iRPC<fNRPC;iRPC++){
                 fRunStatistics[iPlane][iSide][iRPC]=new TSortedList();
+                fRunNumbers[iPlane][iSide][iRPC]=new TSortedList();
             }
         }
     }
@@ -49,6 +50,8 @@ AliRPCData::~AliRPCData(){
         for(Int_t iSide=0;iSide<fNSides;iSide++){
             for(Int_t iRPC=0;iRPC<fNRPC;iRPC++){
                 delete fRunStatistics[iPlane][iSide][iRPC];
+                delete fRunNumbers[iPlane][iSide][iRPC];
+
             }
         }
     }

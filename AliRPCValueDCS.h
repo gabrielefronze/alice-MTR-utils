@@ -62,8 +62,10 @@ public:
 
     inline Bool_t IsCalib() const { return fIsCalib; };
     inline Bool_t IsBeamPresent() const { return fLHCStatus == kBEAM; };
-    inline Bool_t IsOkForIDark() const { return  fLHCStatus > 1; };
-    inline Bool_t IsOkForITot() const { return  fLHCStatus == kBEAM; };
+    //simplified using DeMorgan laws original expression was IsCurrent() && (!fIsAMANDA && fLHCStatus > 1)
+    inline Bool_t IsOkForIDark() const { return  !(!IsCurrent() || (fIsAMANDA || fLHCStatus <= 1)); };
+    //original expression was IsCurrent() && (fIsAMANDA || (!fIsAMANDA && fLHCStatus == kBEAM))
+    inline Bool_t IsOkForITot() const { return  !(!IsCurrent() || !(fIsAMANDA || !(fIsAMANDA || fLHCStatus != kBEAM))); };
 
     virtual Double_t GetValue(Int_t ) const {return 0.;};
 

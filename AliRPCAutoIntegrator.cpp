@@ -88,8 +88,8 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
-    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
+    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
 
     fGlobalDataContainer->cd();
     fGlobalDataContainer->mkdir("TLists");
@@ -315,7 +315,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForITot, listBuffer, AliRPCValueCurrent::kITot);
 
                 fGlobalDataContainer->cd("iTot_Graphs");
-                PlotsITot[iSide][iPlane][iRPC]->Write(Form("iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                PlotsITot[iSide][iPlane][iRPC]->Write(Form("iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
                 PlotsIDark[iSide][iPlane][iRPC]=new TGraph();
                 PlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -327,7 +327,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
 
                 fGlobalDataContainer->cd("iDark_Graphs");
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
-                PlotsIDark[iSide][iPlane][iRPC]->Write(Form("iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                PlotsIDark[iSide][iPlane][iRPC]->Write(Form("iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
                 PlotsVoltage[iSide][iPlane][iRPC]=new TGraph();
                 PlotsVoltage[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -338,7 +338,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotSomethingVersusTime(PlotsVoltage[iSide][iPlane][iRPC],&AliRPCValueDCS::IsVoltage,listBuffer);
 
                 fGlobalDataContainer->cd("Voltage_Graphs");
-                PlotsVoltage[iSide][iPlane][iRPC]->Write(Form("Voltage_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                PlotsVoltage[iSide][iPlane][iRPC]->Write(Form("Voltage_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
                 WhichRPC(iRPC,iSide,iPlane);
 
@@ -1221,7 +1221,6 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
     TList *listBufferAMANDA=0x0;
     TList *listBufferOCDB=0x0;
     TSortedList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
-    //fGlobalDataContainer->mkdir("TLists/AMANDA_DATA_withRunnumber");
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -1232,13 +1231,13 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 DataWithRunNumber[iSide][iPlane][iRPC]=new TSortedList();
                 DataWithRunNumber[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-
                 // if any data list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped
                 if (!listBufferAMANDA) {
                     printf("AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
+
                 if (!listBufferOCDB) {
                     printf("OCDB_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
@@ -1279,9 +1278,9 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                         //printf("run: %d, start %llu, stop %llu \n",OCDBRunNumberBuffer,runBeginBuffer,runEndBuffer);
 
                         //iter over amanda to update the run from start to stop then look for next run
-                        while(iterValueAMANDA()){
-                            ULong64_t AMANDATimeStamp=((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
-                            if((AMANDATimeStamp>=runBeginBuffer)&&(AMANDATimeStamp<=runEndBuffer)){
+                        while(iterValueAMANDA()) {
+                            ULong64_t AMANDATimeStamp = ((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
+                            if ((AMANDATimeStamp >= runBeginBuffer) && (AMANDATimeStamp <= runEndBuffer)) {
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamType(OCDBRunTypeBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetfBeamEnergy(OCDBBeamEnergyBuffer);
@@ -1289,6 +1288,9 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetIsCalib(OCDBIsCalibBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunYear(OCDBRunYearBuffer);
 
+                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                            } else if ((AMANDATimeStamp < newRunBeginBuffer) && (AMANDATimeStamp > runEndBuffer)) {
+                                //now I add data with runnumber =0 (values get between two different runs)
                                 DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
                             }
 
@@ -1305,14 +1307,6 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                         runEndBuffer=OCDBTimeStampBuffer;
                     }
 
-                }
-
-                //now I add data with runnumber =0 (values get between two different runs)
-                TIter iterValueAMANDAzero(listBufferAMANDA);
-                while(iterValueAMANDAzero()){
-                    if(((AliRPCValueDCS *) *iterValueAMANDA)->GetRunNumber()==0){
-                        DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDAzero);
-                    }
                 }
 
                 DataWithRunNumber[iSide][iPlane][iRPC]->Sort();

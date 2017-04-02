@@ -31,6 +31,7 @@ public:
 	Double_t GetMeanIntegratedCharge(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
 	Double_t GetMeanTimeStampStart(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
 
+	inline TSortedList *GetRunList(Int_t plane, Int_t side, Int_t RPC) const {return fRunNumbers[plane][side][RPC];};
 	Double_t GetAverageTotalCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 	Double_t GetAverageNetCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 	Double_t GetAverageHV(Int_t plane, Int_t side, Int_t RPC);

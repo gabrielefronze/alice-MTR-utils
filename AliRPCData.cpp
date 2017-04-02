@@ -66,6 +66,7 @@ Bool_t AliRPCData::AddRunStatistics(Int_t plane, Int_t side, Int_t RPC, AliRPCRu
     if(IsThereThisRun(plane,side,RPC,stats->GetRunNumber(),index)) return kFALSE;
     fRunStatistics[plane][side][RPC]->Add(stats);
     fRunNumbers[plane][side][RPC]->Add(new AliOCDBRun(stats->GetRunNumber(),stats->GetYear()));
+    //printf("added run:%u\n",stats->GetRunNumber());
     return kTRUE;
 };
 

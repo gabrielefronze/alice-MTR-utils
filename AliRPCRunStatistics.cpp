@@ -22,7 +22,7 @@ AliRPCRunStatistics::AliRPCRunStatistics() : TObject(){
     fTotalScalerCountsNotBending=0.;
 };
 
-AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year,Bool_t isCalib, Bool_t isDark, Double_t meanDarkCurrent, Double_t meanTotalCurrent,Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending): TObject(){
+AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, Bool_t isDark, Double_t meanDarkCurrent, Double_t meanTotalCurrent,Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending): TObject(){
     fRunNumber=runNumber;
     fTimeStampStart=timeStampStart;
     fTimeStampStop=timeStampStop;

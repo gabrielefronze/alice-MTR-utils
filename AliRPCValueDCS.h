@@ -50,10 +50,9 @@ public:
     inline void SetIsCalib(Bool_t isCalib){fIsCalib=isCalib;};
     void SetRunNumber(UInt_t RunNumber);
     inline void SetRunYear(UInt_t RunYear){fRunYear=RunYear;};
-    inline void SetfBeamType(TBeamType fBeamType) {AliRPCValueDCS::fBeamType = fBeamType;}
-    inline void SetfBeamEnergy(Float_t fBeamEnergy) {AliRPCValueDCS::fBeamEnergy = fBeamEnergy;}
-    inline void SetfLHCStatus(TLHCStatus fLHCStatus) {AliRPCValueDCS::fLHCStatus = fLHCStatus;}
-    inline void SetfIsCalib(Bool_t fIsCalib) {AliRPCValueDCS::fIsCalib = fIsCalib;}
+    inline void SetBeamType(TBeamType BeamType) {AliRPCValueDCS::fBeamType = BeamType;}
+    inline void SetBeamEnergy(Float_t BeamEnergy) {AliRPCValueDCS::fBeamEnergy = BeamEnergy;}
+    inline void SetLHCStatus(TLHCStatus LHCStatus) {AliRPCValueDCS::fLHCStatus = LHCStatus;}
 
     TBeamType GetfBeamType() const {return fBeamType;}
     Float_t GetfBeamEnergy() const {return fBeamEnergy;}

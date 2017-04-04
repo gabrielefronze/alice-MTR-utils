@@ -404,7 +404,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                         // dark current reading.
                         TIter iterValueGlobalNext = iterValueGlobal;
                         while ( iterValueGlobalNext() ){
-                            if ( ((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForIDark() ) break;
+                            if ( !((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot() ) break;
                         }
 
                         // whenever a good OCDB reading is found then proceed
@@ -501,16 +501,16 @@ void AliRPCAutoIntegrator::Integrator(){
                     AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++, (timestamp0+timestamp1)/2., integratedCharge);
                 }
 
-                if(integratedCharge>MaxCharge){
+                if(integratedCharge<MinCharge){
                     RPCWhichIntegratedBest.Plane=iPlane;
                     RPCWhichIntegratedBest.Side=iSide;
-                    RPCWhichIntegratedBest.RPC=iRPC;
-                }
-
-                if(integratedCharge<MinCharge){
+                    RPCWhichIntegratedBest.RPC=iRPC+1;
+                    MinCharge=integratedCharge;
+                }else if(integratedCharge>=MaxCharge){
                     RPCWhichIntegratedWorst.Plane=iPlane;
                     RPCWhichIntegratedWorst.Side=iSide;
-                    RPCWhichIntegratedWorst.RPC=iRPC;
+                    RPCWhichIntegratedWorst.RPC=iRPC+1;
+                    MaxCharge=integratedCharge;
                 }
 
                 printf("MTR_%s_MT%d_RPC%d %f\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,integratedCharge);
@@ -525,7 +525,7 @@ void AliRPCAutoIntegrator::Integrator(){
                 // }
 
                 fGlobalDataContainer->cd("integrated_charge_Graphs");
-                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite|TObject::kSingleKey);
 
                 WhichRPC(iRPC, iSide, iPlane);
 
@@ -542,9 +542,9 @@ void AliRPCAutoIntegrator::Integrator(){
     fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC+1),buffer);
     BestAndWorstGraph->Add(buffer);
     fGlobalDataContainer->cd("integrated_charge_Graphs");
-    BestAndWorstGraph->Write(Form("integrated_charge_Graph"));
-    printf("Best RPC: MTR_%s_MT%d_RPC%d \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Side],RPCWhichIntegratedBest.RPC);
-    printf("Worst RPC: MTR_%s_MT%d_RPC%d \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Side],RPCWhichIntegratedWorst.RPC);
+    BestAndWorstGraph->Write(Form("integrated_charge_Graph"),TObject::kOverwrite|TObject::kSingleKey);
+    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC,MinCharge);
+    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC,MaxCharge);
 
     fGlobalDataContainer->Flush();
 }

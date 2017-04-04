@@ -50,9 +50,9 @@ public:
     inline void SetIsCalib(Bool_t isCalib){fIsCalib=isCalib;};
     void SetRunNumber(UInt_t RunNumber);
     inline void SetRunYear(UInt_t RunYear){fRunYear=RunYear;};
-    inline void SetBeamType(TBeamType BeamType) {AliRPCValueDCS::fBeamType = BeamType;}
-    inline void SetBeamEnergy(Float_t BeamEnergy) {AliRPCValueDCS::fBeamEnergy = BeamEnergy;}
-    inline void SetLHCStatus(TLHCStatus LHCStatus) {AliRPCValueDCS::fLHCStatus = LHCStatus;}
+    inline void SetBeamType(TBeamType BeamType) {fBeamType = BeamType;}
+    inline void SetBeamEnergy(Float_t BeamEnergy) {fBeamEnergy = BeamEnergy;}
+    inline void SetLHCStatus(TLHCStatus LHCStatus) {fLHCStatus = LHCStatus;}
 
     TBeamType GetfBeamType() const {return fBeamType;}
     Float_t GetfBeamEnergy() const {return fBeamEnergy;}
@@ -61,8 +61,8 @@ public:
 
     inline Bool_t IsCalib() const { return fIsCalib; };
     inline Bool_t IsBeamPresent() const { return fLHCStatus == kBEAM; };
-    //simplified using DeMorgan laws original expression was IsCurrent() && (!fIsAMANDA && fLHCStatus > 1)
-    inline Bool_t IsOkForIDark() const { return  !(!IsCurrent() || (fIsAMANDA || fLHCStatus <= 1)); };
+    //simplified using DeMorgan laws original expression was IsCurrent() && (!fIsAMANDA && fLHCStatus > kNONE)
+    inline Bool_t IsOkForIDark() const { return  IsCurrent() && (!fIsAMANDA && fLHCStatus > kNONE); };
     //original expression was IsCurrent() && (fIsAMANDA || (!fIsAMANDA && fLHCStatus == kBEAM))
     inline Bool_t IsOkForITot() const { return  !(!IsCurrent() || !(fIsAMANDA || !(fIsAMANDA || fLHCStatus != kBEAM))); };
 

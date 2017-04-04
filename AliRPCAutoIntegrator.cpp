@@ -1281,18 +1281,24 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                         //if is updated iterator is in a new run and last endbuffer should not be updated
                         newRunBeginBuffer=OCDBTimeStampBuffer;
 
+                        //((AliRPCValueDCS *) *iterValueOCDB)->PrintBeamStatus();
                         //printf("run: %d, start %llu, stop %llu \n",OCDBRunNumberBuffer,runBeginBuffer,runEndBuffer);
+
 
                         //iter over amanda to update the run from start to stop then look for next run
                         while(iterValueAMANDA()) {
                             ULong64_t AMANDATimeStamp = ((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
                             if ((AMANDATimeStamp >= runBeginBuffer) && (AMANDATimeStamp <= runEndBuffer)) {
+
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamType(OCDBRunTypeBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamEnergy(OCDBBeamEnergyBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetLHCStatus(OCDBLHCStatusBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetIsCalib(OCDBIsCalibBuffer);
                                 ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunYear(OCDBRunYearBuffer);
+
+                                //printf("###AMANDA###");
+                                //((AliRPCValueDCS *) *iterValueAMANDA)->PrintBeamStatus();
 
                                 DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
                             } else if ((AMANDATimeStamp < newRunBeginBuffer) && (AMANDATimeStamp > runEndBuffer)) {

@@ -324,7 +324,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
-                PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, listBuffer, AliRPCValueCurrent::kIDark);
+                PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, listBuffer, AliRPCValueCurrent::kITot);
 
                 fGlobalDataContainer->cd("iDark_Graphs");
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
@@ -374,7 +374,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                 // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
                 // analysis
                 if (!buffer){
-                    printf("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("TList/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
 
@@ -390,8 +390,8 @@ void AliRPCAutoIntegrator::Subtractor(){
                 Int_t counter=0;
                 while(iterValueGlobal()){
 
-                    //skip if value is not a current
-                    if (!((AliRPCValueDCS*)*iterValueGlobal)->IsCurrent()) continue;
+                    //skip if is not current
+                    if ( !((AliRPCValueDCS*)*iterValueGlobal)->IsCurrent() ) continue;
 
                     // if the read value is an AMANDA reading, then the dark
                     // current subtraction must take place. To do that via
@@ -404,7 +404,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                         // dark current reading.
                         TIter iterValueGlobalNext = iterValueGlobal;
                         while ( iterValueGlobalNext() ){
-                            if ( !((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot() ) break;
+                            if (!((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot()) break;
                         }
 
                         // whenever a good OCDB reading is found then proceed
@@ -412,7 +412,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                         if (*iterValueGlobalNext) {
                             Double_t iDarkt0 = darkCurrentValue;
                             Double_t t0 = startTimeStamp;
-                            Double_t iDarkt1 = ((AliRPCValueCurrent*)*iterValueGlobalNext)->GetITot();
+                            Double_t iDarkt1 = ((AliRPCValueCurrent*)*iterValueGlobalNext)->GetIDark();
                             Double_t t1 = ((AliRPCValueCurrent*)*iterValueGlobalNext)->GetTimeStamp();
                             Double_t tnow = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
 
@@ -432,23 +432,23 @@ void AliRPCAutoIntegrator::Subtractor(){
                                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()/fRPCAreas[iRPC][iPlane]);
                         }
                     }
-                    // if a new dark current reading is found (non AMANDA = OCDB)
-                    // then the dark current value is updated (as well as the
-                    // timestamp)
-                    else if( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ){
+                        // if a new dark current reding is found (non AMANDA = OCDB)
+                        // then the dark current value is updated (as well as the
+                        // timestamp)
+                    else{
                         darkCurrentValue = ((AliRPCValueCurrent*)*iterValueGlobal)->GetITot();
                         startTimeStamp = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
                     }
                 }
-
-                WhichRPC(iRPC, iSide, iPlane);
-
                 fGlobalDataContainer->cd("iNet_Graphs");
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
+                WhichRPC(iRPC,iSide,iPlane);
             }
+            break;
         }
+        break;
     }
-    fGlobalDataContainer->Flush();
 }
 
 
@@ -1138,7 +1138,6 @@ void AliRPCAutoIntegrator::FillAliRPCData() {
 
                 WhichRPC(iRPC, iSide, iPlane);
 
-
                 //iter until runnumber changes
                 while (iterValue()) {
                     UInt_t RunNumber = ((AliRPCValueDCS *) *iterValue)->GetRunNumber();
@@ -1268,9 +1267,9 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 //iter on OCDB until runnumber changes
                 while(iterValueOCDB()){
 
-                    TBeamType OCDBRunTypeBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamType();
-                    float_t OCDBBeamEnergyBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfBeamEnergy();
-                    TLHCStatus OCDBLHCStatusBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetfLHCStatus();
+                    TBeamType OCDBRunTypeBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamType();
+                    float_t OCDBBeamEnergyBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamEnergy();
+                    TLHCStatus OCDBLHCStatusBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetLHCStatus();
                     UInt_t OCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
                     ULong64_t OCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
                     Bool_t OCDBIsCalibBuffer=((AliRPCValueDCS *) *iterValueOCDB)->IsCalib();

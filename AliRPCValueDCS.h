@@ -54,22 +54,35 @@ public:
     inline void SetBeamEnergy(Float_t BeamEnergy) {fBeamEnergy = BeamEnergy;}
     inline void SetLHCStatus(TLHCStatus LHCStatus) {fLHCStatus = LHCStatus;}
 
-    TBeamType GetfBeamType() const {return fBeamType;}
-    Float_t GetfBeamEnergy() const {return fBeamEnergy;}
-    TLHCStatus GetfLHCStatus() const {return fLHCStatus;}
+    TBeamType GetBeamType() const {return fBeamType;}
+    Float_t GetBeamEnergy() const {return fBeamEnergy;}
+    TLHCStatus GetLHCStatus() const {return fLHCStatus;}
     UInt_t GetYear(){return fRunYear;};
 
     inline Bool_t IsCalib() const { return fIsCalib; };
     inline Bool_t IsBeamPresent() const { return fLHCStatus == kBEAM; };
-    //simplified using DeMorgan laws original expression was IsCurrent() && (!fIsAMANDA && fLHCStatus > kNONE)
-    inline Bool_t IsOkForIDark() const { return  IsCurrent() && (!fIsAMANDA && fLHCStatus > kNONE); };
+    //simplified original expression was IsCurrent() && (!fIsAMANDA && fLHCStatus > kNONE)
+    inline Bool_t IsOkForIDark() const {
+    if(IsCurrent()) {
+        if (!fIsAMANDA) {
+            return fLHCStatus > kNONE; //OCDB No beam
+        }
+    }return kFALSE;
+    };
+
     //original expression was IsCurrent() && (fIsAMANDA || (!fIsAMANDA && fLHCStatus == kBEAM))
-    inline Bool_t IsOkForITot() const { return  !(!IsCurrent() || !(fIsAMANDA || !(fIsAMANDA || fLHCStatus != kBEAM))); };
+    inline Bool_t IsOkForITot() const {
+        if(fIsAMANDA){
+            return kTRUE;   //AMANDA
+        }else if (IsCurrent()){
+            return fLHCStatus==kBEAM;   //OCDB Beam
+        }
+        return kFALSE;
+    };
 
     virtual Double_t GetValue(Int_t ) const {return 0.;};
 
     inline void PrintBeamStatus() const {printf("%s sqrt(s)=%fGeV %s\n",fHumanBeamType().Data(),fBeamEnergy,fHumanLHCStatusType().Data()); };
-
 
 private:
     UInt_t fRunNumber;

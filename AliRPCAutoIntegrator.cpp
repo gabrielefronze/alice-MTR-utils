@@ -167,16 +167,16 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     Aggregator();
     cout<<"DONE\n"<<endl;
 
-    cout<<"Starting filling AliRPCdata...\n";
-    FillAliRPCData();
-    cout<<"DONE\n"<<endl;
-
     cout<<"Starting plot generation...\n";
     GeneratePlots();
     cout<<"DONE\n"<<endl;
 
     cout<<"Starting data elaboration...\n";
     Subtractor();
+    cout<<"DONE\n"<<endl;
+
+    cout<<"Starting filling AliRPCdata...\n";
+    FillAliRPCData();
     cout<<"DONE\n"<<endl;
 
     cout<<"Starting integrated charge calculation...\n";
@@ -327,7 +327,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, listBuffer, AliRPCValueCurrent::kITot);
 
                 fGlobalDataContainer->cd("iDark_Graphs");
-                PlotsIDark[iSide][iPlane][iRPC]->Fit("pol0","Q");
+                PlotsIDark[iSide][iPlane][iRPC]->Fit("pol1","Q");
                 PlotsIDark[iSide][iPlane][iRPC]->Write(Form("iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
                 PlotsVoltage[iSide][iPlane][iRPC]=new TGraph();
@@ -445,9 +445,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                 WhichRPC(iRPC,iSide,iPlane);
             }
-            break;
         }
-        break;
     }
 }
 

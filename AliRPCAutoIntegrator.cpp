@@ -121,13 +121,20 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
-    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-    fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
+    TFile *globalDataContainer = TFile::Open(Form("%s",OutputFileName.Data()));
 
-    fGlobalDataContainer->cd();
-    fGlobalDataContainer->mkdir("TLists");
-    fGlobalDataContainer->mkdir("iNet_Graphs");
-    fGlobalDataContainer->mkdir("integrated_charge_Graphs");
+    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+    if(!globalDataContainer){
+        fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
+        fGlobalDataContainer->cd();
+        fGlobalDataContainer->mkdir("TLists");
+        fGlobalDataContainer->mkdir("iNet_Graphs");
+        fGlobalDataContainer->mkdir("integrated_charge_Graphs");
+    } else {
+        fGlobalDataContainer = globalDataContainer;
+    }
+
+    globalDataContainer = 0x0;
 
     //check if AliRPCData already exists
     AliRPCData *AliRPCDataBuffer;
@@ -222,6 +229,8 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
     while(kTRUE){
         if(fin.eof()) break;
         fin >> runBuffer.fRunNumber;
+        Int_t dummyindex = 0;
+        if(fAliRPCDataObject->IsThereThisRun(0,0,0,runBuffer.fRunNumber,dummyindex)) continue;
         fOCDBRunListToAdd.push_back(runBuffer);
         //cout<<runBuffer.fRunNumber<<endl<<flush;
     }

@@ -778,7 +778,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         if ((*runIterator).fYear == 0) continue;
         UInt_t RunYear=(*runIterator).fYear;
 
-        cout<<"YEar retrieved"<<endl;
+        //cout<<"YEar retrieved"<<endl;
 
         //inizializzazione dei manager
         managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
@@ -792,7 +792,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         managerRunType->SetRun((*runIterator).fRunNumber);
         managerScaler->SetRun((*runIterator).fRunNumber);
 
-        cout<<"Managers retrieved"<<endl;
+        //cout<<"Managers retrieved"<<endl;
 
         if(CheckPointer((TNamed*)managerCurrent)) continue;
         if(CheckPointer((TNamed*)managerVoltage)) continue;
@@ -844,7 +844,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
             continue;
         }
 
-        cout<<"Beam type retrieved"<<endl;
+        //cout<<"Beam type retrieved"<<endl;
 
         //settaggio del flag beamPresence
         isBeamPresent = (beamEnergy > 1.) ? kTRUE : kFALSE ;
@@ -877,7 +877,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         TClonesArray *arrayScalers = (TClonesArray*)entryScalers->GetObject();
         if(CheckPointer((TNamed*)arrayScalers)) continue;
 
-        cout<<"ready to go"<<endl;
+        //cout<<"ready to go"<<endl;
 
         //loop sui piani, i lati (inside e outside) e le RPC (9 per side)
         for (Int_t plane=0; plane<kNPlanes; plane++) {
@@ -910,10 +910,10 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
                         if(value->GetFloat()<8500.){
                             isVoltageOk=kFALSE;
-                            cout<<"\t"<<value->GetFloat()<<"\tBAD"<<endl;
+                            //cout<<"\t"<<value->GetFloat()<<"\tBAD"<<endl;
                             break;
                         } else {
-                            cout<<"\t"<<value->GetFloat()<<endl;
+                            //cout<<"\t"<<value->GetFloat()<<endl;
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
                         }
                         //cout<<"\t"<<value->GetFloat()<<endl;
@@ -946,7 +946,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                             //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
-                        delete value;
+                        value = 0x0;
                     }
                     //Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC)
                 }
@@ -1019,7 +1019,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         }
         delete scalersData;
 
-        printf("scalers reading complete.\n");
+        //printf("scalers reading complete.\n");
 
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             for (Int_t side=0; side<kNSides; side++) {
@@ -1031,7 +1031,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 }
             }
         }
-        printf("data saved.\n");
+        //printf("data saved.\n");
 
     }
 

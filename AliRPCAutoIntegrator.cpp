@@ -129,7 +129,19 @@ fUpdateAMANDA(updateAMANDA){
     fGlobalDataContainer->mkdir("iNet_Graphs");
     fGlobalDataContainer->mkdir("integrated_charge_Graphs");
 
-    fAliRPCDataObject = new AliRPCData();
+    //check if AliRPCData already exists
+    AliRPCData *AliRPCDataBuffer;
+    fGlobalDataContainer->cd();
+    fGlobalDataContainer->GetObject("AliRPCDataObj", AliRPCDataBuffer);
+
+    if (!AliRPCDataBuffer) {
+        AliRPCDataBuffer = new AliRPCData();
+        fAliRPCDataObject=AliRPCDataBuffer;
+        cout << "Creating new AliRPCData" << endl << flush;
+    } else {
+        fAliRPCDataObject = AliRPCDataBuffer;
+        cout << "Reading old AliRPCData" << endl << flush;
+    }
 
     // Calling this method to preload the runs of which the OCDB data has to be
     // downloaded
@@ -1097,20 +1109,6 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
 
 void AliRPCAutoIntegrator::FillAliRPCData(){
-    //check if AliRPCData already exists
-    AliRPCData *AliRPCDataBuffer;
-    fGlobalDataContainer->cd();
-    fGlobalDataContainer->GetObject("AliRPCDataObj", AliRPCDataBuffer);
-
-    if (!AliRPCDataBuffer) {
-        AliRPCDataBuffer = new AliRPCData();
-        fAliRPCDataObject=AliRPCDataBuffer;
-        cout << "Creating new AliRPCData" << endl << flush;
-    } else {
-        fAliRPCDataObject = AliRPCDataBuffer;
-        cout << "Reading old AliRPCData" << endl << flush;
-    }
-
 
     TList *sortedListData[kNSides][kNPlanes][kNRPC];
     TList *sortedListScalers[kNSides][kNPlanes][kNRPC][kNCathodes];

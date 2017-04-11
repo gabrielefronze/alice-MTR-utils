@@ -845,7 +845,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         //settaggio del flag beamPresence
         isBeamPresent = (beamEnergy > 1.) ? kTRUE : kFALSE ;
 
-        printf("-------------\n#####   Beam energy:%f Beam presence:%s Beam type:%s LHC State:%s \n-------------\n",beamEnergy,(isBeamPresent) ? "true" : "false",beamType->Data(), LHCState->Data());
+        //printf("-------------\n#####   Beam energy:%f Beam presence:%s Beam type:%s LHC State:%s \n-------------\n",beamEnergy,(isBeamPresent) ? "true" : "false",beamType->Data(), LHCState->Data());
 
         //cout<<isCalib<<endl;
 

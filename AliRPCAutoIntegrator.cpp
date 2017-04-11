@@ -907,18 +907,18 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                     //loop sulle entry del vettore di misure di tensione
                     for (Int_t arrayIndex=0; arrayIndex<(dataArrayVoltage->GetEntries()); arrayIndex++) {
                         AliDCSValue *value = (AliDCSValue*)dataArrayVoltage->At(arrayIndex);
-                        if(!value) continue;
+
                         if(value->GetFloat()<8500.){
                             isVoltageOk=kFALSE;
-                            //cout<<"\t"<<value->GetFloat()<<"\tBAD"<<endl;
+                            cout<<"\t"<<value->GetFloat()<<"\tBAD"<<endl;
                             break;
                         } else {
-                            //cout<<"\t"<<value->GetFloat()<<endl;
+                            cout<<"\t"<<value->GetFloat()<<endl;
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
                         }
                         //cout<<"\t"<<value->GetFloat()<<endl;
                         dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
-                        delete value;
+                        value = 0x0;
                     }
 
                     if (isVoltageOk==kFALSE) break;
@@ -939,11 +939,11 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0));
-                            ((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
+                            //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0));
-                            ((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
+                            //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
                         delete value;

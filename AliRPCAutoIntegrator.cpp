@@ -129,6 +129,8 @@ fUpdateAMANDA(updateAMANDA){
     fGlobalDataContainer->mkdir("iNet_Graphs");
     fGlobalDataContainer->mkdir("integrated_charge_Graphs");
 
+    fAliRPCDataObject = new AliRPCData();
+
     // Calling this method to preload the runs of which the OCDB data has to be
     // downloaded
     OCDBRunListReader();
@@ -766,7 +768,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         UInt_t RunYear=(*runIterator).fYear;
 
         //inizializzazione dei manager
-        managerCurrent->SetDefaultStorage(Form("aliGen://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+        managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerVoltage->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerRunType->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerScaler->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
@@ -777,9 +779,17 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         managerRunType->SetRun((*runIterator).fRunNumber);
         managerScaler->SetRun((*runIterator).fRunNumber);
 
+        if(CheckPointer((TNamed*)managerCurrent)) continue;
+        if(CheckPointer((TNamed*)managerVoltage)) continue;
+        if(CheckPointer((TNamed*)managerRunType)) continue;
+        if(CheckPointer((TNamed*)managerScaler)) continue;
+
         AliCDBStorage *defStorage = managerCurrent->GetDefaultStorage();
+        if(CheckPointer((TNamed*)defStorage)) continue;
+
         defStorage->QueryCDB((*runIterator).fRunNumber);
         TObjArray* arrCDBID = defStorage->GetQueryCDBList();
+        if(CheckPointer((TNamed*)arrCDBID)) continue;
         TIter nxt(arrCDBID);
         AliCDBId* cdbID = 0;
         Bool_t hasGRP = kFALSE;
@@ -823,7 +833,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         //settaggio del flag beamPresence
         isBeamPresent = (beamEnergy > 1.) ? kTRUE : kFALSE ;
 
-        //printf("-------------\n#####   Beam energy:%f Beam presence:%s Beam type:%s LHC State:%s \n-------------\n",beamEnergy,(isBeamPresent) ? "true" : "false",beamType->Data(), LHCState->Data());
+        printf("-------------\n#####   Beam energy:%f Beam presence:%s Beam type:%s LHC State:%s \n-------------\n",beamEnergy,(isBeamPresent) ? "true" : "false",beamType->Data(), LHCState->Data());
 
         //cout<<isCalib<<endl;
 
@@ -851,7 +861,6 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         TClonesArray *arrayScalers = (TClonesArray*)entryScalers->GetObject();
         if(CheckPointer((TNamed*)arrayScalers)) continue;
 
-
         //loop sui piani, i lati (inside e outside) e le RPC (9 per side)
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             for (Int_t side=0; side<kNSides; side++) {
@@ -859,8 +868,8 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
                     Int_t dummyIndex = 0;
                     if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
-                        printf("Run %d already there for ",runIterator->fRunNumber);
-                        WhichRPC(RPC-1,side,plane);
+                        printf("Run %d already there for ", runIterator->fRunNumber);
+                        WhichRPC(RPC - 1, side, plane);
                         continue;
                     }
 

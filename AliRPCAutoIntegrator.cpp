@@ -775,9 +775,10 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
     //loop sui run inseriti
     for (std::vector<AliOCDBRun>::iterator runIterator = fOCDBRunListToAdd.begin(); runIterator != fOCDBRunListToAdd.end(); ++runIterator) {
-
         if ((*runIterator).fYear == 0) continue;
         UInt_t RunYear=(*runIterator).fYear;
+
+        cout<<"YEar retrieved"<<endl;
 
         //inizializzazione dei manager
         managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
@@ -790,6 +791,8 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         managerVoltage->SetRun((*runIterator).fRunNumber);
         managerRunType->SetRun((*runIterator).fRunNumber);
         managerScaler->SetRun((*runIterator).fRunNumber);
+
+        cout<<"Managers retrieved"<<endl;
 
         if(CheckPointer((TNamed*)managerCurrent)) continue;
         if(CheckPointer((TNamed*)managerVoltage)) continue;
@@ -841,6 +844,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
             continue;
         }
 
+        cout<<"Beam type retrieved"<<endl;
 
         //settaggio del flag beamPresence
         isBeamPresent = (beamEnergy > 1.) ? kTRUE : kFALSE ;
@@ -873,6 +877,8 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         TClonesArray *arrayScalers = (TClonesArray*)entryScalers->GetObject();
         if(CheckPointer((TNamed*)arrayScalers)) continue;
 
+        cout<<"ready to go"<<endl;
+
         //loop sui piani, i lati (inside e outside) e le RPC (9 per side)
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             for (Int_t side=0; side<kNSides; side++) {
@@ -901,6 +907,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                     //loop sulle entry del vettore di misure di tensione
                     for (Int_t arrayIndex=0; arrayIndex<(dataArrayVoltage->GetEntries()); arrayIndex++) {
                         AliDCSValue *value = (AliDCSValue*)dataArrayVoltage->At(arrayIndex);
+                        if(!value) continue;
                         if(value->GetFloat()<8500.){
                             isVoltageOk=kFALSE;
                             //cout<<"\t"<<value->GetFloat()<<"\tBAD"<<endl;
@@ -1024,6 +1031,8 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 }
             }
         }
+        printf("data saved.\n");
+
     }
 
     printf("\n\n\nData retrieving complete\n\n\n");

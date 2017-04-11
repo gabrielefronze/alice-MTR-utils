@@ -227,8 +227,8 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
     runBuffer.fYear = 0000;
     fin.open(fRunListFileName.Data());
     while(kTRUE){
-        if(fin.eof()) break;
         fin >> runBuffer.fRunNumber;
+        if(fin.eof()) break;
         Int_t dummyindex = 0;
         if(fAliRPCDataObject->IsThereThisRun(0,0,0,runBuffer.fRunNumber,dummyindex)) continue;
         fOCDBRunListToAdd.push_back(runBuffer);

@@ -8,10 +8,14 @@
 #define AliRPCData_h
 
 #include <stdio.h>
+#include <vector>
 #include "TObject.h"
 #include "TString.h"
 #include "TSortedList.h"
 #include "AliRPCRunStatistics.h"
+#include "AliOCDBRun.h"
+
+using namespace std;
 
 class AliRPCData : public TObject{
 public:
@@ -31,7 +35,7 @@ public:
 	Double_t GetMeanIntegratedCharge(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
 	Double_t GetMeanTimeStampStart(UInt_t runNumber, Bool_t normalizeToArea=kFALSE);
 
-	inline TSortedList *GetRunList(Int_t plane, Int_t side, Int_t RPC) const {return fRunNumbers[plane][side][RPC];};
+	inline vector<AliOCDBRun*> GetRunList(Int_t plane, Int_t side, Int_t RPC) const {return fRunNumbers[plane][side][RPC];};
 	Double_t GetAverageTotalCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 	Double_t GetAverageNetCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 	Double_t GetAverageHV(Int_t plane, Int_t side, Int_t RPC);
@@ -40,7 +44,7 @@ public:
 
     Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
 
-    TSortedList* operator()(Int_t iPlane,Int_t iSides,Int_t iRPC){return fRunStatistics[iPlane][iSides][iRPC];};
+    inline vector<AliRPCRunStatistics*> operator()(Int_t iPlane,Int_t iSides,Int_t iRPC){return fRunStatistics[iPlane][iSides][iRPC];};
 
 private:
 	const static Int_t fNSides=2;
@@ -55,12 +59,12 @@ private:
 
     Double_t fAreas[fNRPC][fNPlanes];
 
-    TSortedList *fRunStatistics[fNPlanes][fNSides][fNRPC];
-    TSortedList *fRunNumbers[fNPlanes][fNSides][fNRPC];
+    vector<AliRPCRunStatistics*> fRunStatistics[fNPlanes][fNSides][fNRPC];
+    vector<AliOCDBRun*> fRunNumbers[fNPlanes][fNSides][fNRPC];
 
     Bool_t fIsDarkRun;
 
-	Bool_t IsThereThisRunStupido(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
+//	Bool_t IsThereThisRunStupido(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
     Double_t GetMeanSomething(UInt_t runNumber, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
     Double_t GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const);
 

@@ -51,6 +51,8 @@ public:
     AliRPCAutoIntegrator(TString RunListFileName, TString AMANDAInputFileName, TString OutputFileName, Bool_t updateOCDB=kTRUE, Bool_t updateAMANDA=kTRUE);
 	AliRPCAutoIntegrator(const AliRPCAutoIntegrator &obj)  : TObject(obj){};
 	~AliRPCAutoIntegrator();
+    void InitDataMembers();
+
     void RunAutoIntegrator();
 
     void VoltagePlotter(TGraph *Graph, TList* list, UInt_t RunNumber);
@@ -78,6 +80,7 @@ private:
     static const Int_t kNPlanes=4;
     static const Int_t kNRPC=9;
     static const Int_t kNLocalBoards=234;
+    static const ULong64_t kFullScale=65535;
     static const Int_t kNCathodes=2;
     static const TString *fSides;
     static const Int_t *fPlanes;
@@ -85,7 +88,13 @@ private:
     //array per la conversione di iRPC={0,17} in iRPC={1,9}x{inside,outside}
     static const Int_t *kRPCIndexes;
     static const Int_t *kRPCSides;
+    static const Int_t *kLBToRPC;
     Double_t fRPCAreas[kNRPC][kNPlanes];
+    Double_t fLBAreas[kNLocalBoards][kNPlanes];
+    Double_t fTinyArea[kNPlanes];
+    Double_t fLittleArea[kNPlanes];
+    Double_t fNormalArea[kNPlanes];
+    Double_t fBigArea[kNPlanes];
     static const Int_t *fColors;//[kNRPC] = {kBlack,kRed,kGreen,kBlue,kYellow,kMagenta,kCyan,kGray,kOrange};
     static const Int_t *fStyles;//[kNPlanes]={20,24,21,25};
 
@@ -136,7 +145,7 @@ private:
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 
-ClassDef(AliRPCAutoIntegrator,5);
+ClassDef(AliRPCAutoIntegrator,6);
 };
 
 #endif

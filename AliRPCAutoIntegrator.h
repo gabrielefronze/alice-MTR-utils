@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "TList.h"
+#include "TObjArray.h"
 #include "TClonesArray.h"
 #include "TH1F.h"
 
@@ -55,6 +56,7 @@ public:
 
     void RunAutoIntegrator();
 
+    void PlotGenerator(TString filename="plots.txt");
     void VoltagePlotter(TGraph *Graph, TList* list, UInt_t RunNumber);
     void VoltagePlotter(TGraph *Graph, TList* list, std::vector<UInt_t> RunNumberList);
     void VoltagePlotter(TGraph *Graph, TList* list);
@@ -131,19 +133,11 @@ private:
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<AliOCDBRun> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, Int_t whichValue=0);
 
-    void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const);
-    void PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlanes][kNRPC], Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const);
+    void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const);
+    void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const);
+    void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const);
 
-    void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, TList *list){
-        if(x.Contains("time")){
-            if(y.Contains("voltage")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
-            if(y.Contains("current")){
-                if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kIDark);
-                else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kITot);
-            }
-        }
-    };
-
+    void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, TList *list=nullptr);
 
     static void WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);

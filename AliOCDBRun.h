@@ -9,13 +9,13 @@
 
 class AliOCDBRun : public TObject{
 public:
-    Int_t fRunNumber;
+    UInt_t fRunNumber;
     Int_t fYear;
 
-    inline Int_t GetRunNumber()const{return fRunNumber;};
+    inline UInt_t GetRunNumber()const{return fRunNumber;};
 
     AliOCDBRun() : TObject() {};
-    AliOCDBRun(Int_t runNumber, Int_t year) : fRunNumber(runNumber), fYear(year), TObject(){};
+    AliOCDBRun(UInt_t runNumber, Int_t year) : fRunNumber(runNumber), fYear(year), TObject(){};
     virtual ~AliOCDBRun(){};
 
     Bool_t IsEqual (const TObject *obj) const{

@@ -1220,32 +1220,37 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 Double_t RPCTotalRatePerArea[2] = {0., 0.};
                 ULong64_t totalScalerCounts[2] = {0, 0};
 
-                printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
+                //printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
 
                 TIter iterValueDCS(sortedListData[iSide][iPlane][iRPC - 1]);
-                AliRPCValueDCS *valueDCS = (AliRPCValueDCS *) iterValueDCS();
+                AliRPCValueDCS *valueDCS;
                 do {
                     //generica entry della sorted list
                     //AliRPCValueDCS *valueDCS = ((AliRPCValueDCS*)sortedListData[iSide][iPlane][iRPC-1]->At(iDataList));
-                    if (previousRunNumber == 0) {
-                        previousRunNumber = valueDCS->GetRunNumber();
-                        timeStampStart = valueDCS->GetTimeStamp();
-                        isCalib = valueDCS->IsCalib();
-                        isDark = ((AliRPCValueDCS *) *iterValueDCS)->IsOkForIDark();
-                    }
+                    valueDCS = (AliRPCValueDCS *) iterValueDCS();
+                    if(valueDCS){
+                        if (previousRunNumber == 0) {
+                            previousRunNumber = valueDCS->GetRunNumber();
+                            timeStampStart = valueDCS->GetTimeStamp();
+                            isCalib = valueDCS->IsCalib();
+                            isDark = ((AliRPCValueDCS *) *iterValueDCS)->IsOkForIDark();
+                        }
 
-                    actualRunNumber = valueDCS->GetRunNumber();
-                    actualYear = valueDCS->GetYear();
+                        actualRunNumber = valueDCS->GetRunNumber();
+                        actualYear = valueDCS->GetYear();
+                    }
 
                     Int_t dummyIndex = 0;
                     if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC,actualRunNumber,dummyIndex)) {
-                        printf("Run %d already there for ",actualRunNumber);
-                        WhichRPC(iRPC,iSide,iPlane);
+                        //printf("Run %d already there for ",actualRunNumber);
+                        //WhichRPC(iRPC-1,iSide,iPlane);
                         continue;
+                    } else {
+                        //printf("Adding run %d for ",actualRunNumber);
+                        //WhichRPC(iRPC-1,iSide,iPlane);
                     }
 
-                    if (actualRunNumber == previousRunNumber) {
-                        cout<<"========"<<endl;
+                    if (actualRunNumber == previousRunNumber && valueDCS) {
                         if (valueDCS->IsVoltage()){
                             //cast a tensione
                             AliRPCValueVoltage *voltageBuffer=(AliRPCValueVoltage*)valueDCS;
@@ -1260,17 +1265,15 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             meanDarkCurrent+=currentBuffer->GetIDark();
                             nDarkCurrent++;
                             timeStampStop=valueDCS->GetTimeStamp();
-                        } else continue;
-                    } else if (actualRunNumber < previousRunNumber) {
-                        cout<<"<<<<<<<"<<endl;
+                        }
+                    } else if (actualRunNumber < previousRunNumber && valueDCS) {
                         continue;
-                    } else {
-                        cout<<">>>>>>>"<<endl;
+                    } else if (actualRunNumber > previousRunNumber || !valueDCS){
                         Double_t ratesTimesLBArea[2] = {0., 0.};
                         Double_t LBRateSum[2] = {0., 0.};
                         Double_t notOverflowLBTotalArea[2] = {0., 0.};
 
-                        printf("\n######################\nRun=%d MT=%d iRPC=%d SIDE=%s\n", previousRunNumber, fPlanes[iPlane], iRPC, fSides[iSide].Data());
+                        //printf("\n######################\nRun=%d MT=%d iRPC=%d SIDE=%s\n", previousRunNumber, fPlanes[iPlane], iRPC, fSides[iSide].Data());
                         for (Int_t cathode = 0; cathode < kNCathodes; cathode++) {
                             for (Int_t localBoard = 1; localBoard <= kNLocalBoards; localBoard++) {
                                 Int_t acceptedCount = 0;
@@ -1336,8 +1339,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                 RPCTotalRatePerArea[cathode] = LBRateSum[cathode] / notOverflowLBTotalArea[cathode];
                             else RPCTotalRatePerArea[cathode] = -1.;
                             totalScalerCounts[cathode] = (ULong64_t) (RPCTotalRatePerArea[cathode] * (Double_t) (timeStampStop - timeStampStart) *fRPCAreas[iRPC - 1][iPlane]);
-                            if (cathode == 1)
-                                printf("-Rates:\n\t·Bending: %f Hz/cm^2\n\t·Not bending: %f Hz/cm^2\n\n-Total scaler counts:\n\t·Bending: %llu\n\t·Not bending: %llu\n####################\n",RPCTotalRatePerArea[0], RPCTotalRatePerArea[1], totalScalerCounts[0],totalScalerCounts[1]);
+                            //if (cathode == 1)
+                              //  printf("-Rates:\n\t·Bending: %f Hz/cm^2\n\t·Not bending: %f Hz/cm^2\n\n-Total scaler counts:\n\t·Bending: %llu\n\t·Not bending: %llu\n####################\n",RPCTotalRatePerArea[0], RPCTotalRatePerArea[1], totalScalerCounts[0],totalScalerCounts[1]);
                             //cout<<cathode<<": "<<totalScalerCounts[cathode]<<endl<<endl;
 
                         }
@@ -1366,14 +1369,16 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         //statsBuffer=0x0;
                         //force reset of previous and start timestamp
                         previousRunNumber=0;
-                        previousRunNumber=valueDCS->GetRunNumber();
-                        timeStampStart=valueDCS->GetTimeStamp();
-                        isCalib=valueDCS->IsCalib();
+                        if (valueDCS){
+                            previousRunNumber=valueDCS->GetRunNumber();
+                            timeStampStart=valueDCS->GetTimeStamp();
+                            isCalib=valueDCS->IsCalib();
+                        }
                         ratesTimesLBArea[0]=0;
                         ratesTimesLBArea[1]=0;
                     }
-                }while((valueDCS=(AliRPCValueDCS*)iterValueDCS()));
-                cout<<"DONE"<<endl;
+                }while(valueDCS);
+                //cout<<"DONE"<<endl;
             }
         }
     }

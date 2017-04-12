@@ -1,0 +1,6 @@
+plot, current, time, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC4
+plot, darkcurrent, time, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC5
+plot, darkcurrent, ratenotbending, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3 
+plot, darkcurrent, run, all
+plot, integratedcharge, run, all
+plot, netcurrent, time, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC5

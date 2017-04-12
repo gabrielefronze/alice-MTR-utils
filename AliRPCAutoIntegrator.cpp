@@ -118,7 +118,7 @@ fUpdateAMANDA(updateAMANDA){
     } else {
         //fOCDBDataContainer= new TFile("OCDBDataContainer.root","READ");
         //fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
-        fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
+        fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
     }
 
     fExistsRPCDataObject = checkFileExistance(OutputFileName);
@@ -230,7 +230,7 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
         fin >> runBuffer.fRunNumber;
         if(fin.eof()) break;
         Int_t dummyindex = 0;
-        if(fAliRPCDataObject->IsThereThisRun(0,0,0,runBuffer.fRunNumber,dummyindex)) continue;
+//        if(fAliRPCDataObject->IsThereThisRun(1,1,1,runBuffer.fRunNumber,dummyindex)) continue;
         fOCDBRunListToAdd.push_back(runBuffer);
         //cout<<runBuffer.fRunNumber<<endl<<flush;
     }
@@ -1241,7 +1241,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     }
 
                     Int_t dummyIndex = 0;
-                    if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC,actualRunNumber,dummyIndex)) {
+                    if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC-1,actualRunNumber,dummyIndex)) {
                         //printf("Run %d already there for ",actualRunNumber);
                         //WhichRPC(iRPC-1,iSide,iPlane);
                         continue;
@@ -1351,7 +1351,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         cout<<"setting "<<previousRunNumber<<" complete"<<endl;
                         //cout<<totalScalerCounts[0]<<"\t"<<totalScalerCounts[1]<<endl;
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
-                        fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
+                        fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
 
                         actualRunNumber=0;
                         timeStampStart=0;

@@ -183,7 +183,7 @@ UInt_t AliRPCData::GetTotalEntries(){
     for(Int_t iPlane=0;iPlane<fNPlanes;iPlane++){
         for(Int_t iSide=0;iSide<fNSides;iSide++){
             for(Int_t iRPC=0;iRPC<fNRPC;iRPC++){
-                totalEntries+=(fRunNumbers[iPlane][iSide][iRPC]).size()+1;
+                totalEntries+=(fRunNumbers[iPlane][iSide][iRPC]).size();
             }
         }
     }

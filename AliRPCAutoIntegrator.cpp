@@ -1643,25 +1643,34 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
     Graph->GetYaxis()->SetTitle(y);
 };
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t) const, vector<AliOCDBRun*> RunNumberList){
-    for(AliOCDBRun* iter:RunNumberList){
-            Double_t value=(fAliRPCDataObject->*funky)((*iter).GetRunNumber(),kFALSE);
-                Graph->Fill(value);
-            }
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+  TIter iterValue(DataList);
+  vector<UInt_t> RunNumberIntList;
+  for(auto iter=RunNumberList.begin();iter!=RunNumberList.end();iter++){
+      //cout<<(*iter)->GetRunNumber()<<endl<<flush;
+      RunNumberIntList.push_back((*iter)->GetRunNumber());
+  }
+
+  while (iterValue()) {
+    UInt_t run=((AliRPCValueDCS *) *iterValue)->GetRunNumber();
+    if(!IsRunInList(RunNumberIntList,run)) continue;
+      if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 && (((AliRPCValueDCS *) *iterValue)->*funky)()) {
+          ((TH1F*)Graph)->Fill((((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue)));
+      }
+    }
+
 }
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, vector <AliOCDBRun*> RunNumberList){
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TList *list, vector <AliOCDBRun*> RunNumberList){
         if(label.Contains("current")) {
-            if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanTotalCurrent,RunNumberList);
-            if(label.Contains("dark")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanDarkCurrent,RunNumberList);
-            if(label.Contains("net")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanNetCurrent,RunNumberList);
+            ((TH1F*)Graph)->GetXaxis()->SetRangeUser(0,50);
+            if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kITot);
+            if(label.Contains("dark")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kIDark);
+            if(label.Contains("net")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kINet);
         }else if(label.Contains("voltage")){
-            CreateDistributionSomething(Graph,&AliRPCData::GetMeanHV,RunNumberList);
-        }else if(label.Contains("rate")&&label.Contains("bending")){
-            if(label.Contains("not")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanRateBending,RunNumberList);
-            else CreateDistributionSomething(Graph,&AliRPCData::GetMeanRateNotBending,RunNumberList);
-        }else if(label.Contains("integrated")||label.Contains("charge")){
-            CreateDistributionSomething(Graph,&AliRPCData::GetMeanIntegratedCharge,RunNumberList);
+            CreateDistributionSomething(Graph,&AliRPCValueDCS::IsVoltage,list, RunNumberList, 0);
+        }else if(label.Contains("rate")){
+            if(label.Contains("not")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsScaler,list, RunNumberList, 0);
         }
 }
 
@@ -1696,11 +1705,11 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         }
 
         string line;
-        TObject *graphBuffer;
+        TObject *graphBuffer=0x0;
 
         //create folder
         fGlobalDataContainer->cd();
-        TObject *IsDirThere;
+        TObject *IsDirThere=0x0;
         fGlobalDataContainer->GetObject("PlotsFromFile",IsDirThere);
         if(!IsDirThere) fGlobalDataContainer->mkdir("PlotsFromFile");
 
@@ -1723,16 +1732,18 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
             graphBuffer=new TGraph();
             PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,listPtr);
             }else if(plotType.Contains("distribution")){
+                graphBuffer=new TH1F();
                 vector<AliOCDBRun*> RunList;
                 //create distribution from last added run
                 for(AliOCDBRun iter: fOCDBRunListToAdd){
-                    RunList.push_back(&iter);
+                    RunList.push_back(new AliOCDBRun(iter.GetRunNumber(),0));
                 }
-                CreateDistributionSomething((TH1*)graphBuffer,yaxsis,RunList);
+                CreateDistributionSomething((TH1*)graphBuffer,yaxsis,listPtr, RunList);
             }
             fGlobalDataContainer->cd("PlotsFromFile");
             graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
             graphBuffer=0x0;
+            commands=0x0;
         }
 
         file.close();

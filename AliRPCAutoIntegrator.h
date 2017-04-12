@@ -130,8 +130,8 @@ private:
         ifstream f(fileName.Data());
         return f.good();
     }
-    void CreateDistributionSomething(TH1 *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t) const, vector<AliOCDBRun*> RunNumberList);
-    void CreateDistributionSomething(TH1 *Graph, TString label, vector <AliOCDBRun*> RunNumberList);
+    void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue);
+    void CreateDistributionSomething(TH1 *Graph, TString label, TList *list, vector <AliOCDBRun*> RunNumberList);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, UInt_t RunNumber, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue=0);

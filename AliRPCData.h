@@ -44,7 +44,9 @@ public:
 	Double_t GetAverageRateBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE) const;
 	Double_t GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE) const;
 
-    Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index)const;
+    UInt_t GetTotalEntries();
+
+    Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index) const;
 
     inline vector<AliRPCRunStatistics*> operator()(Int_t iPlane,Int_t iSides,Int_t iRPC){return fRunStatistics[iPlane][iSides][iRPC];};
 

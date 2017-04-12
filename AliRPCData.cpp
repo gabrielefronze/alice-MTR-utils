@@ -108,7 +108,7 @@ Double_t AliRPCData::GetMeanSomething(UInt_t runNumber, Bool_t normalizeToArea,D
 Double_t AliRPCData::GetAverageSomething(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea,Double_t (AliRPCRunStatistics::*funky)() const)const{
     Double_t totaltime=0.;
     Double_t cumulus=0.;
-    for(std::vector<AliRPCRunStatistics*>::iterator it = fRunStatistics[plane][side][RPC].begin(); it != fRunStatistics[plane][side][RPC].end(); ++it){
+    for(auto it = fRunStatistics[plane][side][RPC].begin(); it != fRunStatistics[plane][side][RPC].end(); ++it){
       Double_t startTime = (*it)->GetTimeStampStart();
       Double_t stopTime = (*it)->GetTimeStampStop();
       Double_t deltaTime = (stopTime-startTime);
@@ -190,10 +190,10 @@ UInt_t AliRPCData::GetTotalEntries(){
     return totalEntries;
 };
 
-Bool_t AliRPCData::IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber,  Int_t &index){
+Bool_t AliRPCData::IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber,  Int_t &index) const {
     index = 0;
 
-    for(std::vector<AliRPCRunStatistics*>::iterator it = fRunStatistics[plane][side][RPC].begin(); it != fRunStatistics[plane][side][RPC].end(); ++it){
+    for(auto it = fRunStatistics[plane][side][RPC].begin(); it != fRunStatistics[plane][side][RPC].end(); ++it){
         index++;
         if((*it)->GetRunNumber()==runNumber){
             return kTRUE;

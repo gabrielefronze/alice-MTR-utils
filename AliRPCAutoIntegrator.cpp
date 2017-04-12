@@ -122,12 +122,12 @@ fUpdateAMANDA(updateAMANDA){
     }
 
     TFile *globalDataContainer = TFile::Open(Form("%s",OutputFileName.Data()));
-    (globalDataContainer) ? fUpdateRPCDataObject=kTRUE : fUpdateRPCDataObject=kFALSE ;
+    (globalDataContainer) ? fExistsRPCDataObject=kTRUE : fExistsRPCDataObject=kFALSE ;
     globalDataContainer->Close();
     globalDataContainer = 0x0;
 
     //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-    if(!fUpdateRPCDataObject){
+    if(!fExistsRPCDataObject){
         fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
         fGlobalDataContainer->cd();
         fGlobalDataContainer->mkdir("TLists");
@@ -327,7 +327,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TList *listBuffer;
 
-    if(!fUpdateRPCDataObject) {
+    if(!fExistsRPCDataObject) {
         fGlobalDataContainer->mkdir("iTot_Graphs");
         fGlobalDataContainer->mkdir("iDark_Graphs");
         fGlobalDataContainer->mkdir("Voltage_Graphs");
@@ -1742,7 +1742,7 @@ void AliRPCAutoIntegrator::PlotGenerator(TString filename){
  */
 void AliRPCAutoIntegrator::WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
-  //printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
+  printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;
 }
 

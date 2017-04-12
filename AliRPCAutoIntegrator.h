@@ -38,6 +38,7 @@
 #include "TList.h"
 #include "TObjArray.h"
 #include "TClonesArray.h"
+#include "TObjString.h"
 #include "TH1F.h"
 
 typedef struct {

@@ -310,7 +310,7 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 fGlobalDataContainer->cd("TLists");
                 mergedData[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
-                WhichRPC(iRPC, iSide, iPlane);
+                PrintWhichRPC(iRPC, iSide, iPlane);
 
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
@@ -377,7 +377,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 fGlobalDataContainer->cd("Voltage_Graphs");
                 PlotsVoltage[iSide][iPlane][iRPC]->Write(Form("Voltage_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
-                WhichRPC(iRPC,iSide,iPlane);
+                PrintWhichRPC(iRPC, iSide, iPlane);
 
                 listBuffer=0x0;
             }
@@ -479,7 +479,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                 fGlobalDataContainer->cd("iNet_Graphs");
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-                WhichRPC(iRPC,iSide,iPlane);
+                PrintWhichRPC(iRPC, iSide, iPlane);
             }
         }
     }
@@ -561,7 +561,7 @@ void AliRPCAutoIntegrator::Integrator(){
                 fGlobalDataContainer->cd("integrated_charge_Graphs");
                 AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite|TObject::kSingleKey);
 
-                WhichRPC(iRPC, iSide, iPlane);
+                PrintWhichRPC(iRPC, iSide, iPlane);
 
             }
         }
@@ -593,7 +593,7 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
 
     TList *bufferOutputList;
 
-	TList *data[kNSides][kNPlanes][kNRPC];
+    TList *data[kNSides][kNPlanes][kNRPC];
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
@@ -898,7 +898,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                     Int_t dummyIndex = 0;
                     if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
                         printf("Run %d already there for ", runIterator->fRunNumber);
-                        WhichRPC(RPC - 1, side, plane);
+                        PrintWhichRPC(RPC - 1, side, plane);
                         continue;
                     }
 
@@ -1495,7 +1495,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 fAMANDADataContainer->cd();
                 DataWithRunNumber[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
-                WhichRPC(iRPC, iSide, iPlane);
+                PrintWhichRPC(iRPC, iSide, iPlane);
 
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
@@ -1524,16 +1524,16 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 }
 
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, UInt_t RunNumber, Int_t whichValue){
-    std::vector<UInt_t> RunDummyList;
-    RunDummyList.push_back(RunNumber);
+    std::vector<AliOCDBRun*> RunDummyList;
+    RunDummyList.push_back(new AliOCDBRun(RunNumber,0));
     PlotSomethingVersusTime(Graph, funky, list, RunDummyList, whichValue);
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list,std::vector<AliOCDBRun> RunNumberList, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
-    for(AliOCDBRun iter :RunNumberList){
-        UInt_t temp=((UInt_t)iter.fRunNumber);
+    for(AliOCDBRun* iter :RunNumberList){
+        UInt_t temp=((UInt_t)iter->GetRunNumber());
         RunDummyList.push_back(temp);
     }
     PlotSomethingVersusTime(Graph, funky, list, RunDummyList, whichValue);
@@ -1559,9 +1559,21 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
     Graph->SetMarkerStyle(24);
-    for(AliOCDBRun iter:fOCDBRunListToAdd){
-        Double_t x=(fAliRPCDataObject->GetMeanTimeStampStart(iter.fRunNumber));
-        if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter.GetRunNumber(), kFALSE));
+    vector<UInt_t> OCDBRunListComplete;
+    for(Int_t iSide=0;iSide<kNSides;iSide++) {
+        for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
+            for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
+                vector<AliOCDBRun*> bufferList=fAliRPCDataObject->GetRunList(iPlane,iSide,iRPC);
+                for(auto iter=bufferList.begin(); iter!=bufferList.end(); iter++){
+                if(!IsRunInList(OCDBRunListComplete, (*iter)->GetRunNumber())) OCDBRunListComplete.push_back((*iter)->GetRunNumber());
+                }
+            }
+        }
+    }
+
+    for(UInt_t iter:OCDBRunListComplete){
+        Double_t x=(fAliRPCDataObject->GetMeanTimeStampStart(iter));
+        if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, kFALSE));
     }
 }
 
@@ -1631,56 +1643,26 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
     Graph->GetYaxis()->SetTitle(y);
 };
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue, Bool_t normalizedToArea){
-    TList *listBuffer;
-
-    for (Int_t iSide = 0; iSide < kNSides; iSide++) {
-        for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
-            for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
-
-                //get Object from merged data
-                fGlobalDataContainer->GetObject(
-                        Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d", (fSides[iSide]).Data(),
-                             fPlanes[iPlane], iRPC + 1),
-                        listBuffer);
-
-                if (!listBuffer) {
-                    printf("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n", (fSides[iSide]).Data(),
-                           fPlanes[iPlane],
-                           iRPC + 1);
-                    continue;
-                }
-
-
-                TIter iterValue(listBuffer);
-                while (iterValue()) {
-                    if(((AliRPCValueDCS *) *iterValue)->GetRunNumber()==RunNumber){
-                        if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 &&
-                            (((AliRPCValueDCS *) *iterValue)->*funky)()) {
-                            Graph->Fill(
-                                    (((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue))/(normalizedToArea?fRPCAreas[iRPC][iPlane]:1.));
-                        }
-                    }
-                    //when run is finished exit the cycle
-                    if (((AliRPCValueDCS *) *iterValue)->GetRunNumber() > RunNumber) break;
-                }
-
-                listBuffer = 0x0;
-                WhichRPC(iRPC, iSide, iPlane);
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t) const, vector<AliOCDBRun*> RunNumberList){
+    for(AliOCDBRun* iter:RunNumberList){
+            Double_t value=(fAliRPCDataObject->*funky)((*iter).GetRunNumber(),kFALSE);
+                Graph->Fill(value);
             }
+}
+
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, vector <AliOCDBRun*> RunNumberList){
+        if(label.Contains("current")) {
+            if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanTotalCurrent,RunNumberList);
+            if(label.Contains("dark")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanDarkCurrent,RunNumberList);
+            if(label.Contains("net")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanNetCurrent,RunNumberList);
+        }else if(label.Contains("voltage")){
+            CreateDistributionSomething(Graph,&AliRPCData::GetMeanHV,RunNumberList);
+        }else if(label.Contains("rate")&&label.Contains("bending")){
+            if(label.Contains("not")) CreateDistributionSomething(Graph,&AliRPCData::GetMeanRateBending,RunNumberList);
+            else CreateDistributionSomething(Graph,&AliRPCData::GetMeanRateNotBending,RunNumberList);
+        }else if(label.Contains("integrated")||label.Contains("charge")){
+            CreateDistributionSomething(Graph,&AliRPCData::GetMeanIntegratedCharge,RunNumberList);
         }
-    }
-}
-
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<AliOCDBRun> RunNumberList, Int_t whichValue, Bool_t normalizedToArea){
-    for(AliOCDBRun iter: RunNumberList){
-        AliRPCAutoIntegrator::CreateDistributionSomething(Graph, funky, iter.fRunNumber, whichValue, normalizedToArea);
-    }
-}
-
-void AliRPCAutoIntegrator::CreateDarkCurrentDistribution(TH1 *Graph, UInt_t RunNumber) {
-    AliRPCAutoIntegrator::CreateDistributionSomething(Graph, &AliRPCValueDCS::IsCurrent, RunNumber, AliRPCValueCurrent::kIDark, kTRUE);
-    return;
 }
 
 void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, UInt_t RunNumber){
@@ -1698,10 +1680,20 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
     return;
 }
 
-void AliRPCAutoIntegrator::PlotGenerator(TString filename){
+void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
+    /*
+     * format for file is
+     * [plot/distribution], [darcurrent, netcurrent, voltage, ratenotbending....], [time, run, ...], TLists/OCDB_AMANDA_MTR_INSIDE...
+     *
+     * example
+     * plot, darkcurrent, ratenotbending, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3
+     */
         ifstream file;
         file.open(filename.Data(), ios::in);
-        if(!file.is_open()) cout << "File " << filename << " not found." << endl;
+        if(!file.is_open()) {
+            cout << "File " << filename << " not found." << endl;
+            return;
+        }
 
         string line;
         TObject *graphBuffer;
@@ -1724,14 +1716,19 @@ void AliRPCAutoIntegrator::PlotGenerator(TString filename){
             TString xaxsis=((TObjString*)(commands->At(2)))->GetString();
             TString listName=((TObjString*)(commands->At(3)))->GetString();
             TList *listPtr=0x0;
-            cout<<"what?\t"<<plotType.Data()<<endl;
+            cout<<"Plot type:\t"<<plotType.Data()<<endl;
             cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<listName.Data()<<endl;
             fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
             if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
             PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,listPtr);
             }else if(plotType.Contains("distribution")){
-                //ToDo
+                vector<AliOCDBRun*> RunList;
+                //create distribution from last added run
+                for(AliOCDBRun iter: fOCDBRunListToAdd){
+                    RunList.push_back(&iter);
+                }
+                CreateDistributionSomething((TH1*)graphBuffer,yaxsis,RunList);
             }
             fGlobalDataContainer->cd("PlotsFromFile");
             graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
@@ -1744,7 +1741,7 @@ void AliRPCAutoIntegrator::PlotGenerator(TString filename){
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC
  */
-void AliRPCAutoIntegrator::WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
+void AliRPCAutoIntegrator::PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
   printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;

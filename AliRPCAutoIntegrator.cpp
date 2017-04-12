@@ -121,7 +121,7 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
-    TFile *globalDataContainer = TFile::Open(Form("%s",OutputFileName.Data()));
+    TFile *globalDataContainer = TFile::Open(Form("%s",OutputFileName.Data()),"UPDATE");
 
     //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
     if(!globalDataContainer){
@@ -427,21 +427,21 @@ void AliRPCAutoIntegrator::Subtractor(){
                     //skip if is not current
                     if ( !((AliRPCValueDCS*)*iterValueGlobal)->IsCurrent() ) continue;
 
-                    // if the read value is an AMANDA reading, then the dark
+                    // if the read value is an AMANDA or OCDB with run reading, then the dark
                     // current subtraction must take place. To do that via
                     // interpolation, having stored the previous dark current
                     // reading in darkCurrentValue, one should look for the
                     // following dark current value and the interpolate.
                     if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForITot() ){
 
-                        // Looking for the following not AMANDA (aka OCDB)
+                        // Looking for the following not IsOkForITot (aka dark OCDB)
                         // dark current reading.
                         TIter iterValueGlobalNext = iterValueGlobal;
                         while ( iterValueGlobalNext() ){
                             if (!((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot()) break;
                         }
 
-                        // whenever a good OCDB reading is found then proceed
+                        // whenever a good IsOkForITot reading is found then proceed
                         // with linear interpolation.
                         if (*iterValueGlobalNext) {
                             Double_t iDarkt0 = darkCurrentValue;
@@ -456,9 +456,9 @@ void AliRPCAutoIntegrator::Subtractor(){
                             if (darkCurrent<0.) darkCurrent=0.;
 
                             // the subtraction is not direct: the dark current
-                            // value is set for each AMANDA reading.
+                            // value is set for each reading.
                             // The subtraction will take place at the moment of
-                            // asking the AMANDA reading the iNET value
+                            // asking the reading the iNET value
                             // (since it returns iTOT-iDARK).
                             ((AliRPCValueCurrent*)*iterValueGlobal)->SetIDark(darkCurrent);
                             //cout<<((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()<<endl;
@@ -466,7 +466,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()/fRPCAreas[iRPC][iPlane]);
                         }
                     }
-                        // if a new dark current reding is found (non AMANDA = OCDB)
+                        // if a new dark current reding is found
                         // then the dark current value is updated (as well as the
                         // timestamp)
                     else{
@@ -1538,23 +1538,82 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 }
 
 
-void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(Int_t)const){
+void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const){
     Int_t counter=0;
+    Graph->SetLineColor(0);
+    Graph->SetMarkerSize(1.5);
+    Graph->SetMarkerStyle(24);
     for(AliOCDBRun iter:fOCDBRunListToAdd){
-        Graph->SetPoint(counter++,(fAliRPCDataObject->GetMeanTimeStampStart(iter.fRunNumber)),(fAliRPCDataObject->*funky)(iter.fRunNumber));
+        Double_t x=(fAliRPCDataObject->GetMeanTimeStampStart(iter.fRunNumber));
+        if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter.GetRunNumber(), kFALSE));
     }
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph[kNSides][kNPlanes][kNRPC], Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t)const){
+void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const){
     Int_t counter=0;
+    Graph->SetLineColor(0);
+    Graph->SetMarkerSize(1.5);
+    Graph->SetMarkerStyle(24);
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
-                Graph[iSide][iPlane][iRPC]->SetPoint(counter++,(fAliRPCDataObject->*funkyX)(iSide,iPlane,iRPC),(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC));
+                Double_t x=(fAliRPCDataObject->*funkyX)(iSide,iPlane,iRPC,kFALSE);
+                if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC,kFALSE));
             }
         }
     }
 }
+
+void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x, TList *list){
+    if(x.Contains("time")){
+        if(!list) {
+            cout<<"List not found\n";
+            return;
+        }
+        if(y.Contains("voltage")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
+        if(y.Contains("current")){
+            if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kIDark);
+            else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kITot);
+        }
+    }else if(x.Contains("run")){
+        if(y.Contains("current")) {
+            if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent);
+            if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent);
+            if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent);
+        }else if(y.Contains("voltage")){
+            PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanHV);
+        }else if(y.Contains("rate")&&y.Contains("bending")){
+            if(y.Contains("not")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateNotBending);
+            else PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateBending);
+        }else if(y.Contains("integrated")||y.Contains("charge")){
+            PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanIntegratedCharge);
+        }
+    }else{
+        Double_t (AliRPCData::*Xptr)(Int_t, Int_t, Int_t, Bool_t)const;
+        Double_t (AliRPCData::*Yptr)(Int_t, Int_t, Int_t, Bool_t)const;
+        if(y.Contains("current")) {
+            if(y.Contains("total")) Yptr =&AliRPCData::GetAverageTotalCurrent;
+            if(y.Contains("net")) Yptr =&AliRPCData::GetAverageNetCurrent;
+        }else if(y.Contains("voltage")){
+            Yptr =&AliRPCData::GetAverageHV;
+        }else if(y.Contains("rate")&&y.Contains("bending")){
+            if(y.Contains("not")) Yptr =&AliRPCData::GetAverageRateNotBending;
+            else Yptr =&AliRPCData::GetAverageRateBending;
+        }else return;
+        if(x.Contains("current")) {
+            if(x.Contains("total")) Xptr =&AliRPCData::GetAverageTotalCurrent;
+            if(x.Contains("net")) Xptr =&AliRPCData::GetAverageNetCurrent;
+        }else if(x.Contains("voltage")){
+            Xptr =&AliRPCData::GetAverageHV;
+        }else if(x.Contains("rate") && x.Contains("bending")){
+            if(x.Contains("not")) Xptr =&AliRPCData::GetAverageRateNotBending;
+            else Xptr =&AliRPCData::GetAverageRateBending;
+        }else return;
+        PlotSomethingVersusRPC(Graph,Xptr,Yptr);
+    }
+    Graph->GetXaxis()->SetTitle(x);
+    Graph->GetYaxis()->SetTitle(y);
+};
 
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue, Bool_t normalizedToArea){
     TList *listBuffer;
@@ -1623,6 +1682,48 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
     return;
 }
 
+void AliRPCAutoIntegrator::PlotGenerator(TString filename){
+        ifstream file;
+        file.open(filename.Data(), ios::in);
+        if(!file.is_open()) cout << "File " << filename << " not found." << endl;
+
+        string line;
+        TObject *graphBuffer;
+
+        //create folder
+        fGlobalDataContainer->cd();
+        TObject *IsDirThere;
+        fGlobalDataContainer->GetObject("PlotsFromFile",IsDirThere);
+        if(!IsDirThere) fGlobalDataContainer->mkdir("PlotsFromFile");
+
+        while(getline(file,line)){
+            TString Tline(line);
+            TString token;
+            cout<<"read new line"<<endl;
+            Ssiz_t position = 0;
+            TObjArray *commands;
+            commands=Tline.Tokenize(", ");
+            TString plotType=((TObjString*)(commands->At(0)))->GetString();
+            TString yaxsis=((TObjString*)(commands->At(1)))->GetString();
+            TString xaxsis=((TObjString*)(commands->At(2)))->GetString();
+            TString listName=((TObjString*)(commands->At(3)))->GetString();
+            TList *listPtr=0x0;
+            cout<<"what?\t"<<plotType.Data()<<endl;
+            cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<listName.Data()<<endl;
+            fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
+            if(plotType.Contains("plot")){
+            graphBuffer=new TGraph();
+            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,listPtr);
+            }else if(plotType.Contains("distribution")){
+                //ToDo
+            }
+            fGlobalDataContainer->cd("PlotsFromFile");
+            graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
+            graphBuffer=0x0;
+        }
+
+        file.close();
+}
 
 /*
  * print which RPC corresponds to iSide, iPlane, iRPC

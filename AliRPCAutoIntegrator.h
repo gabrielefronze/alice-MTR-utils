@@ -127,6 +127,10 @@ public:
 
 
 private:
+    inline Bool_t checkFileExistance(TString fileName) {
+        ifstream f(fileName.Data());
+        return f.good();
+    }
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, UInt_t RunNumber, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, std::vector<AliOCDBRun> RunNumberList, Int_t whichValue=0, Bool_t normalizedToArea=kTRUE);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);

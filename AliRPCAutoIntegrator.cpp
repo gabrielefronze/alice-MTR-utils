@@ -121,19 +121,18 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     }
 
-    TFile *globalDataContainer = TFile::Open(Form("%s",OutputFileName.Data()));
-    (globalDataContainer) ? fExistsRPCDataObject=kTRUE : fExistsRPCDataObject=kFALSE ;
-    globalDataContainer->Close();
-    globalDataContainer = 0x0;
+    fExistsRPCDataObject = checkFileExistance(OutputFileName);
 
     //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
     if(!fExistsRPCDataObject){
+        cout<<"File doesn't exist"<<endl;
         fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
         fGlobalDataContainer->cd();
         fGlobalDataContainer->mkdir("TLists");
         fGlobalDataContainer->mkdir("iNet_Graphs");
         fGlobalDataContainer->mkdir("integrated_charge_Graphs");
     } else {
+        cout<<"File exists"<<endl;
         fGlobalDataContainer = new TFile(Form("%s",OutputFileName.Data()),"UPDATE");;
     }
 

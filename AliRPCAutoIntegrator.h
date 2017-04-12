@@ -73,9 +73,13 @@ private:
 
     Bool_t fUpdateOCDB;
     Bool_t fUpdateAMANDA;
+    Bool_t fExistsRPCDataObject;
 
+
+public:
     AliRPCData *fAliRPCDataObject;
 
+private:
     static const Int_t kNSides=2;
     static const Int_t kNPlanes=4;
     static const Int_t kNRPC=9;
@@ -145,7 +149,7 @@ private:
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 
-ClassDef(AliRPCAutoIntegrator,6);
+ClassDef(AliRPCAutoIntegrator,7);
 };
 
 #endif

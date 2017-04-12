@@ -41,6 +41,7 @@ public:
 	Double_t GetAverageHV(Int_t plane, Int_t side, Int_t RPC);
 	Double_t GetAverageRateBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
 	Double_t GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE);
+    UInt_t GetTotalEntries();
 
     Bool_t IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber, Int_t &index);
 

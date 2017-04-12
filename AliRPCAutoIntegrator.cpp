@@ -122,19 +122,20 @@ fUpdateAMANDA(updateAMANDA){
     }
 
     TFile *globalDataContainer = TFile::Open(Form("%s",OutputFileName.Data()));
+    (globalDataContainer) ? fUpdateRPCDataObject=kTRUE : fUpdateRPCDataObject=kFALSE ;
+    globalDataContainer->Close();
+    globalDataContainer = 0x0;
 
     //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-    if(!globalDataContainer){
-        fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"UPDATE");
+    if(!fUpdateRPCDataObject){
+        fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
         fGlobalDataContainer->cd();
         fGlobalDataContainer->mkdir("TLists");
         fGlobalDataContainer->mkdir("iNet_Graphs");
         fGlobalDataContainer->mkdir("integrated_charge_Graphs");
     } else {
-        fGlobalDataContainer = globalDataContainer;
+        fGlobalDataContainer = new TFile(Form("%s",OutputFileName.Data()),"UPDATE");;
     }
-
-    globalDataContainer = 0x0;
 
     //check if AliRPCData already exists
     AliRPCData *AliRPCDataBuffer;
@@ -147,7 +148,7 @@ fUpdateAMANDA(updateAMANDA){
         cout << "Creating new AliRPCData" << endl << flush;
     } else {
         fAliRPCDataObject = AliRPCDataBuffer;
-        cout << "Reading old AliRPCData" << endl << flush;
+        cout << "Reading old AliRPCData with " << fAliRPCDataObject->GetTotalEntries() << " entries"<< endl << flush;
     }
 
     // Calling this method to preload the runs of which the OCDB data has to be
@@ -326,9 +327,11 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TList *listBuffer;
 
-    fGlobalDataContainer->mkdir("iTot_Graphs");
-    fGlobalDataContainer->mkdir("iDark_Graphs");
-    fGlobalDataContainer->mkdir("Voltage_Graphs");
+    if(!fUpdateRPCDataObject) {
+        fGlobalDataContainer->mkdir("iTot_Graphs");
+        fGlobalDataContainer->mkdir("iDark_Graphs");
+        fGlobalDataContainer->mkdir("Voltage_Graphs");
+    }
 
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
@@ -1142,13 +1145,15 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
         }
     }
 
+    cout<<"Init done"<<endl;
+
     TList *buffer=new TList();
     for (Int_t side=0; side<kNSides; side++) {
-        cout<<fSides[side].Data()<<endl;
+        //cout<<fSides[side].Data()<<endl;
         for (Int_t plane=0; plane<kNPlanes; plane++) {
-            cout<<"\t"<<fPlanes[plane]<<endl;
+            //cout<<"\t"<<fPlanes[plane]<<endl;
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-                cout<<"\t\t"<<RPC<<endl;
+                //cout<<"\t\t"<<RPC<<endl;
                 //sortedListData[side][plane][RPC-1]=new TList();
                 fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),buffer);
                 if(!buffer){
@@ -1160,7 +1165,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 buffer=0x0;
 
                 for(Int_t cathode=0;cathode<kNCathodes;cathode++){
-                    cout<<"\t\t\t"<<fCathodes[cathode].Data()<<endl;
+                    //cout<<"\t\t\t"<<fCathodes[cathode].Data()<<endl;
                     //sortedListScalers[side][plane][RPC-1][cathode]=new TList();
                     fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[cathode]).Data(),fPlanes[plane],RPC),buffer);
                     if(!buffer){
@@ -1176,11 +1181,11 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
     }
 
     for(Int_t cathode=0;cathode<kNCathodes;cathode++){
-        cout<<fCathodes[cathode].Data()<<endl;
+        //cout<<fCathodes[cathode].Data()<<endl;
         for(Int_t plane=0;plane<kNPlanes;plane++){
-            cout<<"\t"<<fPlanes[plane]<<endl;
+            //cout<<"\t"<<fPlanes[plane]<<endl;
             for(Int_t local=0;local<kNLocalBoards;local++){
-                cout<<"\t\t"<<local+1<<endl;
+                //cout<<"\t\t"<<local+1<<endl;
                 //scalersLocalBoardList[cathode][plane][local]=new TSortedList();
                 //printf("Scalers_MTR_%s_MT%d_LB%d\n",(cathodes[cathode]).Data(),planes[plane],local+1);
                 fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),buffer);
@@ -1195,6 +1200,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
         }
     }
 
+    cout<<"Data reading done"<<endl;
 
     for (Int_t iSide=0; iSide<kNSides; iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
@@ -1214,6 +1220,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 UInt_t nHV = 0;
                 Double_t RPCTotalRatePerArea[2] = {0., 0.};
                 ULong64_t totalScalerCounts[2] = {0, 0};
+
+                printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
 
                 TIter iterValueDCS(sortedListData[iSide][iPlane][iRPC - 1]);
                 AliRPCValueDCS *valueDCS = (AliRPCValueDCS *) iterValueDCS();
@@ -1238,6 +1246,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     }
 
                     if (actualRunNumber == previousRunNumber) {
+                        cout<<"========"<<endl;
                         if (valueDCS->IsVoltage()){
                             //cast a tensione
                             AliRPCValueVoltage *voltageBuffer=(AliRPCValueVoltage*)valueDCS;
@@ -1253,8 +1262,11 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             nDarkCurrent++;
                             timeStampStop=valueDCS->GetTimeStamp();
                         } else continue;
-                    } else if (actualRunNumber < previousRunNumber) continue;
-                    else {
+                    } else if (actualRunNumber < previousRunNumber) {
+                        cout<<"<<<<<<<"<<endl;
+                        continue;
+                    } else {
+                        cout<<">>>>>>>"<<endl;
                         Double_t ratesTimesLBArea[2] = {0., 0.};
                         Double_t LBRateSum[2] = {0., 0.};
                         Double_t notOverflowLBTotalArea[2] = {0., 0.};
@@ -1334,7 +1346,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         if(nDarkCurrent!=0)meanDarkCurrent=meanDarkCurrent/(Double_t)nDarkCurrent;
                         if(nTotalCurrent!=0)meanTotalCurrent=meanTotalCurrent/(Double_t)nTotalCurrent;
                         if(nHV!=0)meanHV=meanHV/(Double_t)nHV;
-                        //cout<<"setting "<<previousRunNumber<<" complete"<<endl;
+                        cout<<"setting "<<previousRunNumber<<" complete"<<endl;
                         //cout<<totalScalerCounts[0]<<"\t"<<totalScalerCounts[1]<<endl;
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
@@ -1362,7 +1374,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         ratesTimesLBArea[1]=0;
                     }
                 }while((valueDCS=(AliRPCValueDCS*)iterValueDCS()));
-
+                cout<<"DONE"<<endl;
             }
         }
     }
@@ -1370,7 +1382,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
     //save AliRPCData on File
     fGlobalDataContainer->cd();
     fAliRPCDataObject->Write("AliRPCDataObj", TObject::kSingleKey | TObject::kOverwrite);
-    fGlobalDataContainer->Flush();
+    fGlobalDataContainer->Write();
 
 };
 
@@ -1629,7 +1641,7 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
  */
 void AliRPCAutoIntegrator::WhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
-  printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
+  //printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;
 }
 

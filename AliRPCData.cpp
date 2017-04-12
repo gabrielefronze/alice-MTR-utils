@@ -68,7 +68,7 @@ Bool_t AliRPCData::AddRunStatistics(Int_t plane, Int_t side, Int_t RPC, AliRPCRu
     if(IsThereThisRun(plane,side,RPC,stats->GetRunNumber(),index)) return kFALSE;
     (fRunStatistics[plane][side][RPC]).push_back(stats);
     (fRunNumbers[plane][side][RPC]).push_back(new AliOCDBRun(stats->GetRunNumber(),stats->GetYear()));
-    //printf("added run:%u\n",stats->GetRunNumber());
+    printf("added run:%u\n",stats->GetRunNumber());
     return kTRUE;
 };
 
@@ -178,7 +178,17 @@ Double_t AliRPCData::GetAverageRateNotBending(Int_t plane, Int_t side, Int_t RPC
   return AliRPCData::GetAverageSomething(plane,side,RPC,normalizeToArea,&AliRPCRunStatistics::GetMeanRateNotBending);
 };
 
-
+UInt_t AliRPCData::GetTotalEntries(){
+    UInt_t totalEntries = 0;
+    for(Int_t iPlane=0;iPlane<fNPlanes;iPlane++){
+        for(Int_t iSide=0;iSide<fNSides;iSide++){
+            for(Int_t iRPC=0;iRPC<fNRPC;iRPC++){
+                totalEntries+=(fRunNumbers[iPlane][iSide][iRPC]).size();
+            }
+        }
+    }
+    return totalEntries;
+};
 
 Bool_t AliRPCData::IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber,  Int_t &index){
     index = 0;

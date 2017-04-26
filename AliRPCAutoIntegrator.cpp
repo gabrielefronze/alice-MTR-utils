@@ -277,30 +277,7 @@ void AliRPCAutoIntegrator::Aggregator(){
 
 
                 TIter iterValueOCDB(listBufferOCDB);
-                // UInt_t previousRun = 0;
-                // Int_t measuresCounter = 0;
-                // Double_t measuresCumulus = 0.;
-                // while(iterValueOCDB()){
-                //     //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kFALSE);
-                //     if (previousRun == 0) previousRun = ((AliRPCValueCurrent*)*iterValueOCDB)->GetRunNumber();
-                //
-                //     if (previousRun == ((AliRPCValueCurrent*)*iterValueOCDB)->GetRunNumber()) {
-                //         measuresCounter++;
-                //         measuresCumulus+=((AliRPCValueCurrent*)*iterValueOCDB)->GetITot();
-                //     } else {
-                //         mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
-                //         if ( ((AliRPCValueCurrent*)*iterValueOCDB)->IsCurrent() ){
-                //         if (((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueOCDB)->GetITot()>0.)
-                //             OCDBPlotsIDark[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueOCDB)->GetTimeStamp(), measuresCumulus/(Double_t)measuresCounter);
-                //         }
-                //         measuresCounter = 0;
-                //         measuresCumulus = 0.;
-                //         previousRun = ((AliRPCValueCurrent*)*iterValueOCDB)->GetRunNumber();
-                //     }
-                // }
-
                 while(iterValueOCDB()){
-                    //((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kFALSE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
                 }
 

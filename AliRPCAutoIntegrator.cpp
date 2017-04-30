@@ -506,6 +506,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                         // negative dark current is non physical...
                         if (darkCurrent < 0.) darkCurrent = 0;
                         ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark(darkCurrent);
+                        if ( ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() == 0.)  ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark((iDarkt1 + iDarkt0)/2.);
 
                         //cout<<" dark current set "<< ((AliRPCValueCurrent *) *iterValueGlobal)->GetIDark() << endl;
 

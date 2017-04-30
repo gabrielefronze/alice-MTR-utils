@@ -399,8 +399,15 @@ void AliRPCAutoIntegrator::Subtractor(){
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
                 TIter iterValueGlobal(buffer);
-                TIter iterValueGlobalNext(buffer);
+                Double_t darkCurrentValue = 0.;
+                Double_t startTimeStamp = 0.;
                 Int_t counter=0;
+
+                Double_t iDarkt0 = 0.;
+                Double_t t0 = 0.;
+                Double_t iDarkt1 = 0.;
+                Double_t t1 = 0.;
+
                 while(iterValueGlobal()){
 
                     //skip if is not current
@@ -411,64 +418,6 @@ void AliRPCAutoIntegrator::Subtractor(){
                     // interpolation, having stored the previous dark current
                     // reading in darkCurrentValue, one should look for the
                     // following dark current value and the interpolate.
-                    Double_t iDarkt0 = 0.;
-                    Double_t t0 = 0.;
-                    Double_t iDarkt1 = 0.;
-                    Double_t t1 = 0.;
-
-                    // If the current value is flagged as a dark current we want to get the following dark current
-                    // and load the current values and timestamps. These values will be used later.
-                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ) {
-
-                        iDarkt0 = 0.;
-                        t0 = 0.;
-                        iDarkt1 = 0.;
-                        t1 = 0.;
-
-                        iterValueGlobalNext = iterValueGlobal;
-
-                        iDarkt0 = ((AliRPCValueCurrent*)*iterValueGlobal)->GetIDark();
-                        t0 = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
-
-                        while ( iterValueGlobalNext() ){
-                            if (!((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForIDark()) break;
-                        }
-
-                        iDarkt1 = ((AliRPCValueCurrent*)*iterValueGlobalNext)->GetIDark();
-                        t1 = ((AliRPCValueCurrent*)*iterValueGlobalNext)->GetTimeStamp();
-
-                    }
-
-                    // If the current value is relative to a NON dark run we want to set the dark current for that
-                    // current object to the interpolated value of the dark currents taken from the dark runs.
-                    else if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForITot() ) {
-
-                        // current timestamp is neede for the linear interpolation of the dark current
-                        Double_t tnow = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
-
-                        if (tnow>t0 && tnow<t1) {
-
-                            Double_t darkCurrent = tnow * (iDarkt1 - iDarkt0) / (t1 - t0) + iDarkt0;
-
-                            // negative dark current is non physical...
-                            if (darkCurrent < 0.) darkCurrent = 0.;
-                            ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark(darkCurrent);
-
-                            // the subtraction is not direct: the dark current
-                            // value is set for each reading.
-                            // The subtraction will take place at the moment of
-                            // asking the reading the iNET value
-                            // (since it returns iTOT-iDARK).
-                            if (((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp() > 8000 &&
-                                ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() > 0.)
-                                AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++,
-                                                                               ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp(),
-                                                                               ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() /
-                                                                               fRPCAreas[iRPC][iPlane]);
-                        } else {
-                            cout<<"SKIPPING: wrong timestamps"<<endl;
-                        }
-                    }
 
 //                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForITot() ){
 //
@@ -511,7 +460,69 @@ void AliRPCAutoIntegrator::Subtractor(){
 //                        darkCurrentValue = ((AliRPCValueCurrent*)*iterValueGlobal)->GetITot();
 //                        startTimeStamp = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
 //                    }
+
+                    // If the current value is flagged as a dark current we want to get the following dark current
+                    // and load the current values and timestamps. These values will be used later.
+                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ) {
+
+                        iDarkt0 = 0.;
+                        t0 = 0.;
+                        iDarkt1 = 0.;
+                        t1 = 0.;
+
+
+                        if (((AliRPCValueCurrent*)*iterValueGlobal)) {
+                            iDarkt0 = ((AliRPCValueCurrent *) *iterValueGlobal)->GetITot();
+                            t0 = ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp();
+
+                            TIter iterValueGlobalNext = iterValueGlobal;
+                            //iterValueGlobalNext();
+
+                            while (iterValueGlobalNext()) {
+                                if (((AliRPCValueDCS *) *iterValueGlobalNext)->IsOkForIDark()) break;
+                            }
+
+                            if (((AliRPCValueCurrent*)*iterValueGlobalNext)) {
+                                iDarkt1 = ((AliRPCValueCurrent *) *iterValueGlobalNext)->GetITot();
+                                t1 = ((AliRPCValueCurrent *) *iterValueGlobalNext)->GetTimeStamp();
+
+                                //printf("%f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
+                            }
+                        }
+                    }
+
+                    // If the current value is relative to a NON dark run we want to set the dark current for that
+                    // current object to the interpolated value of the dark currents taken from the dark runs.
+                    else {
+
+                        //printf("IDark %f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
+
+                        // current timestamp is neede for the linear interpolation of the dark current
+                        Double_t tnow = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
+                        Double_t darkCurrent = tnow * (iDarkt1 - iDarkt0) / (t1 - t0) + iDarkt0;
+
+                        //printf("tnow %f \n", tnow);
+
+                        // negative dark current is non physical...
+                        if (darkCurrent < 0.) darkCurrent = 0;
+                        ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark(darkCurrent);
+
+                        //cout<<" dark current set "<< ((AliRPCValueCurrent *) *iterValueGlobal)->GetIDark() << endl;
+
+                        // the subtraction is not direct: the dark current
+                        // value is set for each reading.
+                        // The subtraction will take place at the moment of
+                        // asking the reading the iNET value
+                        // (since it returns iTOT-iDARK).
+                        if (((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp() > 8000 &&
+                            ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() >= 0.)
+                            AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++,
+                                                                           ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp(),
+                                                                           ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() /
+                                                                           fRPCAreas[iRPC][iPlane]);
+                    }
                 }
+
                 fGlobalDataContainer->cd("iNet_Graphs");
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 

@@ -464,6 +464,8 @@ void AliRPCAutoIntegrator::Subtractor(){
                                                                                ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp(),
                                                                                ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() /
                                                                                fRPCAreas[iRPC][iPlane]);
+                        } else {
+                            cout<<"SKIPPING: wrong timestamps"<<endl;
                         }
                     }
 

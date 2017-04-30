@@ -425,7 +425,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 //                        // dark current reading.
 //                        TIter iterValueGlobalNext = iterValueGlobal;
 //                        while ( iterValueGlobalNext() ){
-//                            if (!((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForITot()) break;
+//                            if (((AliRPCValueDCS*)*iterValueGlobalNext)->IsOkForIDark()) break;
 //                        }
 //
 //                        // whenever a good IsOkForITot reading is found then proceed
@@ -456,7 +456,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 //                        // if a new dark current reding is found
 //                        // then the dark current value is updated (as well as the
 //                        // timestamp)
-//                    else{
+//                    else if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ){
 //                        darkCurrentValue = ((AliRPCValueCurrent*)*iterValueGlobal)->GetITot();
 //                        startTimeStamp = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
 //                    }

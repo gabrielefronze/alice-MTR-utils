@@ -450,6 +450,11 @@ void AliRPCAutoIntegrator::Subtractor(){
                         if (darkCurrent<0.) darkCurrent=0.;
                         ((AliRPCValueCurrent*)*iterValueGlobal)->SetIDark(darkCurrent);
 
+                        // the subtraction is not direct: the dark current
+                        // value is set for each reading.
+                        // The subtraction will take place at the moment of
+                        // asking the reading the iNET value
+                        // (since it returns iTOT-iDARK).
                         if (((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()>0.)
                                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()/fRPCAreas[iRPC][iPlane]);
                     }

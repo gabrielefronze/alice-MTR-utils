@@ -710,7 +710,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
     AliCDBManager *managerYearCheck = AliCDBManager::Instance();
     for (std::vector<AliOCDBRun>::iterator runIteratorYearChecker = fOCDBRunListToAdd.begin(); runIteratorYearChecker != fOCDBRunListToAdd.end(); ++runIteratorYearChecker) {
-        for (Int_t year = 2016; year>2009; year--){
+        for (Int_t year = 2017; year>2009; year--){
             managerYearCheck->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
             AliCDBStorage *defStorageYear = managerYearCheck->GetDefaultStorage();
             defStorageYear->QueryCDB((*runIteratorYearChecker).fRunNumber);

@@ -444,19 +444,27 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                         // current timestamp is neede for the linear interpolation of the dark current
                         Double_t tnow = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
-                        Double_t darkCurrent = tnow * (iDarkt1-iDarkt0)/(t1-t0) + iDarkt0;
 
-                        // negative dark current is non physical...
-                        if (darkCurrent<0.) darkCurrent=0.;
-                        ((AliRPCValueCurrent*)*iterValueGlobal)->SetIDark(darkCurrent);
+                        if (tnow>t0 && tnow<t1) {
 
-                        // the subtraction is not direct: the dark current
-                        // value is set for each reading.
-                        // The subtraction will take place at the moment of
-                        // asking the reading the iNET value
-                        // (since it returns iTOT-iDARK).
-                        if (((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp()>8000 && ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()>0.)
-                                AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++, ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp(), ((AliRPCValueCurrent*)*iterValueGlobal)->GetINet()/fRPCAreas[iRPC][iPlane]);
+                            Double_t darkCurrent = tnow * (iDarkt1 - iDarkt0) / (t1 - t0) + iDarkt0;
+
+                            // negative dark current is non physical...
+                            if (darkCurrent < 0.) darkCurrent = 0.;
+                            ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark(darkCurrent);
+
+                            // the subtraction is not direct: the dark current
+                            // value is set for each reading.
+                            // The subtraction will take place at the moment of
+                            // asking the reading the iNET value
+                            // (since it returns iTOT-iDARK).
+                            if (((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp() > 8000 &&
+                                ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() > 0.)
+                                AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++,
+                                                                               ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp(),
+                                                                               ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() /
+                                                                               fRPCAreas[iRPC][iPlane]);
+                        }
                     }
 
 //                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForITot() ){

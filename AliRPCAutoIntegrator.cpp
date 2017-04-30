@@ -382,6 +382,7 @@ void AliRPCAutoIntegrator::Subtractor(){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
                 fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
+                buffer->Sort();
 
                 // if any data list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped from the whole following

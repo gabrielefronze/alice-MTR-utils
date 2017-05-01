@@ -1423,6 +1423,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     }
                 }while(valueDCS);
                 //cout<<"DONE"<<endl;
+                
+                PrintWhichRPC(iRPC-1,iSide,iPlane);
             }
         }
     }

@@ -199,10 +199,6 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     Aggregator();
     cout<<"DONE\n"<<endl;
 
-    cout<<"Starting plot generation...\n";
-    GeneratePlots();
-    cout<<"DONE\n"<<endl;
-
     cout<<"Starting data elaboration...\n";
     Subtractor();
     cout<<"DONE\n"<<endl;

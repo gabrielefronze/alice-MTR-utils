@@ -1625,7 +1625,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
 
     for(UInt_t iter:OCDBRunListComplete){
         Double_t x=(fAliRPCDataObject->GetMeanTimeStampStart(iter));
-        if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, kFALSE));
+       if(x>8000) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, kFALSE));
     }
 }
 
@@ -1749,56 +1749,57 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
      * example
      * plot, darkcurrent, ratenotbending, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3
      */
-        ifstream file;
-        file.open(filename.Data(), ios::in);
-        if(!file.is_open()) {
-            cout << "File " << filename << " not found." << endl;
-            return;
-        }
+    ifstream file;
+    file.open(filename.Data(), ios::in);
+    
+    if(!file.is_open()) {
+        cout << "File " << filename << " not found." << endl;
+        return;
+    }
 
-        string line;
-        TObject *graphBuffer=0x0;
+    TFile *PlotFile=new TFile(filename.Append(".root"),"RECREATE");
 
-        //create folder
-        fGlobalDataContainer->cd();
-        TObject *IsDirThere=0x0;
-        fGlobalDataContainer->GetObject("PlotsFromFile",IsDirThere);
-        if(!IsDirThere) fGlobalDataContainer->mkdir("PlotsFromFile");
-
-        while(getline(file,line)){
-            TString Tline(line);
-            TString token;
-            cout<<"read new line"<<endl;
-            Ssiz_t position = 0;
-            TObjArray *commands;
-            commands=Tline.Tokenize(", ");
-            TString plotType=((TObjString*)(commands->At(0)))->GetString();
-            TString yaxsis=((TObjString*)(commands->At(1)))->GetString();
-            TString xaxsis=((TObjString*)(commands->At(2)))->GetString();
-            TString listName=((TObjString*)(commands->At(3)))->GetString();
-            TList *listPtr=0x0;
-            cout<<"Plot type:\t"<<plotType.Data()<<endl;
-            cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<listName.Data()<<endl;
-            fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
-            if(plotType.Contains("plot")){
+    string line;
+    TObject *graphBuffer=0x0;
+    
+    while(getline(file,line)){
+        if(line.empty()) continue;
+        //convert string to TString
+        TString Tline(line);
+        cout<<"read new line"<<endl;
+        //separate string when find ,
+        TObjArray *commands;
+        commands=Tline.Tokenize(", ");
+        TString plotType=((TObjString*)(commands->At(0)))->GetString();
+        TString yaxsis=((TObjString*)(commands->At(1)))->GetString();
+        TString xaxsis=((TObjString*)(commands->At(2)))->GetString();
+        TString listName=((TObjString*)(commands->At(3)))->GetString();
+        
+        cout<<"Plot type:\t"<<plotType.Data()<<endl;
+        cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<listName.Data()<<endl;
+        
+        //Get List useful on vs time plots
+        TList *listPtr=0x0;
+        fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
+        
+        //call correct function plot or distribution
+        if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
             PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,listPtr);
-            }else if(plotType.Contains("distribution")){
-                graphBuffer=new TH1F();
-                vector<AliOCDBRun*> RunList;
-                //create distribution from last added run
-                for(AliOCDBRun iter: fOCDBRunListToAdd){
-                    RunList.push_back(new AliOCDBRun(iter.GetRunNumber(),0));
-                }
-                CreateDistributionSomething((TH1*)graphBuffer,yaxsis,listPtr, RunList);
-            }
-            fGlobalDataContainer->cd("PlotsFromFile");
-            graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
-            graphBuffer=0x0;
-            commands=0x0;
+        }else if(plotType.Contains("distribution")){
+            graphBuffer=new TH1F();
+            vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);
+            CreateDistributionSomething((TH1*)graphBuffer,yaxsis,listPtr, RunList);
         }
-
-        file.close();
+        
+        PlotFile->cd();
+        graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
+        graphBuffer=0x0;
+        commands=0x0;
+    }
+    
+    file.close();
+    PlotFile->Close();
 }
 
 /*

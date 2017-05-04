@@ -298,8 +298,10 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TList *listBuffer;
-
-    if(true) {
+    
+    TObject *IsDirThere;
+    fGlobalDataContainer->GetObject("iTot_Graphs",IsDirThere);
+    if(!IsDirThere) {
         fGlobalDataContainer->mkdir("iTot_Graphs");
         fGlobalDataContainer->mkdir("iDark_Graphs");
         fGlobalDataContainer->mkdir("Voltage_Graphs");

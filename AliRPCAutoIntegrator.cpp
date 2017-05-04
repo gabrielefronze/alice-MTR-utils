@@ -303,6 +303,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
         fGlobalDataContainer->mkdir("iTot_Graphs");
         fGlobalDataContainer->mkdir("iDark_Graphs");
         fGlobalDataContainer->mkdir("Voltage_Graphs");
+        cout<<"directories created"<<endl;
     }
 
 

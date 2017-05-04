@@ -299,7 +299,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TList *listBuffer;
 
-    if(!fExistsRPCDataObject) {
+    if(true) {
         fGlobalDataContainer->mkdir("iTot_Graphs");
         fGlobalDataContainer->mkdir("iDark_Graphs");
         fGlobalDataContainer->mkdir("Voltage_Graphs");

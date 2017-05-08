@@ -138,7 +138,7 @@ private:
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue=0);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TList *list, Int_t whichValue=0);
 
-    void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const);
+    void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea=kFALSE);
     void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const);
 
     void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, TList *list=nullptr);
@@ -147,7 +147,7 @@ private:
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 
-ClassDef(AliRPCAutoIntegrator,7);
+ClassDef(AliRPCAutoIntegrator,8);
 };
 
 #endif

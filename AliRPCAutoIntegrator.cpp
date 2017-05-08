@@ -1608,7 +1608,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 }
 
 
-void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const){
+void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea){
     Int_t counter=0;
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
@@ -1665,8 +1665,8 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         }else if(y.Contains("voltage")){
             PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanHV);
         }else if(y.Contains("rate")&&y.Contains("bending")){
-            if(y.Contains("not")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateNotBending);
-            else PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateBending);
+            if(y.Contains("not")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateNotBending, kTRUE);
+            else PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateBending, kTRUE);
         }else if(y.Contains("integrated")||y.Contains("charge")){
             PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanIntegratedCharge);
         }

@@ -122,7 +122,7 @@ public:
     void GeneratePlots();
     void Subtractor();
     void Integrator();
-
+    void IntegratorPerRun();
     void AMANDASetDataMembers();
 
 

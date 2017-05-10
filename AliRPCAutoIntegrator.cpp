@@ -610,7 +610,7 @@ void AliRPCAutoIntegrator::Integrator(){
                 // }
 
                 fGlobalDataContainer->cd("integrated_charge_Graphs");
-                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite|TObject::kSingleKey);
+                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite||TObject::kSingleKey);
 
                 PrintWhichRPC(iRPC, iSide, iPlane);
 
@@ -631,6 +631,108 @@ void AliRPCAutoIntegrator::Integrator(){
     printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC,MinCharge);
     printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC,MaxCharge);
 
+    fGlobalDataContainer->Flush();
+}
+
+void AliRPCAutoIntegrator::IntegratorPerRun(){
+    TGraph *buffer;
+    TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
+    fGlobalDataContainer->cd("integrated_charge_Graphs");
+    
+    //arrays contains {iSide, IPlane, IRPC, integratedCharge}
+    RPC RPCWhichIntegratedBest;
+    RPC RPCWhichIntegratedWorst;
+    Double_t MaxCharge=0.;
+    Double_t MinCharge=1000000.;
+    
+    //Plot the best and the worst chamber
+    TMultiGraph *BestAndWorstGraph=new TMultiGraph("BestAndWorstGraph","BestAndWorstGraph");
+    TGraph *MeanGraph=new TGraph();
+    TGraph *Best, *Worst;
+    Int_t counter=0;
+    Int_t meanCounter=0;
+    Double_t IntegratedCharge=0.;
+    Double_t MeanIntegratedCharge=0.;
+    
+    vector<AliRPCRunStatistics*> list;
+    
+    for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+        for(Int_t iSide=0;iSide<kNSides;iSide++){
+            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
+                counter=0;
+                IntegratedCharge=0.;
+                //get and sort list of run for this RPC
+                list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC);
+                std::sort(list.begin(),list.end(),AliRPCRunStatistics::SortRunStatistics);
+                
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]=new TGraph();
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetFillColor(0);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
+                
+                
+                auto it=list.begin();
+                Double_t x0=(*it)->GetTimeStampStart();
+                Double_t x1=x0;
+                Double_t y0=(*it)->GetMeanNetCurrent();
+                Double_t y1=y1;
+                
+                for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin()+1;iter!=list.end();iter++){
+                    Double_t IntChargeBuffer=(y0+y1)*(x1-x0)/2;
+                    if(!(IntChargeBuffer>0)) IntChargeBuffer=0;
+                    
+                    //sum integrated charge for new run
+                    IntegratedCharge+=IntChargeBuffer;
+                    
+                    PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++,(*iter)->GetTimeStampStart(),IntegratedCharge);
+                    
+                    x0=x1;
+                    y0=y1;
+                    x1=(*iter)->GetTimeStampStart();
+                    y1=(*iter)->GetMeanNetCurrent();
+                }
+                
+                //estimate max and min RPC
+                if(IntegratedCharge<MinCharge){
+                    RPCWhichIntegratedBest.Plane=iPlane;
+                    RPCWhichIntegratedBest.Side=iSide;
+                    RPCWhichIntegratedBest.RPC=iRPC+1;
+                    MinCharge=IntegratedCharge;
+                    Best=PlotsIntegratedCharge[iSide][iPlane][iRPC];
+                }else if(IntegratedCharge>=MaxCharge){
+                    RPCWhichIntegratedWorst.Plane=iPlane;
+                    RPCWhichIntegratedWorst.Side=iSide;
+                    RPCWhichIntegratedWorst.RPC=iRPC+1;
+                    MaxCharge=IntegratedCharge;
+                    Worst=PlotsIntegratedCharge[iSide][iPlane][iRPC];
+                }
+                
+                printf("RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,IntegratedCharge);
+                BestAndWorstGraph->Add(PlotsIntegratedCharge[iSide][iPlane][iRPC]);
+                fGlobalDataContainer->cd("integrated_charge_Graphs");
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite||TObject::kSingleKey);
+                
+            }
+        }
+    }
+    
+    //calculate mean integratedcharge
+    for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end()-1;iter++){
+        MeanIntegratedCharge+=((AliRPCData*)(fAliRPCDataObject))->GetMeanIntegratedCharge((*iter)->GetRunNumber());
+        MeanGraph->SetPoint(meanCounter++,(*iter)->GetTimeStampStart(),MeanIntegratedCharge);
+    }
+    
+    
+    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC,MinCharge);
+    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC,MaxCharge);
+    MeanGraph->SetLineColor(kCyan-3);
+    MeanGraph->SetMarkerSize(0.15);
+    MeanGraph->SetMarkerColor(kCyan-3);
+    MeanGraph->SetMarkerStyle(24);
+    BestAndWorstGraph->Add(MeanGraph);
+    
     fGlobalDataContainer->Flush();
 }
 

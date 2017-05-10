@@ -222,6 +222,10 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
     AliOCDBRun runBuffer;
     runBuffer.fYear = 0000;
     fin.open(fRunListFileName.Data());
+    if(!fin.is_open()) {
+     cout<<"File not found"<<endl<<flush;
+        return;
+    }
     while(kTRUE){
         fin >> runBuffer.fRunNumber;
         if(fin.eof()) break;

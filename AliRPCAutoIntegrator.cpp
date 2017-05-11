@@ -547,7 +547,7 @@ void AliRPCAutoIntegrator::Integrator(){
     RPC RPCWhichIntegratedBest;
     RPC RPCWhichIntegratedWorst;
     Double_t MaxCharge=0.;
-    Double_t MinCharge=1000000.;
+    Double_t MinCharge=std::numeric_limits<Double_t>::max();
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){

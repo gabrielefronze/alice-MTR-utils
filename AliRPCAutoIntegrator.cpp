@@ -1822,6 +1822,16 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRP
       }
     }
 
+//operator * is overloaded correctly for TH1F not for TH1
+if (strcmp(Graph->ClassName(),"TH1F")==0)
+{
+    //normalize to 72 RPC
+    Double_t Normfactor=(Double_t)kNRPC/Graph->GetEntries();
+    TH1F *GraphF=(TH1F*)Graph;
+    TH1F GraphNorm=Normfactor*(*GraphF);
+    Graph=&GraphNorm;
+    }
+
 }
 
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TList *list, vector <AliOCDBRun*> RunNumberList){

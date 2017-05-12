@@ -579,6 +579,8 @@ void AliRPCAutoIntegrator::Integrator(){
                     Double_t iNet0,iNet1;
                     buffer->GetPoint(iPoint, timestamp0, iNet0);
                     buffer->GetPoint(iPoint+1, timestamp1, iNet1);
+                    
+                    if((timestamp1-timestamp0)>3*24*60*60) continue;
 
                     // the integrated charge is an incremental value
                     integratedCharge+=(timestamp1-timestamp0)*(iNet0+iNet1)/2.;
@@ -610,7 +612,7 @@ void AliRPCAutoIntegrator::Integrator(){
                 // }
 
                 fGlobalDataContainer->cd("integrated_charge_Graphs");
-                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite||TObject::kSingleKey);
+                AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite|TObject::kSingleKey);
 
                 PrintWhichRPC(iRPC, iSide, iPlane);
 
@@ -1328,10 +1330,12 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     sortedListScalers[side][plane][RPC-1][cathode]=buffer;
                     buffer=0x0;
                 }
+                PrintWhichRPC(RPC-1,side,plane);
             }
         }
     }
 
+    
     for(Int_t cathode=0;cathode<kNCathodes;cathode++){
         //cout<<fCathodes[cathode].Data()<<endl;
         for(Int_t plane=0;plane<kNPlanes;plane++){
@@ -1386,9 +1390,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             previousRunNumber = valueDCS->GetRunNumber();
                             timeStampStart = valueDCS->GetTimeStamp();
                             isCalib = valueDCS->IsCalib();
+                            isDark = ((AliRPCValueDCS *) *iterValueDCS)->GetLHCStatus()>kNONE;
                         }
-                        
-                        if (valueDCS->IsCurrent()&&!valueDCS->IsAMANDA()) isDark = ((AliRPCValueDCS *) *iterValueDCS)->GetLHCStatus()>kNONE;
                         
                         actualRunNumber = valueDCS->GetRunNumber();
                         actualYear = valueDCS->GetYear();
@@ -1530,7 +1533,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             previousRunNumber=valueDCS->GetRunNumber();
                             timeStampStart=valueDCS->GetTimeStamp();
                             isCalib=valueDCS->IsCalib();
-                            if (valueDCS->IsCurrent()&&!valueDCS->IsAMANDA()) isDark = ((AliRPCValueDCS *) *iterValueDCS)->GetLHCStatus()>kNONE;
+                            isDark = ((AliRPCValueDCS *) *iterValueDCS)->GetLHCStatus()>kNONE;
                         }
                         ratesTimesLBArea[0]=0;
                         ratesTimesLBArea[1]=0;

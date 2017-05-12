@@ -676,24 +676,35 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                 
                 
                 auto it=list.begin();
-                Double_t x0=(*it)->GetTimeStampStart();
-                Double_t x1=x0;
-                Double_t y0=(*it)->GetMeanNetCurrent();
-                Double_t y1=y1;
+                Double_t timestamp0=(*it)->GetTimeStampStart();
+                Double_t timestamp1=timestamp0;
+                Double_t iNet0=(*it)->GetMeanNetCurrent();
+                Double_t iNet1=iNet0;
                 
                 for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin()+1;iter!=list.end();iter++){
-                    Double_t IntChargeBuffer=(y0+y1)*(x1-x0)/2;
+                    Double_t IntChargeBuffer=(iNet0+iNet1)*(timestamp1-timestamp0)/2;
                     if(!(IntChargeBuffer>0)) IntChargeBuffer=0;
+                    
+                    //if Inet ==0 (aka dark run) skip integration
+                    if (iNet1==0) continue;
+                    
+                    //if timestamps differe for more than 3 days (eg shutdown)
+                    //integrated charge should not be incremented
+                    if((timestamp1-timestamp0)>3*24*60*60) {
+                        timestamp0=timestamp1;
+                        iNet0=iNet1;
+                        continue;
+                    }
                     
                     //sum integrated charge for new run
                     IntegratedCharge+=IntChargeBuffer;
                     
-                    PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++,(*iter)->GetTimeStampStart(),IntegratedCharge);
+                    PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++,(timestamp0+timestamp1)/2,IntegratedCharge);
                     
-                    x0=x1;
-                    y0=y1;
-                    x1=(*iter)->GetTimeStampStart();
-                    y1=(*iter)->GetMeanNetCurrent();
+                    timestamp0=timestamp1;
+                    iNet0=iNet1;
+                    timestamp1=(*iter)->GetTimeStampStart();
+                    iNet1=(*iter)->GetMeanNetCurrent();
                 }
                 
                 //estimate max and min RPC

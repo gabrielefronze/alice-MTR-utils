@@ -1912,6 +1912,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         
         //Get List useful on vs time plots
         TList *listPtr=0x0;
+        listName.Prepend("TLists/OCDB_AMANDA_Data_");
         fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
         
         //call correct function plot or distribution

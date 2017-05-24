@@ -645,7 +645,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     RPC RPCWhichIntegratedBest;
     RPC RPCWhichIntegratedWorst;
     Double_t MaxCharge=0.;
-    Double_t MinCharge=1000000.;
+    Double_t MinCharge=std::numeric_limits<Double_t>::max();
     
     //Plot the best and the worst chamber
     TMultiGraph *BestAndWorstGraph=new TMultiGraph("BestAndWorstGraph","BestAndWorstGraph");
@@ -1773,15 +1773,18 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
             return;
         }
         if(y.Contains("voltage")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
-        if(y.Contains("current")){
+        else if(y.Contains("current")){
             if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kIDark);
             else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kITot);
         }
-    }else if(x.Contains("run")){
-        if(y.Contains("current")) {
-            if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent);
-            if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent);
-            if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent);
+        else if(y.Contains("integrated")&&y.Contains("charge")){
+            IntegratorPerRun();
+        }
+        }else if(x.Contains("run")){
+            if(y.Contains("current")) {
+                if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent);
+                if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent);
+                if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent);
         }else if(y.Contains("voltage")){
             PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanHV);
         }else if(y.Contains("rate")&&y.Contains("bending")){

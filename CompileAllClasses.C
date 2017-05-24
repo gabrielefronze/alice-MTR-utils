@@ -16,6 +16,7 @@ void CompileAllClasses(TString myopt="fast"){
   gSystem->CompileMacro("AliRPCValueVoltage.cpp",opt);
   gSystem->CompileMacro("AliRPCValueScaler.cpp",opt);
   gSystem->CompileMacro("AliRPCOverflowStatistics.cpp",opt);
+  gSystem->CompileMacro("AliOCDBContainer.h",opt);
   gSystem->CompileMacro("AliRPCRunStatistics.cpp",opt);
   gSystem->CompileMacro("AliRPCData.cpp",opt);
   gSystem->CompileMacro("AliRPCAutoIntegrator.cpp",opt);

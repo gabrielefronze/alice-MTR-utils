@@ -1747,7 +1747,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
 
     for(UInt_t iter:OCDBRunListComplete){
         Double_t x=(fAliRPCDataObject->GetMeanTimeStampStart(iter));
-       if(x>8000) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, kFALSE));
+       if(x>8000) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, normalizedToArea));
     }
 }
 

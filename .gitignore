@@ -4,3 +4,17 @@
 cmake-build-debug/
 
 CMakeLists\.txt
+
+*.root
+
+*.bak
+
+*.so
+
+*.d
+
+\.DS_Store
+
+DarkRate\.cpp
+
+IntegratedCharge\.cpp

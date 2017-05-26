@@ -115,8 +115,8 @@ private:
 
 public:
     void OCDBRunListReader();
-    void OCDBDataToCParser();
-    void OCDBDataToCParserBlocks(Int_t blockNumber = -1, UInt_t blockSize = 10);
+    void OCDBDataToCParser(bool blockMode = true, UInt_t blockSize = 10);
+    bool OCDBDataToCParserBlocks(Int_t blockNumber = -1, UInt_t blockSize = 10);
     void AMANDATextToCParser();
     void FillAliRPCData();
     void Aggregator();

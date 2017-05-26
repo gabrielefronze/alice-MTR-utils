@@ -833,11 +833,17 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
     }
 }
 
-void AliRPCAutoIntegrator::OCDBDataToCParser(){
-    OCDBDataToCParserBlocks(-1);
+void AliRPCAutoIntegrator::OCDBDataToCParser(bool blockMode, UInt_t blockSize){
+    if (!blockMode) OCDBDataToCParserBlocks(-1);
+    else{
+        Int_t blockNumber = 0;
+        while(OCDBDataToCParserBlocks(blockNumber++, blockSize));
+    }
 }
 
-void AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blockSize){
+bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blockSize){
+
+    bool allBlocksDone = false;
 
     //array 3D di liste di dati. le TList sono già ordinate dopo ogni inserimento
     TList *dataList[kNSides][kNPlanes][kNRPC];
@@ -940,12 +946,14 @@ void AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
         if (beginOfBlock > fOCDBRunListToAdd.end()) {
             printf("Download of data ended.\n");
-            return;
+            allBlocksDone = true;
+            return allBlocksDone;
         }
 
         if (endOfBlock > fOCDBRunListToAdd.end()) {
             printf("Last block to process.\n");
             endOfBlock = fOCDBRunListToAdd.end();
+            allBlocksDone = true;
         }
     }
 
@@ -1359,6 +1367,8 @@ void AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     }
 
     printf("\n\n\nDark currents setting complete\n\n\n");
+
+    return allBlocksDone;
 }
 
 

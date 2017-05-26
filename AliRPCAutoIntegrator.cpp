@@ -830,6 +830,8 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
                 fAMANDADataContainer->cd();
                 if (data[iSide][iPlane][iRPC]->GetEntries()==0) continue;
                 data[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
+                PrintWhichRPC(iRPC,iSide,iPlane);
+                cout<<data[iSide][iPlane][iRPC]->GetEntries()<<endl;
 
             }
         }

@@ -928,15 +928,13 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     Bool_t isCalib=kFALSE;
     Bool_t isBeamPresent=kFALSE;
 
-    auto beginOfBlock;
-    auto endOfBlock;
+    auto beginOfBlock = fOCDBRunListToAdd.begin();;
+    auto endOfBlock = fOCDBRunListToAdd.end();
 
     if ( blockNumber == -1 ){
 
         printf("Running in single block mode.\n");
 
-        beginOfBlock = fOCDBRunListToAdd.begin();
-        endOfBlock = fOCDBRunListToAdd.end();
     } else {
 
         printf("Running in block mode.\n");

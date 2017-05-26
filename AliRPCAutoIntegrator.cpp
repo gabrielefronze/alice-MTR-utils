@@ -273,12 +273,14 @@ void AliRPCAutoIntegrator::Aggregator(){
                 while(iterValueAMANDA()){
                     ((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                    mergedData[iSide][iPlane][iRPC]->IsOwner();
                 }
 
 
                 TIter iterValueOCDB(listBufferOCDB);
                 while(iterValueOCDB()){
                     mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
+                    mergedData[iSide][iPlane][iRPC]->IsOwner();
                 }
 
                 // the sorting will take place with respect to the timestamp of
@@ -814,6 +816,7 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
             // //if (timeStamp<8000000) continue;
             //if (!(data[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1])) continue;
             data[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->Add(currentBuffer);
+            data[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->IsOwner();
             currentBuffer = 0x0;
         } //else cout<<"#### skip ###"<<endl;
         }
@@ -1166,9 +1169,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
+                            dataList[side][plane][RPC-1]->IsOwner();
                         }
                         //cout<<"\t"<<value->GetFloat()<<endl;
                         dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
+                        dataList[side][plane][RPC-1]->IsOwner();
                         value = 0x0;
                     }
 
@@ -1190,10 +1195,12 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0));
+                            dataList[side][plane][RPC-1]->IsOwner();
                             //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
                             dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0));
+                            dataList[side][plane][RPC-1]->IsOwner();
                             //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
@@ -1251,14 +1258,18 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         if(scalerEntry!=arrayScalersEntries-1){
                             AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                             scalersDataList[cathode][iSide][plane][iRPC09-1]->Add(buffer);
+                            scalersDataList[cathode][iSide][plane][iRPC09-1]->IsOwner();
                             scalersLocalBoardList[cathode][plane][localBoard]->Add(buffer);
+                            scalersLocalBoardList[cathode][plane][localBoard]->IsOwner();
                             //delete buffer;
                         }
                             // altrimenti il timestamp è pari all'EOR
                         else {
                             AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                             scalersDataList[cathode][iSide][plane][iRPC09-1]->Add(buffer);
+                            scalersDataList[cathode][iSide][plane][iRPC09-1]->IsOwner();
                             scalersLocalBoardList[cathode][plane][localBoard]->Add(buffer);
+                            scalersLocalBoardList[cathode][plane][localBoard]->IsOwner();
                             //delete buffer;
                         }
                         //printf(" MTR %d cathode %d LB %d RPC %d or %d_%s timestamp %lu data %d\n",fPlanes[plane],cathode,localBoard,iRPC017,iRPC09,(fSides[iSide]).Data(),SOR+elapsedTime,scalersData->GetLocScalStrip(cathode, plane, localBoard));
@@ -1277,6 +1288,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
                     for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
                         scalersDataList[cathode][side][plane][RPC-1]->Add(new AliRPCOverflowStatistics((*runIterator).fRunNumber, EOR, overflowLB[cathode][side][plane][RPC-1], readLB[cathode][side][plane][RPC-1], isCalib,*beamType,beamEnergy,*LHCState ));
+                        scalersDataList[cathode][side][plane][RPC-1]->IsOwner();
                         //cout<<"RUN"<<(*runIterator).runNumber<<" side:"<<side<<" plane "<<plane<<" RPC "<<RPC<<" cathode "<<cathode<<" READ="<<readLB[cathode][side][plane][RPC-1]<<" OVERFLOW="<<overflowLB[cathode][side][plane][RPC-1]<<endl<<endl;
                     }
                 }
@@ -1726,9 +1738,11 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                                 //((AliRPCValueDCS *) *iterValueAMANDA)->PrintBeamStatus();
 
                                 DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                                DataWithRunNumber[iSide][iPlane][iRPC]->IsOwner();
                             } else if ((AMANDATimeStamp < newRunBeginBuffer) && (AMANDATimeStamp > runEndBuffer)) {
                                 //now I add data with runnumber =0 (values get between two different runs)
                                 DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                                DataWithRunNumber[iSide][iPlane][iRPC]->IsOwner();
                             }
 
                             //when the run is passed exit the cycle

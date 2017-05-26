@@ -54,14 +54,6 @@ public:
     AliRPCAutoIntegrator(TString RunListFileName, TString AMANDAInputFileName, TString OutputFileName, Bool_t updateOCDB=kTRUE, Bool_t updateAMANDA=kTRUE);
     AliRPCAutoIntegrator(const AliRPCAutoIntegrator &obj)  : TObject(obj){};
     ~AliRPCAutoIntegrator();
-    void InitDataMembers();
-
-    void RunAutoIntegrator();
-
-    void GeneratePlotFromFile(TString filename = "plots.txt");
-    void VoltagePlotter(TGraph *Graph, TObjArray* list, UInt_t RunNumber);
-    void VoltagePlotter(TGraph *Graph, TObjArray* list, std::vector<UInt_t> RunNumberList);
-    void VoltagePlotter(TGraph *Graph, TObjArray* list);
 
 private:
     std::vector<AliOCDBRun> fOCDBRunListToAdd;
@@ -78,11 +70,8 @@ private:
     Bool_t fUpdateAMANDA;
     Bool_t fExistsRPCDataObject;
 
-
-public:
     AliRPCData *fAliRPCDataObject;
 
-private:
     static const Int_t kNSides=2;
     static const Int_t kNPlanes=4;
     static const Int_t kNRPC=9;
@@ -114,17 +103,27 @@ private:
     }
 
 public:
+
+    void InitDataMembers();
+
+    void RunAutoIntegrator();
+
     void OCDBRunListReader();
     void OCDBDataToCParser(bool blockMode = true, UInt_t blockSize = 10);
     bool OCDBDataToCParserBlocks(Int_t blockNumber = -1, UInt_t blockSize = 10);
     void AMANDATextToCParser();
     void FillAliRPCData();
     void Aggregator();
-    void GeneratePlots();
     void Subtractor();
     void Integrator();
     void IntegratorPerRun();
     void AMANDASetDataMembers();
+
+    void GeneratePlots();
+    void GeneratePlotFromFile(TString filename = "plots.txt");
+    void VoltagePlotter(TGraph *Graph, TObjArray* list, UInt_t RunNumber);
+    void VoltagePlotter(TGraph *Graph, TObjArray* list, std::vector<UInt_t> RunNumberList);
+    void VoltagePlotter(TGraph *Graph, TObjArray* list);
 
 
 private:

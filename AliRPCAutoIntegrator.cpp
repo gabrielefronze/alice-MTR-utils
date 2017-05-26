@@ -786,7 +786,7 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
     Bool_t isZero=kFALSE;
 
     ULong64_t dummyTimeStamp=0;
-    ULong64_t timeStamp=0;
+    Double_t timeStamp=0;
     Double_t current=0.;
     Int_t MT=0;
     Int_t RPC=0;

@@ -1305,7 +1305,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 //flag positivo se la precedente misura di tensione è >=8500.V
                 Bool_t voltageOkFlag=kFALSE;
 
-                //printf("MT%d_%s_%d\n",fPlanes[plane],fSides[side].Data(),RPC);
+                printf("Processing: MT%d_%s_%d\r",fPlanes[plane],fSides[side].Data(),RPC);
 
                 //loop sulle entries della lisa di dati
                 TIter valueDCSIterator(sortedList);
@@ -1358,16 +1358,20 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
         }
     }
 
+    cout<<endl;
+
     for(Int_t cathode=0;cathode<kNCathodes;cathode++){
         for(Int_t plane=0;plane<kNPlanes;plane++){
             for(Int_t local=0;local<kNLocalBoards;local++){
                 fOCDBDataContainer->cd();
                 scalersLocalBoardList[cathode][plane][local]->Sort();
                 scalersLocalBoardList[cathode][plane][local]->Write(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),TObject::kSingleKey | TObject::kOverwrite);
-                //printf("OCDB_Scalers_MTR_%s_MT%d_LB%d\n",(fCathodes[cathode]).Data(),fPlanes[plane],local+1);
+                printf("Writing: OCDB_Scalers_MTR_%s_MT%d_LB%d\r",(fCathodes[cathode]).Data(),fPlanes[plane],local+1);
             }
         }
     }
+
+    cout<<endl;
 
     printf("\n\n\nDark currents setting complete\n\n\n");
 

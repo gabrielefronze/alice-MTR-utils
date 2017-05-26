@@ -1308,10 +1308,15 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 //printf("MT%d_%s_%d\n",fPlanes[plane],fSides[side].Data(),RPC);
 
                 //loop sulle entries della lisa di dati
-                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
+                TIter valueDCSIterator(sortedList);
+//                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
+                while(true){
                     //cout<<iList<<"/"<<sortedList->GetEntries()<<endl;
                     //L'elemento può essere una tensione o una corrente
-                    AliRPCValueDCS *valueDCS=(AliRPCValueDCS*)(sortedList->At(iList));
+                    AliRPCValueDCS *valueDCS=(AliRPCValueDCS*)(valueDCSIterator());
+
+                    if ( !valueDCS ) break;
+
                     //se è una tensione
                     if (valueDCS->IsVoltage()) {
                         //cast a tensione

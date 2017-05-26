@@ -834,42 +834,10 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
 }
 
 void AliRPCAutoIntegrator::OCDBDataToCParser(){
+    OCDBDataToCParserBlocks(-1);
+}
 
-    //flag che è kTRUE se l'evento è di calibrazione
-    Bool_t isCalib=kFALSE;
-    Bool_t isBeamPresent=kFALSE;
-
-    AliCDBManager *managerYearCheck = AliCDBManager::Instance();
-    for (std::vector<AliOCDBRun>::iterator runIteratorYearChecker = fOCDBRunListToAdd.begin(); runIteratorYearChecker != fOCDBRunListToAdd.end(); ++runIteratorYearChecker) {
-        for (Int_t year = 2017; year>2009; year--){
-            managerYearCheck->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
-            AliCDBStorage *defStorageYear = managerYearCheck->GetDefaultStorage();
-            defStorageYear->QueryCDB((*runIteratorYearChecker).fRunNumber);
-            TObjArray* arrCDBIDYear = defStorageYear->GetQueryCDBList();
-            TIter nxt(arrCDBIDYear);
-            AliCDBId* cdbIDYear = 0;
-            Bool_t hasGRP = kFALSE;
-            while ((cdbIDYear=(AliCDBId*)nxt())) {
-                if (cdbIDYear->GetPath() == "GRP/GRP/Data") {hasGRP = kTRUE; break;}
-            }
-            if(!hasGRP){
-                printf("\n\n### Can't find run %d\n\n",(*runIteratorYearChecker).fRunNumber);
-                (*runIteratorYearChecker).fYear = 0000;
-                continue;
-            } else {
-                printf("\n\n### Run %d belongs to year %d\n\n",(*runIteratorYearChecker).fRunNumber,year);
-                (*runIteratorYearChecker).fYear = year;
-                break;
-            }
-        }
-    }
-
-    //manager per interfacciarsi con gli OCDB
-    AliCDBManager *managerCurrent = AliCDBManager::Instance();
-    AliCDBManager *managerVoltage = AliCDBManager::Instance();
-    AliCDBManager *managerRunType = AliCDBManager::Instance();
-    AliCDBManager *managerScaler  = AliCDBManager::Instance();
-
+void AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blockSize){
 
     //array 3D di liste di dati. le TList sono già ordinate dopo ogni inserimento
     TList *dataList[kNSides][kNPlanes][kNRPC];
@@ -950,31 +918,131 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
 
     bufferScalersLocalBoardList1 = 0x0;
 
+    //flag che è kTRUE se l'evento è di calibrazione
+    Bool_t isCalib=kFALSE;
+    Bool_t isBeamPresent=kFALSE;
+
+    auto beginOfBlock;
+    auto endOfBlock;
+
+    if ( blockNumber == -1 ){
+
+        printf("Running in single block mode.\n");
+
+        beginOfBlock = fOCDBRunListToAdd.begin();
+        endOfBlock = fOCDBRunListToAdd.end();
+    } else {
+
+        printf("Running in block mode.\n");
+
+        beginOfBlock = fOCDBRunListToAdd.begin() + blockSize * blockNumber;
+        endOfBlock = beginOfBlock + blockSize;
+
+        if (beginOfBlock > fOCDBRunListToAdd.end()) {
+            printf("Download of data ended.\n");
+            return;
+        }
+
+        if (endOfBlock > fOCDBRunListToAdd.end()) {
+            printf("Last block to process.\n");
+            endOfBlock = fOCDBRunListToAdd.end();
+        }
+    }
+
+//    AliCDBManager *managerYearCheck = AliCDBManager::Instance();
+//    for (std::vector<AliOCDBRun>::iterator runIteratorYearChecker = beginOfBlock; runIteratorYearChecker != endOfBlock; ++runIteratorYearChecker) {
+//        for (Int_t year = 2017; year>2009; year--){
+//            managerYearCheck->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
+//            AliCDBStorage *defStorageYear = managerYearCheck->GetDefaultStorage();
+//            defStorageYear->QueryCDB((*runIteratorYearChecker).fRunNumber);
+//            TObjArray* arrCDBIDYear = defStorageYear->GetQueryCDBList();
+//            TIter nxt(arrCDBIDYear);
+//            AliCDBId* cdbIDYear = 0;
+//            Bool_t hasGRP = kFALSE;
+//            while ((cdbIDYear=(AliCDBId*)nxt())) {
+//                if (cdbIDYear->GetPath() == "GRP/GRP/Data") {hasGRP = kTRUE; break;}
+//            }
+//            if(!hasGRP){
+//                printf("\n\n### Can't find run %d\n\n",(*runIteratorYearChecker).fRunNumber);
+//                (*runIteratorYearChecker).fYear = 0000;
+//                continue;
+//            } else {
+//                printf("\n\n### Run %d belongs to year %d\n\n",(*runIteratorYearChecker).fRunNumber,year);
+//                (*runIteratorYearChecker).fYear = year;
+//                break;
+//            }
+//        }
+//    }
+
+    //manager per interfacciarsi con gli OCDB
+    AliCDBManager *managerPrototype = AliCDBManager::Instance();
+//    AliCDBManager *managerYearCheck = AliCDBManager::Instance();
+//    AliCDBManager *managerCurrent = AliCDBManager::Instance();
+//    AliCDBManager *managerVoltage = AliCDBManager::Instance();
+//    AliCDBManager *managerRunType = AliCDBManager::Instance();
+//    AliCDBManager *managerScaler  = AliCDBManager::Instance();
+
     //loop sui run inseriti
-    for (std::vector<AliOCDBRun>::iterator runIterator = fOCDBRunListToAdd.begin(); runIterator != fOCDBRunListToAdd.end(); ++runIterator) {
-        if ((*runIterator).fYear == 0) continue;
-        UInt_t RunYear=(*runIterator).fYear;
+    for (std::vector<AliOCDBRun>::iterator runIterator = beginOfBlock; runIterator != endOfBlock; ++runIterator) {
+
+        AliCDBManager *managerYearCheck = managerPrototype;
+
+        for (Int_t year = 2017; year>2009; year--){
+            managerYearCheck->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
+            AliCDBStorage *defStorageYear = managerYearCheck->GetDefaultStorage();
+            defStorageYear->QueryCDB((*runIterator).fRunNumber);
+            TObjArray* arrCDBIDYear = defStorageYear->GetQueryCDBList();
+            TIter nxt(arrCDBIDYear);
+            AliCDBId* cdbIDYear = 0;
+            Bool_t hasGRP = kFALSE;
+            while ((cdbIDYear=(AliCDBId*)nxt())) {
+                if (cdbIDYear->GetPath() == "GRP/GRP/Data") {hasGRP = kTRUE; break;}
+            }
+            if(!hasGRP){
+                printf("\n\n### Can't find run %d\n\n",(*runIterator).fRunNumber);
+                (*runIterator).fYear = 0000;
+                continue;
+            } else {
+                printf("\n\n### Run %d belongs to year %d\n\n",(*runIterator).fRunNumber,year);
+                (*runIterator).fYear = year;
+                break;
+            }
+            continue; //if year is not found skip run number
+        }
+
+        Int_t RunYear=(*runIterator).fYear;
 
         //cout<<"YEar retrieved"<<endl;
 
         //inizializzazione dei manager
-        managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
-        managerVoltage->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
-        managerRunType->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
-        managerScaler->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+        managerPrototype->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+//
+//        managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+//        managerVoltage->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+//        managerRunType->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+//        managerScaler->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
 
         //i manager puntano al run desiderato
-        managerCurrent->SetRun((*runIterator).fRunNumber);
-        managerVoltage->SetRun((*runIterator).fRunNumber);
-        managerRunType->SetRun((*runIterator).fRunNumber);
-        managerScaler->SetRun((*runIterator).fRunNumber);
+        managerPrototype->SetRun((*runIterator).fRunNumber);
+//
+//        managerCurrent->SetRun((*runIterator).fRunNumber);
+//        managerVoltage->SetRun((*runIterator).fRunNumber);
+//        managerRunType->SetRun((*runIterator).fRunNumber);
+//        managerScaler->SetRun((*runIterator).fRunNumber);
 
         //cout<<"Managers retrieved"<<endl;
 
-        if(CheckPointer((TNamed*)managerCurrent)) continue;
-        if(CheckPointer((TNamed*)managerVoltage)) continue;
-        if(CheckPointer((TNamed*)managerRunType)) continue;
-        if(CheckPointer((TNamed*)managerScaler)) continue;
+        if(CheckPointer((TNamed*)managerPrototype)) continue;
+
+//        if(CheckPointer((TNamed*)managerCurrent)) continue;
+//        if(CheckPointer((TNamed*)managerVoltage)) continue;
+//        if(CheckPointer((TNamed*)managerRunType)) continue;
+//        if(CheckPointer((TNamed*)managerScaler)) continue;
+
+        AliCDBManager *managerCurrent = managerPrototype;
+        AliCDBManager *managerVoltage = managerPrototype;
+        AliCDBManager *managerRunType = managerPrototype;
+        AliCDBManager *managerScaler  = managerPrototype;
 
         AliCDBStorage *defStorage = managerCurrent->GetDefaultStorage();
         if(CheckPointer((TNamed*)defStorage)) continue;

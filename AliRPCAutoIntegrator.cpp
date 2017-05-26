@@ -128,7 +128,7 @@ fUpdateAMANDA(updateAMANDA){
         cout<<"File doesn't exist"<<endl;
         fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
         fGlobalDataContainer->cd();
-        fGlobalDataContainer->mkdir("TLists");
+        fGlobalDataContainer->mkdir("TObjArrays");
         fGlobalDataContainer->mkdir("iNet_Graphs");
         fGlobalDataContainer->mkdir("integrated_charge_Graphs");
     } else {
@@ -243,9 +243,9 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
 // beam runs (OCDB). This allows one to use subtract the dark current from
 // AMANDA data in the most detailed way.
 void AliRPCAutoIntegrator::Aggregator(){
-    TList *listBufferAMANDA = 0x0;
-    TList *listBufferOCDB = 0x0;
-    TList *mergedData[kNSides][kNPlanes][kNRPC];
+    TObjArray *listBufferAMANDA = 0x0;
+    TObjArray *listBufferOCDB = 0x0;
+    TObjArray *mergedData[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -266,7 +266,7 @@ void AliRPCAutoIntegrator::Aggregator(){
                     continue;
                 }
 
-                mergedData[iSide][iPlane][iRPC]=new TList();
+                mergedData[iSide][iPlane][iRPC]=new TObjArray();
                 mergedData[iSide][iPlane][iRPC]->SetName(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
                 TIter iterValueAMANDA(listBufferAMANDA);
@@ -285,7 +285,7 @@ void AliRPCAutoIntegrator::Aggregator(){
                 // each entry
                 mergedData[iSide][iPlane][iRPC]->Sort();
 
-                fGlobalDataContainer->cd("TLists");
+                fGlobalDataContainer->cd("TObjArrays");
                 mergedData[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
                 PrintWhichRPC(iRPC, iSide, iPlane);
 
@@ -301,7 +301,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsITot[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
-    TList *listBuffer;
+    TObjArray *listBuffer;
     
     TObject *IsDirThere;
     fGlobalDataContainer->GetObject("iTot_Graphs",IsDirThere);
@@ -316,10 +316,10 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
+                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
 
                 if (!listBuffer) {
-                    printf("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
 
@@ -378,20 +378,20 @@ void AliRPCAutoIntegrator::GeneratePlots() {
 //      dark current value for each AMANDA value falling between the two
 //      interpolated dark current values.
 void AliRPCAutoIntegrator::Subtractor(){
-    TList *buffer;
+    TObjArray *buffer;
     TGraph *AMANDAPlotsINet[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
+                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
                 buffer->Sort();
 
                 // if any data list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
                 // analysis
                 if (!buffer){
-                    printf("TList/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("TObjArray/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
 
@@ -757,9 +757,9 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
     mts[21]=2;
     mts[22]=3;
 
-    TList *bufferOutputList;
+    TObjArray *bufferOutpuTObjArray;
 
-    TList *data[kNSides][kNPlanes][kNRPC];
+    TObjArray *data[kNSides][kNPlanes][kNRPC];
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
@@ -768,14 +768,14 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
                 // added to the list after the data already there. If not the
                 //  object will be created.
                 fAMANDADataContainer->cd();
-                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),bufferOutputList);
-                if (!bufferOutputList) {
-                    data[iSide][iPlane][iRPC]=new TList();
+                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),bufferOutpuTObjArray);
+                if (!bufferOutpuTObjArray) {
+                    data[iSide][iPlane][iRPC]=new TObjArray();
                     data[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
                 } else {
-                    data[iSide][iPlane][iRPC] = bufferOutputList;
+                    data[iSide][iPlane][iRPC] = bufferOutpuTObjArray;
                 }
-                bufferOutputList = 0x0;
+                bufferOutpuTObjArray = 0x0;
                 //cout<<"created "<<data[iSide][iPlane][iRPC]->GetName()<<endl;
             }
         }
@@ -845,14 +845,14 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
     bool allBlocksDone = false;
 
-    //array 3D di liste di dati. le TList sono già ordinate dopo ogni inserimento
-    TList *dataList[kNSides][kNPlanes][kNRPC];
-    TList *scalersDataList[2][kNSides][kNPlanes][kNRPC];
-    TList *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
+    //array 3D di liste di dati. le TObjArray sono già ordinate dopo ogni inserimento
+    TObjArray *dataList[kNSides][kNPlanes][kNRPC];
+    TObjArray *scalersDataList[2][kNSides][kNPlanes][kNRPC];
+    TObjArray *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
 
-    TList *bufferDataList;
-    TList *bufferScalersDataList0;
-    TList *bufferScalersDataList1;
+    TObjArray *bufferDataList;
+    TObjArray *bufferScalersDataList0;
+    TObjArray *bufferScalersDataList1;
 
     for (Int_t plane=0; plane<kNPlanes; plane++) {
         for (Int_t side=0; side<kNSides; side++) {
@@ -867,7 +867,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC),bufferScalersDataList1);
 
                 if (!bufferDataList) {
-                    dataList[side][plane][RPC-1]=new TList();
+                    dataList[side][plane][RPC-1]=new TObjArray();
                     dataList[side][plane][RPC-1]->SetName(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC));
                 } else {
                     dataList[side][plane][RPC-1] = bufferDataList;
@@ -875,7 +875,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 bufferDataList = 0x0;
 
                 if (!bufferScalersDataList0) {
-                    scalersDataList[0][side][plane][RPC-1]=new TList();
+                    scalersDataList[0][side][plane][RPC-1]=new TObjArray();
                     scalersDataList[0][side][plane][RPC-1]->SetName(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC));
                 } else {
                     scalersDataList[0][side][plane][RPC-1] = bufferScalersDataList0;
@@ -883,7 +883,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 bufferScalersDataList0 = 0x0;
 
                 if (!bufferScalersDataList1) {
-                    scalersDataList[1][side][plane][RPC-1]=new TList();
+                    scalersDataList[1][side][plane][RPC-1]=new TObjArray();
                     scalersDataList[1][side][plane][RPC-1]->SetName(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC));
                 } else {
                     scalersDataList[1][side][plane][RPC-1] = bufferScalersDataList1;
@@ -899,7 +899,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     bufferScalersDataList0 = 0x0;
     bufferScalersDataList1 = 0x0;
 
-    TList *bufferScalersLocalBoardList1;
+    TObjArray *bufferScalersLocalBoardList1;
 
     for(Int_t cathode=0;cathode<kNCathodes;cathode++){
         for(Int_t plane=0;plane<kNPlanes;plane++){
@@ -912,7 +912,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),bufferScalersLocalBoardList1);
 
                 if (!bufferScalersLocalBoardList1) {
-                    scalersLocalBoardList[cathode][plane][local]=new TList();
+                    scalersLocalBoardList[cathode][plane][local]=new TObjArray();
                     scalersLocalBoardList[cathode][plane][local]->SetName(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1));
                 } else {
                     scalersLocalBoardList[cathode][plane][local] = bufferScalersLocalBoardList1;
@@ -1292,8 +1292,8 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     for (Int_t plane=0; plane<kNPlanes; plane++) {
         for (Int_t side=0; side<kNSides; side++) {
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-                //alias all'elemento dell'array 3D di TLists*
-                TList *sortedList=dataList[side][plane][RPC-1];
+                //alias all'elemento dell'array 3D di TObjArrays*
+                TObjArray *sortedList=dataList[side][plane][RPC-1];
                 sortedList->Sort();
 
                 //contenitore per il run number del run dal quale deriva la misura di dark current
@@ -1372,9 +1372,9 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
 void AliRPCAutoIntegrator::FillAliRPCData(){
 
-    TList *sortedListData[kNSides][kNPlanes][kNRPC];
-    TList *sortedListScalers[kNSides][kNPlanes][kNRPC][kNCathodes];
-    TList *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
+    TObjArray *sortedListData[kNSides][kNPlanes][kNRPC];
+    TObjArray *sortedListScalers[kNSides][kNPlanes][kNRPC][kNCathodes];
+    TObjArray *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
 
     Int_t previousScalers[kNCathodes][kNPlanes][kNLocalBoards];
 
@@ -1388,15 +1388,15 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
     cout<<"Init done"<<endl;
 
-    TList *buffer=new TList();
+    TObjArray *buffer=new TObjArray();
     for (Int_t side=0; side<kNSides; side++) {
         //cout<<fSides[side].Data()<<endl;
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
                 //cout<<"\t\t"<<RPC<<endl;
-                //sortedListData[side][plane][RPC-1]=new TList();
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),buffer);
+                //sortedListData[side][plane][RPC-1]=new TObjArray();
+                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),buffer);
                 if(!buffer){
                     cout<<"OCDB_AMANDA_Data NOT FOUND"<<endl;
                     continue;
@@ -1407,7 +1407,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                 for(Int_t cathode=0;cathode<kNCathodes;cathode++){
                     //cout<<"\t\t\t"<<fCathodes[cathode].Data()<<endl;
-                    //sortedListScalers[side][plane][RPC-1][cathode]=new TList();
+                    //sortedListScalers[side][plane][RPC-1][cathode]=new TObjArray();
                     fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[cathode]).Data(),fPlanes[plane],RPC),buffer);
                     if(!buffer){
                         cout<<"Scalers NOT FOUND"<<endl;
@@ -1641,8 +1641,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 };
 
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
-    TList *listBufferAMANDA=0x0;
-    TList *listBufferOCDB=0x0;
+    TObjArray *listBufferAMANDA=0x0;
+    TObjArray *listBufferOCDB=0x0;
     TSortedList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
@@ -1758,7 +1758,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
     Int_t counter=0;
     TIter iterValue(list);
     counter=0;
@@ -1773,14 +1773,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, UInt_t RunNumber, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, UInt_t RunNumber, Int_t whichValue){
     std::vector<AliOCDBRun*> RunDummyList;
     RunDummyList.push_back(new AliOCDBRun(RunNumber,0));
     PlotSomethingVersusTime(Graph, funky, list, RunDummyList, whichValue);
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
     for(AliOCDBRun* iter :RunNumberList){
         UInt_t temp=((UInt_t)iter->GetRunNumber());
@@ -1790,7 +1790,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const,TList *list, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const,TObjArray *list, Int_t whichValue){
     Int_t counter=0;
     TIter iterValue(list);
     counter=0;
@@ -1842,7 +1842,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
     }
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x, TList *list){
+void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x, TObjArray *list){
     if(x.Contains("time")){
         if(!list) {
             cout<<"List not found\n";
@@ -1896,17 +1896,17 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
     Graph->GetYaxis()->SetTitle(y);
 };
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
   TIter iterValue(DataList);
-  vector<UInt_t> RunNumberIntList;
+  vector<UInt_t> RunNumberInTObjArray;
   for(auto iter=RunNumberList.begin();iter!=RunNumberList.end();iter++){
       //cout<<(*iter)->GetRunNumber()<<endl<<flush;
-      RunNumberIntList.push_back((*iter)->GetRunNumber());
+      RunNumberInTObjArray.push_back((*iter)->GetRunNumber());
   }
 
   while (iterValue()) {
     UInt_t run=((AliRPCValueDCS *) *iterValue)->GetRunNumber();
-    if(!IsRunInList(RunNumberIntList,run)) continue;
+    if(!IsRunInList(RunNumberInTObjArray,run)) continue;
       if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 && (((AliRPCValueDCS *) *iterValue)->*funky)()) {
           ((TH1F*)Graph)->Fill((((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue)));
       }
@@ -1924,7 +1924,7 @@ if (strcmp(Graph->ClassName(),"TH1F")==0)
 
 }
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TList *list, vector <AliOCDBRun*> RunNumberList){
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TObjArray *list, vector <AliOCDBRun*> RunNumberList){
         if(label.Contains("current")) {
             ((TH1F*)Graph)->GetXaxis()->SetRangeUser(0,50);
             if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kITot);
@@ -1937,17 +1937,17 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label
         }
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, UInt_t RunNumber){
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list, UInt_t RunNumber){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, list, RunNumber, 0);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, std::vector<UInt_t> RunNumberList){
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list, std::vector<UInt_t> RunNumberList){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list,RunNumberList,0);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
     return;
 }
@@ -1955,10 +1955,10 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
 void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
     /*
      * format for file is
-     * [plot/distribution], [darcurrent, netcurrent, voltage, ratenotbending....], [time, run, ...], TLists/OCDB_AMANDA_MTR_INSIDE...
+     * [plot/distribution], [darcurrent, netcurrent, voltage, ratenotbending....], [time, run, ...], TObjArrays/OCDB_AMANDA_MTR_INSIDE...
      *
      * example
-     * plot, darkcurrent, ratenotbending, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3
+     * plot, darkcurrent, ratenotbending, TObjArrays/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3
      */
     ifstream file;
     file.open(filename.Data(), ios::in);
@@ -1990,8 +1990,8 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<listName.Data()<<endl;
         
         //Get List useful on vs time plots
-        TList *listPtr=0x0;
-        listName.Prepend("TLists/OCDB_AMANDA_Data_");
+        TObjArray *listPtr=0x0;
+        listName.Prepend("TObjArrays/OCDB_AMANDA_Data_");
         fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
         
         //call correct function plot or distribution

@@ -1429,7 +1429,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for(Int_t local=0;local<kNLocalBoards;local++){
                 //cout<<"\t\t"<<local+1<<endl;
-                //scalersLocalBoardList[cathode][plane][local]=new TSortedList();
+                //scalersLocalBoardList[cathode][plane][local]=new TObjArray();
                 //printf("Scalers_MTR_%s_MT%d_LB%d\n",(cathodes[cathode]).Data(),planes[plane],local+1);
                 fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),buffer);
                 if(!buffer){
@@ -1643,7 +1643,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
     TObjArray *listBufferAMANDA=0x0;
     TObjArray *listBufferOCDB=0x0;
-    TSortedList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
+    TObjArray *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -1651,7 +1651,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferOCDB);
                 fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferAMANDA);
 
-                DataWithRunNumber[iSide][iPlane][iRPC]=new TSortedList();
+                DataWithRunNumber[iSide][iPlane][iRPC]=new TObjArray();
                 DataWithRunNumber[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
                 // if any data list is missing, then the channel

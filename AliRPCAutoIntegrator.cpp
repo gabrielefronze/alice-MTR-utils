@@ -837,7 +837,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(bool blockMode, UInt_t blockSize){
     if (!blockMode) OCDBDataToCParserBlocks(-1);
     else{
         Int_t blockNumber = 0;
-        while(OCDBDataToCParserBlocks(blockNumber++, blockSize));
+        while(!OCDBDataToCParserBlocks(blockNumber++, blockSize));
     }
 }
 

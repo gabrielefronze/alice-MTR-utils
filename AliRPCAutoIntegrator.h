@@ -36,7 +36,7 @@
 #include <vector>
 #include <stdio.h>
 
-#include "TList.h"
+#include "TTree.h"
 #include "TObjArray.h"
 #include "TClonesArray.h"
 #include "TObjString.h"
@@ -62,10 +62,12 @@ private:
     TString fAMANDAInputFileName;
     TString fOutputFileName;
 
+public:
     TFile *fOCDBDataContainer;
     TFile *fAMANDADataContainer;
     TFile *fGlobalDataContainer;
 
+private:
     Bool_t fUpdateOCDB;
     Bool_t fUpdateAMANDA;
     Bool_t fExistsRPCDataObject;
@@ -94,6 +96,18 @@ private:
     static const Int_t *fColors;//[kNRPC] = {kBlack,kRed,kGreen,kBlue,kYellow,kMagenta,kCyan,kGray,kOrange};
     static const Int_t *fStyles;//[kNPlanes]={20,24,21,25};
 
+public:
+    TTree *fOCDBTree;
+    //array 3D di liste di dati. le TObjArray sono già ordinate dopo ogni inserimento
+    TObjArray *fOCDBData[kNSides][kNPlanes][kNRPC];
+    TObjArray *fOCDBRPCScalers[2][kNSides][kNPlanes][kNRPC];
+    TObjArray *fOCDBLBScalers[kNCathodes][kNPlanes][kNLocalBoards];
+
+
+    TTree *fAMANDATree;
+    TObjArray *fAMANDAData[kNSides][kNPlanes][kNRPC];
+
+private:
     Bool_t CheckPointer(TNamed *pointer){
         Bool_t output=!pointer;
         if(output) {

@@ -97,15 +97,20 @@ private:
     static const Int_t *fStyles;//[kNPlanes]={20,24,21,25};
 
 public:
-    TTree *fOCDBTree;
+//    TTree *fOCDBTree;
     //array 3D di liste di dati. le TObjArray sono già ordinate dopo ogni inserimento
-    TObjArray *fOCDBData[kNSides][kNPlanes][kNRPC];
-    TObjArray *fOCDBRPCScalers[2][kNSides][kNPlanes][kNRPC];
-    TObjArray *fOCDBLBScalers[kNCathodes][kNPlanes][kNLocalBoards];
+    TTree *fOCDBDataTree[kNSides][kNPlanes][kNRPC];
+    TTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
+    TTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
+
+    AliRPCValueDCS *fOCDBDataTreeBuffer[kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS *fOCDBRPCScalersTreeBuffer[2][kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS *fOCDBLBScalersTreeBuffer[kNCathodes][kNPlanes][kNLocalBoards];
 
 
-    TTree *fAMANDATree;
-    TObjArray *fAMANDAData[kNSides][kNPlanes][kNRPC];
+//    TTree *fAMANDATree;
+    TTree *fAMANDADataTree[kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS *fAMANDADataTreeBuffer[kNSides][kNPlanes][kNRPC];
 
 private:
     Bool_t CheckPointer(TNamed *pointer){

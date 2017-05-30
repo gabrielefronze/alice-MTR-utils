@@ -962,6 +962,14 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(bool blockMode, UInt_t blockSize){
         Int_t blockNumber = 0;
         while(!OCDBDataToCParserBlocks(blockNumber++, blockSize));
     }
+
+    for (Int_t plane=0; plane<kNPlanes; plane++) {
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 1; RPC <= kNRPC; RPC++) {
+                fOCDBDataTree[side][plane][RPC-1]->Sort("fRunNumber","fTimeStamp");
+            }
+        }
+    }
 }
 
 bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blockSize){
@@ -1319,13 +1327,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 //loop sulle entries della lisa di dati
 //                TIter valueDCSIterator(sortedList);
 //                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
-                fOCDBDataTree[side][plane][RPC-1]->Sort("fRunNumber","fTimestamp");
+                //fOCDBDataTree[side][plane][RPC-1]->Sort("fRunNumber","fTimestamp");
+                AliRPCValueDCS *valueDCS=fOCDBDataTreeBuffer[side][plane][RPC-1];
                 while(true){
                     //cout<<iList<<"/"<<sortedList->GetEntries()<<endl;
                     //L'elemento può essere una tensione o una corrente
-                    AliRPCValueDCS *valueDCS=(AliRPCValueDCS*)(valueDCSIterator());
-
-                    if ( !valueDCS ) break;
 
                     //se è una tensione
                     if (valueDCS->IsVoltage()) {
@@ -1353,11 +1359,10 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         }
                         valueCurrent=0x0;
                     }
+                    fOCDBDataTree[side][plane][RPC-1]->Next();
+                    if ( !valueDCS ) break;
                     //cout<<valueDCS->IsCalib()<<endl;
-                    valueDCS=0x0;
                 }
-
-                sortedList->Sort();
             }
         }
     }

@@ -9,17 +9,21 @@
 #include "TTreeIndex.h"
 
 class TSmartTree : public TTree{
+
 private:
     Bool_t fIsSorted;
     Long64_t *fTreeIndex;
+    Long64_t fPosition;
 public:
 
     TSmartTree() : TTree(){
         fIsSorted = kFALSE;
+        fPosition = 0;
     }
 
     TSmartTree(const char* name, const char* title, Int_t splitlevel = 99) : TTree(name,title,splitlevel){
         fIsSorted = kFALSE;
+        fPosition = 0;
     }
 
     void Sort(const char* majorname, const char* minorname = "0"){
@@ -44,6 +48,12 @@ public:
     void operator[](Long64_t i){
         this->GetSortedEntry(i);
     }
+
+    void Next(){
+        this->GetSortedEntry(fPosition++);
+    }
+
+    inline Bool_t GetIsSorted(){ return fIsSorted; }
 
     ClassDef(TSmartTree,1);
 };

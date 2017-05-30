@@ -28,7 +28,7 @@ private:
     Bool_t fOverflow;
     Float_t fDeltaT;
 
-    ClassDef(AliRPCValueScaler,3);
+    ClassDef(AliRPCValueScaler,4);
 };
 
 #endif /* AliRPCValueScaler_h */

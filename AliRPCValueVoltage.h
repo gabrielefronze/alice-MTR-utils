@@ -26,7 +26,7 @@ public:
 private:
     Float_t fVSupp;
     
-    ClassDef(AliRPCValueVoltage,1);
+    ClassDef(AliRPCValueVoltage,2);
 };
 
 #endif /* AliRPCValueVoltage_h */

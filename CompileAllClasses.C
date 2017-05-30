@@ -1,5 +1,7 @@
 /*==================================================================*/
 /*macro per la compilazione one call di tutte le classi usate       */
+#include <TSystem.h>
+
 /*==================================================================*/
 
 void CompileAllClasses(TString myopt="fast"){
@@ -11,6 +13,7 @@ void CompileAllClasses(TString myopt="fast"){
     opt = "kg";
   }
   gSystem->CompileMacro("AliOCDBRun.h",opt);
+  gSystem->CompileMacro("TSmartTree.h",opt);
   gSystem->CompileMacro("AliRPCValueDCS.cpp",opt);
   gSystem->CompileMacro("AliRPCValueCurrent.cpp",opt);
   gSystem->CompileMacro("AliRPCValueVoltage.cpp",opt);

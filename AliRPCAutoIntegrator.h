@@ -36,7 +36,7 @@
 #include <vector>
 #include <stdio.h>
 
-#include "TTree.h"
+#include "TSmartTree.h"
 #include "TObjArray.h"
 #include "TClonesArray.h"
 #include "TObjString.h"
@@ -99,9 +99,9 @@ private:
 public:
 //    TTree *fOCDBTree;
     //array 3D di liste di dati. le TObjArray sono già ordinate dopo ogni inserimento
-    TTree *fOCDBDataTree[kNSides][kNPlanes][kNRPC];
-    TTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
-    TTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
+    TSmartTree *fOCDBDataTree[kNSides][kNPlanes][kNRPC];
+    TSmartTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
+    TSmartTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
 
     AliRPCValueDCS *fOCDBDataTreeBuffer[kNSides][kNPlanes][kNRPC];
     AliRPCValueDCS *fOCDBRPCScalersTreeBuffer[2][kNSides][kNPlanes][kNRPC];
@@ -109,7 +109,7 @@ public:
 
 
 //    TTree *fAMANDATree;
-    TTree *fAMANDADataTree[kNSides][kNPlanes][kNRPC];
+    TSmartTree *fAMANDADataTree[kNSides][kNPlanes][kNRPC];
     AliRPCValueDCS *fAMANDADataTreeBuffer[kNSides][kNPlanes][kNRPC];
 
 private:

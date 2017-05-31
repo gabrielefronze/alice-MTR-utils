@@ -64,7 +64,8 @@ public:
     void VoltagePlotter(TGraph *Graph, TList* list);
 
 private:
-    std::vector<AliOCDBRun> fOCDBRunListToAdd;
+    TObjArray *fOCDBRunListToAdd;
+    TObjArray *fOCDBRunListDownloaded;
 
     TString fRunListFileName;
     TString fAMANDAInputFileName;
@@ -147,7 +148,7 @@ private:
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 
-ClassDef(AliRPCAutoIntegrator,8);
+ClassDef(AliRPCAutoIntegrator,9);
 };
 
 #endif

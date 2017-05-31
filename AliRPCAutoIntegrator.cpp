@@ -87,6 +87,15 @@ void AliRPCAutoIntegrator::InitDataMembers(){
             //cout<<iLB+1<<" "<<LBAreas[iLB][iPlane]<<endl;
         }
     }
+    
+    TObjArray *check;
+    if(fGlobalDataContainer) fGlobalDataContainer->GetObject("DownloadedRuns",check);
+    if(check){
+        fOCDBRunListDownloaded=check;
+    }else{
+        fOCDBRunListDownloaded=new TObjArray();
+    }
+
 }
 
 // Default constructor
@@ -149,12 +158,13 @@ fUpdateAMANDA(updateAMANDA){
         fAliRPCDataObject = AliRPCDataBuffer;
         cout << "Reading old AliRPCData with " << fAliRPCDataObject->GetTotalEntries() << " entries"<< endl << flush;
     }
+    
+    InitDataMembers();
 
     // Calling this method to preload the runs of which the OCDB data has to be
     // downloaded
     OCDBRunListReader();
 
-    InitDataMembers();
 }
 
 //  Destructor will dellaocate any data member allocated in the heap
@@ -218,23 +228,33 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
 
 // Method to parse a text file containing the run list for OCDB downloader
 void AliRPCAutoIntegrator::OCDBRunListReader(){
+    fOCDBRunListToAdd=new TObjArray();
+    
     ifstream fin;
-    AliOCDBRun runBuffer;
-    runBuffer.fYear = 0000;
+    TObject *runBuffer;
+    
     fin.open(fRunListFileName.Data());
     if(!fin.is_open()) {
      cout<<"File not found"<<endl<<flush;
         return;
     }
     while(kTRUE){
-        fin >> runBuffer.fRunNumber;
+        runBuffer=new AliOCDBRun();
+        ((AliOCDBRun*)runBuffer)->fYear = 0000;
+        
+        fin >> ((AliOCDBRun*)runBuffer)->fRunNumber;
+        
         if(fin.eof()) break;
-        Int_t dummyindex = 0;
-//        if(fAliRPCDataObject->IsThereThisRun(1,1,1,runBuffer.fRunNumber,dummyindex)) continue;
-        fOCDBRunListToAdd.push_back(runBuffer);
+
+        //check if run is already downloaded
+        if(!fOCDBRunListDownloaded->FindObject(runBuffer)){
+        fOCDBRunListToAdd->Add(runBuffer);
+        }
         //cout<<runBuffer.fRunNumber<<endl<<flush;
+        runBuffer=0x0;
     }
     fin.close();
+    
 }
 
 // Method to merge the two files: AMANDA data and OCDB data.
@@ -838,9 +858,10 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
     //flag che è kTRUE se l'evento è di calibrazione
     Bool_t isCalib=kFALSE;
     Bool_t isBeamPresent=kFALSE;
-
+    
     AliCDBManager *managerYearCheck = AliCDBManager::Instance();
-    for (std::vector<AliOCDBRun>::iterator runIteratorYearChecker = fOCDBRunListToAdd.begin(); runIteratorYearChecker != fOCDBRunListToAdd.end(); ++runIteratorYearChecker) {
+    for(Int_t i=0;i<fOCDBRunListToAdd->GetEntries();i++){
+        AliOCDBRun *runIteratorYearChecker=(AliOCDBRun*)fOCDBRunListToAdd->At(i);
         for (Int_t year = 2017; year>2009; year--){
             managerYearCheck->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
             AliCDBStorage *defStorageYear = managerYearCheck->GetDefaultStorage();
@@ -863,7 +884,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
             }
         }
     }
-
+    
     //manager per interfacciarsi con gli OCDB
     AliCDBManager *managerCurrent = AliCDBManager::Instance();
     AliCDBManager *managerVoltage = AliCDBManager::Instance();
@@ -951,12 +972,13 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
     bufferScalersLocalBoardList1 = 0x0;
 
     //loop sui run inseriti
-    for (std::vector<AliOCDBRun>::iterator runIterator = fOCDBRunListToAdd.begin(); runIterator != fOCDBRunListToAdd.end(); ++runIterator) {
-        if ((*runIterator).fYear == 0) continue;
+    for(Int_t i=0;i<fOCDBRunListToAdd->GetEntries();i++){
+        AliOCDBRun *runIterator=(AliOCDBRun*)fOCDBRunListToAdd->At(i);
+        if (runIterator->fYear == 0) continue;
         UInt_t RunYear=(*runIterator).fYear;
-
+        
         //cout<<"YEar retrieved"<<endl;
-
+        
         //inizializzazione dei manager
         managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
         managerVoltage->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
@@ -1067,7 +1089,13 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         PrintWhichRPC(RPC - 1, side, plane);
                         continue;
                     }
-
+                    
+                    if(fOCDBRunListDownloaded->FindObject(runIterator)){
+                        continue;
+                    }
+                    
+                    fOCDBRunListDownloaded->Add(runIterator);
+                    
                     //creazione di un pointer all'elemento della mappa delle tensioni
                     TObjArray *dataArrayVoltage;
                     dataArrayVoltage=(TObjArray*)(mapCurrent->GetValue(Form("MTR_%s_MT%d_RPC%d_HV.vEff",fSides[side].Data(),fPlanes[plane],RPC)));
@@ -1291,6 +1319,9 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
     }
 
     printf("\n\n\nDark currents setting complete\n\n\n");
+    fGlobalDataContainer->cd();
+    fOCDBRunListToAdd->Write("DownloadedRuns",TObject::kSingleKey);
+
 }
 
 

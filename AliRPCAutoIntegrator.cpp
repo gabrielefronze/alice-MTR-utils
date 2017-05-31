@@ -1458,12 +1458,13 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kFALSE, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
                             fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
                             
+                            
                             AMANDAActualRunNumber-=1;
                             AMANDATimeStampStart=AMANDATimeStampStop;
                             AMANDATimeStampStop=0;
                             AMANDAMeanTotalCurrent=0.;
                             AMANDANTotalCurrent=0;
-                            
+                            statsBuffer=0x0;
                         }
                     }
                     

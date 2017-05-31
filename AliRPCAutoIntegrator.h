@@ -121,6 +121,20 @@ private:
         return output;
     }
 
+    void SetupSmartTree(TString ObjectName, TFile *file, TSmartTree *smartTree, AliRPCValueDCS* smartTreeBuffer) {
+        if (!(file->GetListOfKeys()->Contains(ObjectName))) {
+            smartTree = new TSmartTree(ObjectName, ObjectName);
+            smartTree->Branch(ObjectName, smartTreeBuffer);
+            smartTree->Write(ObjectName);
+            cout << "Created ";
+        } else {
+            file->GetObject(ObjectName, smartTree);
+            smartTree->SetBranchAddress(ObjectName, &smartTreeBuffer);
+            cout << "Loading ";
+        }
+        cout << ObjectName << " #Entries: " << smartTree->GetEntries() << "\r";
+    }
+
 public:
 
     void InitDataMembers();

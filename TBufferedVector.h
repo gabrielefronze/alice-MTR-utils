@@ -5,11 +5,10 @@
 #ifndef TBUFFEREDVECTOR_H
 #define TBUFFEREDVECTOR_H
 
-#include "TObject.h"
 #include "TSmartTree.h"
 #include "TBranch.h"
 
-template<typename T> class TBufferedVector : public TObject{
+template <class T> class TBufferedVector : public TObject{
 private:
     TSmartTree fSmartTree;
     TBranch *fBranch;
@@ -21,7 +20,7 @@ private:
 public:
 
     TBufferedVector<T>(const char* treeName = "tree", const char* branchName = "branch") : TObject(),
-    fSmartTree(treeName,treeName){
+                                                                                           fSmartTree(treeName,treeName){
         fBegin = 0;
         fEnd = 0;
         fPosition = 0;
@@ -41,8 +40,8 @@ public:
         return fContentPointer;
     }
 
-    void Add(T* element){
-        fContentPointer = element;
+    void Add(T element){
+        fContentPointer = &element;
         fEnd++;
         fSmartTree.Fill();
     }
@@ -51,8 +50,13 @@ public:
         fSmartTree.Sort(majorname,minorname);
     }
 
-    ClassDefT(TBufferedVector<T>,0)
+    Int_t GetEntries(){
+        return fSmartTree.GetEntries();
+    }
 };
-ClassDefT2(TBufferedVector,T)
+
+#ifdef ROOTCLING
+#pragma link C++ class TBufferedVector<TObject>+;
+#endif
 
 #endif //TBUFFEREDVECTOR_H

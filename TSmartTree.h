@@ -6,6 +6,7 @@
 #define ALICE_MTR_UTILS_TSMARTTREE_H
 
 #include "TTree.h"
+#include "TBranch.h"
 #include "TTreeIndex.h"
 
 class TSmartTree : public TTree{

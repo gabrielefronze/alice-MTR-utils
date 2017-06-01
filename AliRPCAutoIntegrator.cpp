@@ -433,7 +433,7 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
 
-                fGlobalDataContainer->Write();
+                fGlobalDataTree[iSide][iPlane][iRPC]->Write("",TObject::kOverwrite);
             }
         }
     }

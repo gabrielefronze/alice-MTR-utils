@@ -934,8 +934,8 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
           if((current!=0. || (current==0. && isZero)) && timeStamp>8000000.){
 //            printf("%f %c=%d %d %d %.17f\n\n",timeStamp,InsideOutside,(InsideOutside=='I'?0:1),MT,RPC,current);
 //            cout<<timeStamp<<endl;
-              fAMANDADataTreeBuffer[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1] = new AliRPCValueCurrent(0, timeStamp, 0, current, 0., kFALSE,"",0.f,"", 0, kTRUE);
-              fAMANDADataTreeBuffer[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->SetIsAMANDA(kTRUE);
+              fAMANDADataTreeBuffer[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1] = AliRPCValueCurrent(0, timeStamp, 0, current, 0., kFALSE,"",0.f,"", 0, kTRUE);
+              fAMANDADataTreeBuffer[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1].SetIsAMANDA(kTRUE);
               fAMANDADataTree[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->Fill();
 //              cout<<"filled"<<endl;
             // //if (timeStamp<8000000) continue;

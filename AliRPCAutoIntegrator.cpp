@@ -421,6 +421,8 @@ void AliRPCAutoIntegrator::Aggregator(){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
 
+                fGlobalDataContainer->cd();
+
                 for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
                     fGlobalDataTreeBuffer[iSide][iPlane][iRPC] = fAMANDADataTreeBuffer[iSide][iPlane][iRPC];
                     fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
@@ -433,6 +435,7 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
 
+                fGlobalDataContainer->cd();
                 fGlobalDataTree[iSide][iPlane][iRPC]->Write("",TObject::kOverwrite);
             }
         }
@@ -1360,12 +1363,23 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     }
 
     printf("\n\n\nDark currents setting complete\n\n\n");
+
     for (Int_t plane=0; plane<kNPlanes; plane++) {
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 1; RPC <= kNRPC; RPC++) {
+                fOCDBDataContainer->cd();
                 fOCDBDataTree[side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+                fOCDBDataContainer->cd();
                 fOCDBRPCScalersTree[0][side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+                fOCDBDataContainer->cd();
                 fOCDBRPCScalersTree[1][side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+            }
+
+            for (Int_t localBoard=0; localBoard<kNLocalBoards; localBoard++) {
+                fOCDBDataContainer->cd();
+                fOCDBLBScalersTree[0][plane][localBoard]->Write("", TObject::kOverwrite);
+                fOCDBDataContainer->cd();
+                fOCDBLBScalersTree[1][plane][localBoard]->Write("", TObject::kOverwrite);
             }
         }
     }

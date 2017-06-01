@@ -102,18 +102,18 @@ public:
     TSmartTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
     TSmartTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
 
-    AliRPCValueDCS *fOCDBDataTreeBuffer[kNSides][kNPlanes][kNRPC];
-    AliRPCValueDCS *fOCDBRPCScalersTreeBuffer[2][kNSides][kNPlanes][kNRPC];
-    AliRPCValueDCS *fOCDBLBScalersTreeBuffer[kNCathodes][kNPlanes][kNLocalBoards];
+    AliRPCValueDCS fOCDBDataTreeBuffer[kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS fOCDBRPCScalersTreeBuffer[2][kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS fOCDBLBScalersTreeBuffer[kNCathodes][kNPlanes][kNLocalBoards];
 
 
 //    TTree *fAMANDATree;
     TSmartTree *fAMANDADataTree[kNSides][kNPlanes][kNRPC];
-    AliRPCValueDCS *fAMANDADataTreeBuffer[kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS fAMANDADataTreeBuffer[kNSides][kNPlanes][kNRPC];
     
 //    TTree *fGlobalTree;
     TSmartTree *fGlobalDataTree[kNSides][kNPlanes][kNRPC];
-    AliRPCValueDCS *fGlobalDataTreeBuffer[kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS fGlobalDataTreeBuffer[kNSides][kNPlanes][kNRPC];
 
 private:
     Bool_t CheckPointer(TNamed *pointer){

@@ -143,12 +143,12 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fOCDBDataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
+//                fOCDBDataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
                 ObjectName = Form("OCDB_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
                 if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fOCDBDataContainer->cd();
                     fOCDBDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
-                    fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, fOCDBDataTreeBuffer[side][plane][RPC]);
+                    fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, &fOCDBDataTreeBuffer[side][plane][RPC]);
                     fOCDBDataTree[side][plane][RPC]->Write(ObjectName);
                     cout << "Created ";
                 } else {
@@ -164,12 +164,12 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fOCDBRPCScalersTreeBuffer[0][side][plane][RPC] = new AliRPCValueDCS();
+//                fOCDBRPCScalersTreeBuffer[0][side][plane][RPC] = new AliRPCValueDCS();
                 ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
                     fOCDBRPCScalersTree[0][side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,fOCDBRPCScalersTreeBuffer[0][side][plane][RPC]);
+                    fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBuffer[0][side][plane][RPC]);
                     fOCDBRPCScalersTree[0][side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
@@ -185,12 +185,12 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fOCDBRPCScalersTreeBuffer[1][side][plane][RPC] = new AliRPCValueDCS();
+//                fOCDBRPCScalersTreeBuffer[1][side][plane][RPC] = new AliRPCValueDCS();
                 ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
                     fOCDBRPCScalersTree[1][side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,fOCDBRPCScalersTreeBuffer[1][side][plane][RPC]);
+                    fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBuffer[1][side][plane][RPC]);
                     fOCDBRPCScalersTree[1][side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
@@ -208,12 +208,12 @@ fUpdateAMANDA(updateAMANDA){
         
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fGlobalDataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
+//                fGlobalDataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
                 ObjectName = Form("Global_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
                 if (!(fGlobalDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fGlobalDataContainer->cd();
                     fGlobalDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
-                    fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, fGlobalDataTreeBuffer[side][plane][RPC]);
+                    fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, &fGlobalDataTreeBuffer[side][plane][RPC]);
                     fGlobalDataTree[side][plane][RPC]->Write(ObjectName);
                     cout << "Created ";
                 } else {
@@ -231,12 +231,12 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fAMANDADataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
+//                fAMANDADataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
                 ObjectName = Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fAMANDADataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fAMANDADataContainer->cd();
                     fAMANDADataTree[side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,fAMANDADataTreeBuffer[side][plane][RPC]);
+                    fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,&fAMANDADataTreeBuffer[side][plane][RPC]);
                     fAMANDADataTree[side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
@@ -254,12 +254,12 @@ fUpdateAMANDA(updateAMANDA){
 
         cout<<"Beginning LBs"<<endl;
         for(Int_t local=0;local<kNLocalBoards;local++) {
-            fOCDBLBScalersTreeBuffer[0][plane][local] = new AliRPCValueDCS();
+//            fOCDBLBScalersTreeBuffer[0][plane][local] = new AliRPCValueDCS();
             ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d", (fCathodes[0]).Data(), fPlanes[plane], local + 1);
             if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                 fOCDBDataContainer->cd();
                 fOCDBLBScalersTree[0][plane][local] = new TSmartTree(ObjectName, ObjectName);
-                fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, fOCDBLBScalersTreeBuffer[0][plane][local]);
+                fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, &fOCDBLBScalersTreeBuffer[0][plane][local]);
                 fOCDBLBScalersTree[0][plane][local]->Write(ObjectName);
                 cout << "Created ";
             } else {
@@ -273,12 +273,12 @@ fUpdateAMANDA(updateAMANDA){
         cout<<endl;
 
         for(Int_t local=0;local<kNLocalBoards;local++){
-            fOCDBLBScalersTreeBuffer[1][plane][local] = new AliRPCValueDCS();
+//            fOCDBLBScalersTreeBuffer[1][plane][local] = new AliRPCValueDCS();
             ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[1]).Data(),fPlanes[plane],local+1);
             if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                 fOCDBDataContainer->cd();
                 fOCDBLBScalersTree[1][plane][local] = new TSmartTree(ObjectName,ObjectName);
-                fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,fOCDBLBScalersTreeBuffer[1][plane][local]);
+                fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,&fOCDBLBScalersTreeBuffer[1][plane][local]);
                 fOCDBLBScalersTree[1][plane][local]->Write(ObjectName);
                 cout<<"Created ";
             } else {
@@ -1156,7 +1156,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                             break;
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
-                            fOCDBDataTreeBuffer[side][plane][RPC-1] = new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
+                            fOCDBDataTreeBuffer[side][plane][RPC-1] = AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
 //                                    cout<<"Filled tree! "<<fOCDBDataTree[side][plane][RPC-1]->GetEntries()<<endl;
                         }
@@ -1185,12 +1185,12 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         AliDCSValue *value = (AliDCSValue*)dataArrayCurrents->At(arrayIndex);
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
-                            fOCDBDataTreeBuffer[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
+                            fOCDBDataTreeBuffer[side][plane][RPC-1] = AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
-                            fOCDBDataTreeBuffer[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
+                            fOCDBDataTreeBuffer[side][plane][RPC-1] = AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
@@ -1251,11 +1251,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
                         // se la lettura non è quella a fine run immagazzino il dato con timestamp pari a SOR+DeltaT
                         if(scalerEntry!=arrayScalersEntries-1){
-                            fOCDBRPCScalersTreeBuffer[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
+                            fOCDBRPCScalersTreeBuffer[cathode][iSide][plane][iRPC09-1] = AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
                             // altrimenti il timestamp è pari all'EOR
                         else {
-                            fOCDBRPCScalersTreeBuffer[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
+                            fOCDBRPCScalersTreeBuffer[cathode][iSide][plane][iRPC09-1] = AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
                         fOCDBLBScalersTreeBuffer[cathode][plane][localBoard] = fOCDBRPCScalersTreeBuffer[cathode][iSide][plane][iRPC09-1];
 
@@ -1277,7 +1277,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
             for (Int_t side=0; side<kNSides; side++) {
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
                     for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
-                        fOCDBRPCScalersTreeBuffer[cathode][side][plane][RPC-1] = new AliRPCOverflowStatistics((*runIterator).fRunNumber, EOR, overflowLB[cathode][side][plane][RPC-1], readLB[cathode][side][plane][RPC-1], isCalib,*beamType,beamEnergy,*LHCState );
+                        fOCDBRPCScalersTreeBuffer[cathode][side][plane][RPC-1] = AliRPCOverflowStatistics((*runIterator).fRunNumber, EOR, overflowLB[cathode][side][plane][RPC-1], readLB[cathode][side][plane][RPC-1], isCalib,*beamType,beamEnergy,*LHCState );
                         fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Fill();
 //                        fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Write(0,TObject::kWriteDelete,0);
                         //cout<<"RUN"<<(*runIterator).runNumber<<" side:"<<side<<" plane "<<plane<<" RPC "<<RPC<<" cathode "<<cathode<<" READ="<<readLB[cathode][side][plane][RPC-1]<<" OVERFLOW="<<overflowLB[cathode][side][plane][RPC-1]<<endl<<endl;
@@ -1318,7 +1318,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 //                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
                 fOCDBDataTree[side][plane][RPC-1]->Sort("fRunNumber","fTimeStamp");
 
-                AliRPCValueDCS *valueDCS=fOCDBDataTreeBuffer[side][plane][RPC-1];
+                AliRPCValueDCS *valueDCS= &(fOCDBDataTreeBuffer[side][plane][RPC-1]);
 
                 for (int iOCDBData = 0; iOCDBData < fOCDBDataTree[side][plane][RPC-1]->GetEntries() ; ++iOCDBData) {
                     //cout<<iList<<"/"<<sortedList->GetEntries()<<endl;

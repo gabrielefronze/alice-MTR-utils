@@ -20,3 +20,23 @@ DarkRate\.cpp
 IntegratedCharge\.cpp
 
 *.o
+
+alice_MTR_utils\.build/Debug/alice_MTR_utils\.build/
+
+alice_MTR_utils\.build/Debug/ALL_BUILD\.build/
+
+alice_MTR_utils\.build/Debug/ZERO_CHECK\.build/
+
+alice_MTR_utils\.xcodeproj/
+
+*.cbp
+
+CMakeScripts/
+
+CMakeFiles/
+
+cmake_install\.cmake
+
+CMakeCache\.txt
+
+Makefile

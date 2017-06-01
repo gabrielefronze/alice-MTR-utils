@@ -98,7 +98,6 @@ private:
 
 public:
 //    TTree *fOCDBTree;
-    //array 3D di liste di dati. le TObjArray sono già ordinate dopo ogni inserimento
     TSmartTree *fOCDBDataTree[kNSides][kNPlanes][kNRPC];
     TSmartTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
     TSmartTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
@@ -111,6 +110,10 @@ public:
 //    TTree *fAMANDATree;
     TSmartTree *fAMANDADataTree[kNSides][kNPlanes][kNRPC];
     AliRPCValueDCS *fAMANDADataTreeBuffer[kNSides][kNPlanes][kNRPC];
+    
+//    TTree *fGlobalTree;
+    TSmartTree *fGlobalDataTree[kNSides][kNPlanes][kNRPC];
+    AliRPCValueDCS *fGlobalDataTreeBuffer[kNSides][kNPlanes][kNRPC];
 
 private:
     Bool_t CheckPointer(TNamed *pointer){
@@ -122,6 +125,7 @@ private:
     }
 
     void SetupSmartTree(TString ObjectName, TFile *file, TSmartTree *smartTree, AliRPCValueDCS* smartTreeBuffer) {
+        file->cd();
         if (!(file->GetListOfKeys()->Contains(ObjectName))) {
             smartTree = new TSmartTree(ObjectName, ObjectName);
             smartTree->Branch(ObjectName, smartTreeBuffer);

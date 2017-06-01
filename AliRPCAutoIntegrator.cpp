@@ -530,16 +530,6 @@ void AliRPCAutoIntegrator::Subtractor(){
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
-                buffer->Sort();
-
-                // if any fAMANDAData list is missing, then the channel
-                // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
-                // analysis
-                if (!buffer){
-                    printf("TObjArray/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
 
                 AMANDAPlotsINet[iSide][iPlane][iRPC]=new TGraph();
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -547,7 +537,6 @@ void AliRPCAutoIntegrator::Subtractor(){
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
-                TIter iterValueGlobal(buffer);
                 Double_t darkCurrentValue = 0.;
                 Double_t startTimeStamp = 0.;
                 Int_t counter=0;
@@ -557,10 +546,18 @@ void AliRPCAutoIntegrator::Subtractor(){
                 Double_t iDarkt1 = 0.;
                 Double_t t1 = 0.;
 
-                while(iterValueGlobal()){
+                if(!fGlobalDataTree[iSide][iPlane][iRPC]->GetIsSorted()) fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimestamp");
+
+                AliRPCValueDCS *bufferValue = 0x0;
+
+                for (Long64_t iGlobalData=0; iGlobalData < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); fGlobalDataTree[iSide][iPlane][iRPC]->GetEntry(iGlobalData++)) {
+
+                    fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
+
+                    bufferValue = &(fGlobalDataTreeBuffer[iSide][iPlane][iRPC]);
 
                     //skip if is not current
-                    if ( !((AliRPCValueDCS*)*iterValueGlobal)->IsCurrent() ) continue;
+                    if ( !((AliRPCValueDCS*)bufferValue)->IsCurrent() ) continue;
 
                     // if the read value is an AMANDA or OCDB with run reading, then the dark
                     // current subtraction must take place. To do that via
@@ -612,7 +609,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                     // If the current value is flagged as a dark current we want to get the following dark current
                     // and load the current values and timestamps. These values will be used later.
-                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ) {
+                    if ( ((AliRPCValueDCS*)bufferValue)->IsOkForIDark() ) {
 
                         iDarkt0 = 0.;
                         t0 = 0.;
@@ -620,23 +617,27 @@ void AliRPCAutoIntegrator::Subtractor(){
                         t1 = 0.;
 
 
-                        if (((AliRPCValueCurrent*)*iterValueGlobal)) {
-                            iDarkt0 = ((AliRPCValueCurrent *) *iterValueGlobal)->GetITot();
-                            t0 = ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp();
+                        if (((AliRPCValueCurrent*)bufferValue)) {
+                            iDarkt0 = ((AliRPCValueCurrent *) bufferValue)->GetITot();
+                            t0 = ((AliRPCValueCurrent *) bufferValue)->GetTimeStamp();
 
-                            TIter iterValueGlobalNext = iterValueGlobal;
-                            //iterValueGlobalNext();
 
-                            while (iterValueGlobalNext()) {
-                                if (((AliRPCValueDCS *) *iterValueGlobalNext)->IsOkForIDark()) break;
+                            for (Long64_t iGlobalDataNext=iGlobalData+1; iGlobalDataNext < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); fGlobalDataTree[iSide][iPlane][iRPC]->GetEntry(iGlobalDataNext++)) {
+
+                                fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalDataNext);
+
+                                if (((AliRPCValueDCS *) bufferValue)->IsOkForIDark()) break;
+
+
+                                if (((AliRPCValueCurrent*)bufferValue)) {
+                                    iDarkt1 = ((AliRPCValueCurrent *) bufferValue)->GetITot();
+                                    t1 = ((AliRPCValueCurrent *) bufferValue)->GetTimeStamp();
+                                }
+
+                                    //printf("%f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
                             }
 
-                            if (((AliRPCValueCurrent*)*iterValueGlobalNext)) {
-                                iDarkt1 = ((AliRPCValueCurrent *) *iterValueGlobalNext)->GetITot();
-                                t1 = ((AliRPCValueCurrent *) *iterValueGlobalNext)->GetTimeStamp();
-
-                                //printf("%f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
-                            }
+                            fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
                         }
                     }
 
@@ -647,15 +648,15 @@ void AliRPCAutoIntegrator::Subtractor(){
                         //printf("IDark %f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
 
                         // current timestamp is neede for the linear interpolation of the dark current
-                        Double_t tnow = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
+                        Double_t tnow = ((AliRPCValueCurrent*)bufferValue)->GetTimeStamp();
                         Double_t darkCurrent = tnow * (iDarkt1 - iDarkt0) / (t1 - t0) + iDarkt0;
 
                         //printf("tnow %f \n", tnow);
 
                         // negative dark current is non physical...
                         if (darkCurrent < 0.) darkCurrent = 0;
-                        ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark(darkCurrent);
-                        if ( ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() == 0.)  ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark((iDarkt1 + iDarkt0)/2.);
+                        ((AliRPCValueCurrent *) bufferValue)->SetIDark(darkCurrent);
+                        if ( ((AliRPCValueCurrent *) bufferValue)->GetINet() == 0.)  ((AliRPCValueCurrent *) bufferValue)->SetIDark((iDarkt1 + iDarkt0)/2.);
 
                         //cout<<" dark current set "<< ((AliRPCValueCurrent *) *iterValueGlobal)->GetIDark() << endl;
 
@@ -664,11 +665,11 @@ void AliRPCAutoIntegrator::Subtractor(){
                         // The subtraction will take place at the moment of
                         // asking the reading the iNET value
                         // (since it returns iTOT-iDARK).
-                        if (((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp() > 8000 &&
-                            ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() >= 0.)
+                        if (((AliRPCValueCurrent *) bufferValue)->GetTimeStamp() > 8000 &&
+                            ((AliRPCValueCurrent *) bufferValue)->GetINet() >= 0.)
                             AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++,
-                                                                           ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp(),
-                                                                           ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() /
+                                                                           ((AliRPCValueCurrent *) bufferValue)->GetTimeStamp(),
+                                                                           ((AliRPCValueCurrent *) bufferValue)->GetINet() /
                                                                            fRPCAreas[iRPC][iPlane]);
                     }
                 }

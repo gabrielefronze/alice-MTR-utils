@@ -121,6 +121,21 @@ fUpdateAMANDA(updateAMANDA){
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
     }
 
+    fExistsRPCDataObject = checkFileExistance(OutputFileName);
+
+    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+    if(!fExistsRPCDataObject){
+        cout<<"File doesn't exist"<<endl;
+        fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
+        fGlobalDataContainer->cd();
+        fGlobalDataContainer->mkdir("TObjArrays");
+        fGlobalDataContainer->mkdir("iNet_Graphs");
+        fGlobalDataContainer->mkdir("integrated_charge_Graphs");
+    } else {
+        cout<<"File exists"<<endl;
+        fGlobalDataContainer = new TFile(Form("%s",OutputFileName.Data()),"UPDATE");;
+    }
+
     TString ObjectName;
     for (Int_t plane=0; plane<kNPlanes; plane++) {
 
@@ -276,20 +291,6 @@ fUpdateAMANDA(updateAMANDA){
         cout<<endl<<endl;
     }
 
-    fExistsRPCDataObject = checkFileExistance(OutputFileName);
-
-    //fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-    if(!fExistsRPCDataObject){
-        cout<<"File doesn't exist"<<endl;
-        fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
-        fGlobalDataContainer->cd();
-        fGlobalDataContainer->mkdir("TObjArrays");
-        fGlobalDataContainer->mkdir("iNet_Graphs");
-        fGlobalDataContainer->mkdir("integrated_charge_Graphs");
-    } else {
-        cout<<"File exists"<<endl;
-        fGlobalDataContainer = new TFile(Form("%s",OutputFileName.Data()),"UPDATE");;
-    }
 
     //check if AliRPCData already exists
     AliRPCData *AliRPCDataBuffer;

@@ -1223,6 +1223,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
                         value = 0x0;
                     }
+
 //                    fOCDBDataTree[side][plane][RPC-1]->Write(0,TObject::kWriteDelete,0);
                     //Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC)
                 }
@@ -1312,7 +1313,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
         }
         //printf("fAMANDAData saved.\n");
 
-        fOCDBDataContainer->Write();
+//        fOCDBDataContainer->Write();
 
         delete runType, beamType, LHCState;
     }
@@ -1389,8 +1390,15 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     }
 
     printf("\n\n\nDark currents setting complete\n\n\n");
-
-    fOCDBDataContainer->Write();
+    for (Int_t plane=0; plane<kNPlanes; plane++) {
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 1; RPC <= kNRPC; RPC++) {
+                fOCDBDataTree[side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+                fOCDBRPCScalersTree[0][side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+                fOCDBRPCScalersTree[1][side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+            }
+        }
+    }
 
     return allBlocksDone;
 }

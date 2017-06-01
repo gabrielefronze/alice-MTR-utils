@@ -188,6 +188,28 @@ fUpdateAMANDA(updateAMANDA){
         }
 
         cout<<endl;
+        fGlobalDataContainer->cd();
+        
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
+                fGlobalDataTreeBuffer[side][plane][RPC] = new AliRPCValueDCS();
+                ObjectName = Form("Global_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
+                if (!(fGlobalDataContainer->GetListOfKeys()->Contains(ObjectName))) {
+                    fGlobalDataContainer->cd();
+                    fGlobalDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
+                    fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, fGlobalDataTreeBuffer[side][plane][RPC]);
+                    fGlobalDataTree[side][plane][RPC]->Write(ObjectName);
+                    cout << "Created ";
+                } else {
+                    fGlobalDataContainer->GetObject(ObjectName,fGlobalDataTree[side][plane][RPC]);
+                    fGlobalDataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fGlobalDataTreeBuffer[side][plane][RPC]);
+                    cout << "Loading ";
+                }
+                cout << ObjectName << " #Entries: "<< fGlobalDataTree[side][plane][RPC]->GetEntries() << "\r";
+            }
+        }
+        
+        cout<<endl;
 
         fAMANDADataContainer->cd();
 

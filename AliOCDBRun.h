@@ -15,7 +15,7 @@ public:
     inline UInt_t GetRunNumber()const{return fRunNumber;};
 
     AliOCDBRun() : TObject() {};
-    AliOCDBRun(UInt_t runNumber, Int_t year) : fRunNumber(runNumber), fYear(year), TObject(){};
+    AliOCDBRun(UInt_t runNumber, Int_t year) : TObject(), fRunNumber(runNumber), fYear(year){};
     virtual ~AliOCDBRun(){};
 
     Bool_t IsEqual (const TObject *obj) const{

@@ -188,6 +188,7 @@ fUpdateAMANDA(updateAMANDA){
         }
 
         cout<<endl;
+        
         fGlobalDataContainer->cd();
         
         for (Int_t side = 0; side < kNSides; side++) {
@@ -414,56 +415,24 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
 // beam runs (OCDB). This allows one to use subtract the dark current from
 // AMANDA fAMANDAData in the most detailed way.
 void AliRPCAutoIntegrator::Aggregator(){
-    TObjArray *listBufferAMANDA = 0x0;
-    TObjArray *listBufferOCDB = 0x0;
-    TObjArray *mergedData[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
 
-                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBufferAMANDA);
-                fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBufferOCDB);
-
-                // if any fAMANDAData list is missing, then the channel
-                // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
-                // analysis
-                if (!listBufferAMANDA) {
-                    printf("AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
-                if (!listBufferOCDB) {
-                    printf("OCDB_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
+                for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
+                    fGlobalDataTreeBuffer[iSide][iPlane][iRPC] = fAMANDADataTreeBuffer[iSide][iPlane][iRPC];
+                    fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
                 }
 
-                mergedData[iSide][iPlane][iRPC]=new TObjArray();
-                mergedData[iSide][iPlane][iRPC]->SetName(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-
-                TIter iterValueAMANDA(listBufferAMANDA);
-                while(iterValueAMANDA()){
-                    ((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
-                    mergedData[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-                    mergedData[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+                for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
+                    fGlobalDataTreeBuffer[iSide][iPlane][iRPC] = fAMANDADataTreeBuffer[iSide][iPlane][iRPC];
+                    fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
                 }
 
+                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
 
-                TIter iterValueOCDB(listBufferOCDB);
-                while(iterValueOCDB()){
-                    mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
-                    mergedData[iSide][iPlane][iRPC]->SetOwner(kTRUE);
-                }
-
-                // the sorting will take place with respect to the timestamp of
-                // each entry
-                mergedData[iSide][iPlane][iRPC]->Sort();
-
-                fGlobalDataContainer->cd("TObjArrays");
-                mergedData[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
-                PrintWhichRPC(iRPC, iSide, iPlane);
-
-                listBufferAMANDA = 0x0;
-                listBufferOCDB = 0x0;
+                fGlobalDataContainer->Write();
             }
         }
     }

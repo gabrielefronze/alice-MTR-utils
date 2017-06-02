@@ -8,11 +8,13 @@
 #include "TSmartTree.h"
 #include "TBranch.h"
 
+
 template <class T> class TBufferedVector : public TObject{
 private:
     TSmartTree fSmartTree;
     TBranch *fBranch;
-    T* fContentPointer;
+    T fContentPointerW;
+    T* fContentPointerR;
     Long64_t fBegin;
     Long64_t fEnd;
     Long64_t fPosition;
@@ -24,24 +26,31 @@ public:
         fBegin = 0;
         fEnd = 0;
         fPosition = 0;
-        fContentPointer = new T();
-        fBranch = fSmartTree.Branch(branchName,branchName,fContentPointer);
+        fContentPointerR = &fContentPointerW;
+        fBranch = fSmartTree.Branch(branchName,branchName,&fContentPointerW);
+        fSmartTree.SetBranchAddress(branchName,&fContentPointerR);
     }
 
     T* operator[](Long64_t i){
         fSmartTree.GetSortedEntry(i);
         fPosition = i;
-        return fContentPointer;
+        return fContentPointerR;
     }
 
     T* At(Long64_t i){
         fSmartTree.GetSortedEntry(i);
         fPosition = i;
-        return fContentPointer;
+        return fContentPointerR;
+    }
+
+    void Add(T* element){
+        fContentPointerW = *element;
+        fEnd++;
+        fSmartTree.Fill();
     }
 
     void Add(T element){
-        fContentPointer = &element;
+        fContentPointerW = element;
         fEnd++;
         fSmartTree.Fill();
     }
@@ -53,10 +62,14 @@ public:
     Int_t GetEntries(){
         return fSmartTree.GetEntries();
     }
+
+    ClassDefT(TBufferedVector<T>,1)
 };
 
-#ifdef ROOTCLING
 #pragma link C++ class TBufferedVector<TObject>+;
-#endif
+
+//#ifdef ROOTCINT
+//#pragma link C++ class TBufferedVector<TObject>+;
+//#endif
 
 #endif //TBUFFEREDVECTOR_H

@@ -143,7 +143,8 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fOCDBDataTreeBufferR[side][plane][RPC] = &(fOCDBDataTreeBufferW[side][plane][RPC]);
+                fOCDBDataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
+                fOCDBDataTreeBufferR[side][plane][RPC] = fOCDBDataTreeBufferW[side][plane][RPC];
                 ObjectName = Form("OCDB_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
                 if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fOCDBDataContainer->cd();
@@ -164,7 +165,8 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fOCDBRPCScalersTreeBufferR[0][side][plane][RPC] = &(fOCDBRPCScalersTreeBufferW[0][side][plane][RPC]);
+                fOCDBRPCScalersTreeBufferW[0][side][plane][RPC] = new AliRPCValueScaler();
+                fOCDBRPCScalersTreeBufferR[0][side][plane][RPC] = fOCDBRPCScalersTreeBufferW[0][side][plane][RPC];
                 ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
@@ -185,7 +187,8 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fOCDBRPCScalersTreeBufferR[1][side][plane][RPC] = &(fOCDBRPCScalersTreeBufferW[1][side][plane][RPC]);
+                fOCDBRPCScalersTreeBufferW[1][side][plane][RPC] = new AliRPCValueScaler();
+                fOCDBRPCScalersTreeBufferR[1][side][plane][RPC] = fOCDBRPCScalersTreeBufferW[1][side][plane][RPC];
                 ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
@@ -208,7 +211,8 @@ fUpdateAMANDA(updateAMANDA){
         
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fGlobalDataTreeBufferR[side][plane][RPC] = &(fGlobalDataTreeBufferW[side][plane][RPC]);
+                fGlobalDataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
+                fGlobalDataTreeBufferR[side][plane][RPC] = fGlobalDataTreeBufferW[side][plane][RPC];
                 ObjectName = Form("Global_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
                 if (!(fGlobalDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fGlobalDataContainer->cd();
@@ -231,7 +235,8 @@ fUpdateAMANDA(updateAMANDA){
 
         for (Int_t side = 0; side < kNSides; side++) {
             for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
-                fAMANDADataTreeBufferR[side][plane][RPC] = &(fAMANDADataTreeBufferW[side][plane][RPC]);
+                fAMANDADataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
+                fAMANDADataTreeBufferR[side][plane][RPC] = fAMANDADataTreeBufferW[side][plane][RPC];
                 ObjectName = Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fAMANDADataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fAMANDADataContainer->cd();
@@ -254,7 +259,8 @@ fUpdateAMANDA(updateAMANDA){
 
         cout<<"Beginning LBs"<<endl;
         for(Int_t local=0;local<kNLocalBoards;local++) {
-            fOCDBLBScalersTreeBufferR[0][plane][local] = &(fOCDBLBScalersTreeBufferW[0][plane][local]);
+            fOCDBLBScalersTreeBufferW[0][plane][local] = new AliRPCValueScaler();
+            fOCDBLBScalersTreeBufferR[0][plane][local] = fOCDBLBScalersTreeBufferW[0][plane][local];
             ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d", (fCathodes[0]).Data(), fPlanes[plane], local + 1);
             if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                 fOCDBDataContainer->cd();
@@ -273,7 +279,8 @@ fUpdateAMANDA(updateAMANDA){
         cout<<endl;
 
         for(Int_t local=0;local<kNLocalBoards;local++){
-            fOCDBLBScalersTreeBufferR[1][plane][local] = &(fOCDBLBScalersTreeBufferW[1][plane][local]);
+            fOCDBLBScalersTreeBufferW[1][plane][local] = new AliRPCValueScaler();
+            fOCDBLBScalersTreeBufferR[1][plane][local] = fOCDBLBScalersTreeBufferW[1][plane][local];
             ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[1]).Data(),fPlanes[plane],local+1);
             if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                 fOCDBDataContainer->cd();
@@ -554,7 +561,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                     fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
 
-                    bufferValue = &(fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
+                    bufferValue = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
 
                     //skip if is not current
                     if ( !((AliRPCValueDCS*)bufferValue)->IsCurrent() ) continue;
@@ -934,8 +941,8 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
           if((current!=0. || (current==0. && isZero)) && timeStamp>8000000.){
 //            printf("%f %c=%d %d %d %.17f\n\n",timeStamp,InsideOutside,(InsideOutside=='I'?0:1),MT,RPC,current);
 //            cout<<timeStamp<<endl;
-              fAMANDADataTreeBufferW[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1] = AliRPCValueCurrent(0, timeStamp, 0, current, 0., kFALSE,"",0.f,"", 0, kTRUE);
-              fAMANDADataTreeBufferW[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1].SetIsAMANDA(kTRUE);
+              fAMANDADataTreeBufferW[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1] = new AliRPCValueCurrent(0, timeStamp, 0, current, 0., kFALSE,"",0.f,"", 0, kTRUE);
+              fAMANDADataTreeBufferW[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->SetIsAMANDA(kTRUE);
               fAMANDADataTree[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->Fill();
 //              cout<<"filled"<<endl;
             // //if (timeStamp<8000000) continue;
@@ -1156,7 +1163,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                             break;
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
-                            fOCDBDataTreeBufferW[side][plane][RPC-1] = AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
+                            fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
 //                                    cout<<"Filled tree! "<<fOCDBDataTree[side][plane][RPC-1]->GetEntries()<<endl;
                         }
@@ -1185,12 +1192,12 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         AliDCSValue *value = (AliDCSValue*)dataArrayCurrents->At(arrayIndex);
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
-                            fOCDBDataTreeBufferW[side][plane][RPC-1] = AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
+                            fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
-                            fOCDBDataTreeBufferW[side][plane][RPC-1] = AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
+                            fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
@@ -1251,11 +1258,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
                         // se la lettura non è quella a fine run immagazzino il dato con timestamp pari a SOR+DeltaT
                         if(scalerEntry!=arrayScalersEntries-1){
-                            fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
+                            fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
                             // altrimenti il timestamp è pari all'EOR
                         else {
-                            fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
+                            fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
                         fOCDBLBScalersTreeBufferW[cathode][plane][localBoard] = fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1];
 
@@ -1311,6 +1318,8 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 //flag positivo se la precedente misura di tensione è >=8500.V
                 Bool_t voltageOkFlag=kFALSE;
 
+                cout<<"cieo"<<endl<<endl;
+
                 printf("Processing: MT%d_%s_%d\r",fPlanes[plane],fSides[side].Data(),RPC);
 
                 //loop sulle entries della lisa di dati
@@ -1331,15 +1340,17 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     //se è una tensione
                     if (valueDCS->IsVoltage()) {
                         //cast a tensione
-                        AliRPCValueVoltage* valueVoltage= reinterpret_cast<AliRPCValueVoltage*>(valueDCS);
+                        cout<<"Cast a tensione"<<endl;
+                        AliRPCValueVoltage* valueVoltage= static_cast<AliRPCValueVoltage*>(valueDCS);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
                         valueVoltage=0x0;
                         cout<<valueVoltage->GetVSupp()<<endl;
                         //se è una corrente
                     } else if (valueDCS->IsCurrent()) {
+                        cout<<"Cast a corrente"<<endl;
                         //cast a corrente
-                        AliRPCValueCurrent* valueCurrent=reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
+                        AliRPCValueCurrent* valueCurrent= static_cast<AliRPCValueCurrent*>(valueDCS);
                         //se è un run di calibrazione fatto a tensione di lavoro
                         if (valueCurrent->IsCalib()==kTRUE && voltageOkFlag==kTRUE) {
                             //rimangono alcune letture a 0.0A, così si tolgono ###GIUSTO?###

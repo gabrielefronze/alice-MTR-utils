@@ -32,7 +32,7 @@ typedef enum{
     kCurrent,
     kVoltage,
     kScaler,
-    kOverflow,
+    kOverflowData,
     kNoType
 } DCSDataType;
 
@@ -48,10 +48,10 @@ public:
     Int_t Compare(const TObject *obj) const;
     Bool_t IsSortable() const { return kTRUE; };
     TString *WhatIsThis() const;
-    inline Bool_t IsCurrent() const {return fDataType == kCurrent;};
-    inline Bool_t IsVoltage() const {return fDataType == kVoltage;};
-    inline Bool_t IsScaler() const {return fDataType == kScaler;};
-    inline Bool_t IsOverflow() const {return fDataType == kOverflow;};
+    inline Bool_t IsCurrent() const {return fDataType == DCSDataType::kCurrent;};
+    inline Bool_t IsVoltage() const {return fDataType == DCSDataType::kVoltage;};
+    inline Bool_t IsScaler() const {return fDataType == DCSDataType::kScaler;};
+    inline Bool_t IsOverflow() const {return fDataType == DCSDataType::kOverflowData;};
     inline Bool_t IsAMANDA() const {return fIsAMANDA;};
 
     inline void SetIsAMANDA(Bool_t isAMANDA){fIsAMANDA = isAMANDA;};

@@ -14,7 +14,7 @@ AliRPCOverflowStatistics::AliRPCOverflowStatistics() : AliRPCValueDCS(){
 };
 
 AliRPCOverflowStatistics::AliRPCOverflowStatistics(UInt_t runNumber,ULong64_t timeStamp,UInt_t overflowLBCount,UInt_t underflowLBCount,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus) : AliRPCValueDCS(
-        runNumber, timeStamp, 0, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
+        runNumber, timeStamp, 0, isCalib, beamType, beamEnergy, LHCStatus, kFALSE, DCSDataType::kOverflow) {
     fOverflowLBCount=overflowLBCount;
     fUnderflowLBCount=underflowLBCount;
 };

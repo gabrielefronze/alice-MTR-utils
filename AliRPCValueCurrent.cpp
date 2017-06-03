@@ -9,6 +9,7 @@
 #include "AliRPCValueCurrent.h"
 
 AliRPCValueCurrent::AliRPCValueCurrent() : AliRPCValueDCS(){
+    fDataType=DCSDataType::kCurrent;
 	fCalibRunNumber=0;
     fITot=0.;
     fIDark=0.;

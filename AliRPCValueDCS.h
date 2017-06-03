@@ -103,9 +103,8 @@ private:
     Bool_t fIsCalib;
     Bool_t fIsAMANDA;
 
-    DCSDataType fDataType;
-
 protected:
+    DCSDataType fDataType;
     Long64_t fScalerCounts;
     Bool_t fOverflow;
     Float_t fDeltaT;

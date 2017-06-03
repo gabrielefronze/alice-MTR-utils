@@ -9,6 +9,7 @@
 #include "AliRPCOverflowStatistics.h"
 
 AliRPCOverflowStatistics::AliRPCOverflowStatistics() : AliRPCValueDCS(){
+    fDataType=DCSDataType::kOverflowData;
     fOverflowLBCount=0;
     fUnderflowLBCount=0;
 };

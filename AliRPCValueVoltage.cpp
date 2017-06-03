@@ -9,6 +9,7 @@
 #include "AliRPCValueVoltage.h"
 
 AliRPCValueVoltage::AliRPCValueVoltage() : AliRPCValueDCS(){
+    fDataType=DCSDataType::kVoltage;
     fVSupp=(Float_t)0.;
 };
 

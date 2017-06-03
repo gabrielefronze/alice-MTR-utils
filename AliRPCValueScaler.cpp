@@ -9,6 +9,7 @@
 #include "AliRPCValueScaler.h"
 
 AliRPCValueScaler::AliRPCValueScaler() : AliRPCValueDCS(){
+    fDataType=DCSDataType::kScaler;
     fScalerCounts=0;
     fOverflow=kFALSE;
     fDeltaT=(Float_t)-1.;

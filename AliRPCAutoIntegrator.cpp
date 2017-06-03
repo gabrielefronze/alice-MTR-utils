@@ -149,7 +149,7 @@ fUpdateAMANDA(updateAMANDA){
                 if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fOCDBDataContainer->cd();
                     fOCDBDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
-                    fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, &fOCDBDataTreeBufferW[side][plane][RPC]);
+                    fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, &fOCDBDataTreeBufferW[side][plane][RPC],32000,0);
                     fOCDBDataTree[side][plane][RPC]->Write(ObjectName);
                     cout << "Created ";
                 } else {
@@ -171,7 +171,7 @@ fUpdateAMANDA(updateAMANDA){
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
                     fOCDBRPCScalersTree[0][side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC]);
+                    fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC],32000,0);
                     fOCDBRPCScalersTree[0][side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
@@ -193,7 +193,7 @@ fUpdateAMANDA(updateAMANDA){
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
                     fOCDBRPCScalersTree[1][side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC]);
+                    fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC],32000,0);
                     fOCDBRPCScalersTree[1][side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
@@ -217,7 +217,7 @@ fUpdateAMANDA(updateAMANDA){
                 if (!(fGlobalDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fGlobalDataContainer->cd();
                     fGlobalDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
-                    fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, &fGlobalDataTreeBufferW[side][plane][RPC]);
+                    fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, &fGlobalDataTreeBufferW[side][plane][RPC],32000,0);
                     fGlobalDataTree[side][plane][RPC]->Write(ObjectName);
                     cout << "Created ";
                 } else {
@@ -241,7 +241,7 @@ fUpdateAMANDA(updateAMANDA){
                 if ( !(fAMANDADataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fAMANDADataContainer->cd();
                     fAMANDADataTree[side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC]);
+                    fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC],32000,0);
                     fAMANDADataTree[side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
@@ -265,7 +265,7 @@ fUpdateAMANDA(updateAMANDA){
             if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                 fOCDBDataContainer->cd();
                 fOCDBLBScalersTree[0][plane][local] = new TSmartTree(ObjectName, ObjectName);
-                fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, &fOCDBLBScalersTreeBufferW[0][plane][local]);
+                fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, &fOCDBLBScalersTreeBufferW[0][plane][local],32000,0);
                 fOCDBLBScalersTree[0][plane][local]->Write(ObjectName);
                 cout << "Created ";
             } else {
@@ -285,7 +285,7 @@ fUpdateAMANDA(updateAMANDA){
             if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                 fOCDBDataContainer->cd();
                 fOCDBLBScalersTree[1][plane][local] = new TSmartTree(ObjectName,ObjectName);
-                fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local]);
+                fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local],32000,0);
                 fOCDBLBScalersTree[1][plane][local]->Write(ObjectName);
                 cout<<"Created ";
             } else {

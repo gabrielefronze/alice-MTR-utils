@@ -1341,7 +1341,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     if (valueDCS->IsVoltage()) {
                         //cast a tensione
                         cout<<"Cast a tensione"<<endl;
-                        AliRPCValueVoltage* valueVoltage= (AliRPCValueVoltage*)valueDCS;
+                        AliRPCValueVoltage* valueVoltage= static_cast<AliRPCValueVoltage*>(fOCDBDataTreeBufferW[side][plane][RPC-1]);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
                         valueVoltage=0x0;
@@ -1350,7 +1350,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     } else if (valueDCS->IsCurrent()) {
                         cout<<"Cast a corrente"<<endl;
                         //cast a corrente
-                        AliRPCValueCurrent* valueCurrent= (AliRPCValueCurrent*)valueDCS;
+                        AliRPCValueCurrent* valueCurrent= static_cast<AliRPCValueCurrent*>(fOCDBDataTreeBufferW[side][plane][RPC-1]);
                         //se è un run di calibrazione fatto a tensione di lavoro
                         if (valueCurrent->IsCalib()==kTRUE && voltageOkFlag==kTRUE) {
                             //rimangono alcune letture a 0.0A, così si tolgono ###GIUSTO?###

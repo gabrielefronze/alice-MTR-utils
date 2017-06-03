@@ -105,6 +105,17 @@ private:
 
     DCSDataType fDataType;
 
+protected:
+    Long64_t fScalerCounts;
+    Bool_t fOverflow;
+    Float_t fDeltaT;
+    Float_t fVSupp;
+    UInt_t fCalibRunNumber;
+    Double_t fITot;
+    Double_t fIDark;
+    UInt_t fOverflowLBCount;
+    UInt_t fUnderflowLBCount;
+
     TString fHumanBeamType() const;
     TString fHumanLHCStatusType() const;
 

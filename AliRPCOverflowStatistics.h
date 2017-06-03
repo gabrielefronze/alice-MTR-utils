@@ -21,11 +21,6 @@ public:
     inline UInt_t GetOverflowNumber() const {return fOverflowLBCount;};
     inline UInt_t GetUnderNumber() const {return fUnderflowLBCount;};
 
-
-private:
-	UInt_t fOverflowLBCount;
-	UInt_t fUnderflowLBCount;
-
 	ClassDef(AliRPCOverflowStatistics,1);
 };
 

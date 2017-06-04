@@ -88,7 +88,7 @@ void AliRPCAutoIntegrator::InitDataMembers(){
         }
     }
     
-    TObjArray *check;
+    TObjArray *check=0x0;
     if(fGlobalDataContainer) fGlobalDataContainer->GetObject("DownloadedRuns",check);
     if(check){
         fOCDBRunListDownloaded=check;

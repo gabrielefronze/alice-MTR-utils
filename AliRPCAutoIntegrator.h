@@ -74,6 +74,7 @@ private:
     TFile *fOCDBDataContainer;
     TFile *fAMANDADataContainer;
     TFile *fGlobalDataContainer;
+    TFile *fPlotContainer;
 
     Bool_t fUpdateOCDB;
     Bool_t fUpdateAMANDA;
@@ -148,7 +149,7 @@ private:
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 
-ClassDef(AliRPCAutoIntegrator,9);
+ClassDef(AliRPCAutoIntegrator,10);
 };
 
 #endif

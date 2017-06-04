@@ -96,6 +96,8 @@ void AliRPCAutoIntegrator::InitDataMembers(){
         fOCDBRunListDownloaded=new TObjArray();
     }
 
+    fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","RECREATE");
+
 }
 
 // Default constructor
@@ -1978,8 +1980,6 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         return;
     }
 
-    TFile *PlotFile=new TFile(filename.Append(".root"),"RECREATE");
-
     string line;
     TObject *graphBuffer=0x0;
     
@@ -2014,14 +2014,14 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
             CreateDistributionSomething((TH1*)graphBuffer,yaxsis,listPtr, RunList);
         }
         
-        PlotFile->cd();
+        fPlotContainer->cd();
         graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
         graphBuffer=0x0;
         commands=0x0;
     }
     
     file.close();
-    PlotFile->Close();
+    fPlotContainer->Close();
 }
 
 /*

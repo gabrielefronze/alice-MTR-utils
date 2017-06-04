@@ -37,6 +37,8 @@ public:
     inline static Bool_t SortRunStatistics(AliRPCRunStatistics* a, AliRPCRunStatistics* b ){
         return a->GetTimeStampStart()<b->GetTimeStampStart();
     }
+    
+    void PrintHumanReadable();
 
     Bool_t IsEqual (const TObject *obj) const;
     Int_t Compare(const TObject *obj) const;

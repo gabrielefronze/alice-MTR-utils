@@ -18,3 +18,23 @@ CMakeLists\.txt
 DarkRate\.cpp
 
 IntegratedCharge\.cpp
+
+alice_MTR_utils\.build/Debug/alice_MTR_utils\.build/
+
+alice_MTR_utils\.build/Debug/ALL_BUILD\.build/
+
+alice_MTR_utils\.build/Debug/ZERO_CHECK\.build/
+
+alice_MTR_utils\.xcodeproj/project\.xcworkspace/xcuserdata/Filippo\.xcuserdatad/
+
+*.cmake
+
+alice_MTR_utils\.xcodeproj/
+
+CMakeCache\.txt
+
+CMakeFiles/3\.7\.2/
+
+CMakeFiles/
+
+CMakeScripts/

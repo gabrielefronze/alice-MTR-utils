@@ -659,7 +659,7 @@ void AliRPCAutoIntegrator::Integrator(){
 }
 
 void AliRPCAutoIntegrator::IntegratorPerRun(){
-    TGraph *buffer;
+    cout<<"\nGenerating integrated charge graphs"<<endl;
     TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
     fGlobalDataContainer->cd("integrated_charge_Graphs");
     
@@ -1482,12 +1482,12 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         }else{
                             if(AMANDANTotalCurrent!=0) AMANDAMeanTotalCurrent/=AMANDANTotalCurrent;
                             else AMANDAMeanTotalCurrent=0.;
-                            cout<<"new AMANDA Run"<<endl<<endl;
-                            cout<<"start: "<<AMANDATimeStampStart<<endl;
-                            cout<<"stop "<<AMANDATimeStampStop<<endl;
-                            cout<<"current "<<AMANDAMeanTotalCurrent;
-                            cout<<"RunNumber"<<AMANDAActualRunNumber;
-                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
+//                            cout<<"new AMANDA Run"<<endl<<endl;
+//                            cout<<"start: "<<AMANDATimeStampStart<<endl;
+//                            cout<<"stop "<<AMANDATimeStampStop<<endl;
+//                            cout<<"current "<<AMANDAMeanTotalCurrent;
+//                            cout<<"RunNumber"<<AMANDAActualRunNumber;
+//                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
                             AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kFALSE, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
                             fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
                             
@@ -1816,7 +1816,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 }
 
 
-void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea){
+void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea, Bool_t onlyDarkPoints){
     Int_t counter=0;
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
@@ -1825,21 +1825,23 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
-                vector<AliOCDBRun*> bufferList=fAliRPCDataObject->GetRunList(iPlane,iSide,iRPC);
+                vector<AliRPCRunStatistics*> bufferList=fAliRPCDataObject->GetRunStatistics(iPlane,iSide,iRPC);
                 for(auto iter=bufferList.begin(); iter!=bufferList.end(); iter++){
-                if(!IsRunInList(OCDBRunListComplete, (*iter)->GetRunNumber())) OCDBRunListComplete.push_back((*iter)->GetRunNumber());
+                    auto run=(*iter)->GetRunNumber();
+                    if(onlyDarkPoints&&(*iter)->GetIsDark()) continue;
+                    if(!IsRunInList(OCDBRunListComplete, run)) OCDBRunListComplete.push_back(run);
                 }
             }
         }
     }
-
+    
     for(UInt_t iter:OCDBRunListComplete){
         Double_t x=(fAliRPCDataObject->GetMeanTimeStampStart(iter));
-       if(x>8000) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, normalizedToArea));
+        if(x>8000) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funky)(iter, normalizedToArea));
     }
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const){
+void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const, Bool_t normalizedToArea){
     Int_t counter=0;
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
@@ -1847,14 +1849,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
-                Double_t x=(fAliRPCDataObject->*funkyX)(iSide,iPlane,iRPC,kFALSE);
-                if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC,kFALSE));
+                Double_t x=(fAliRPCDataObject->*funkyX)(iSide,iPlane,iRPC,normalizedToArea);
+                if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC,normalizedToArea));
             }
         }
     }
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x, TList *list){
+void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, Bool_t toFit, TList *list){
     if(x.Contains("time")){
         if(!list) {
             cout<<"List not found\n";
@@ -1870,16 +1872,16 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         }
         }else if(x.Contains("run")){
             if(y.Contains("current")) {
-                if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent);
-                if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent);
-                if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent);
+                if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent,normalizedToArea,onlyDarkPoints);
+                if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent,normalizedToArea,onlyDarkPoints);
+                if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent,normalizedToArea,onlyDarkPoints);
         }else if(y.Contains("voltage")){
             PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanHV);
         }else if(y.Contains("rate")&&y.Contains("bending")){
-            if(y.Contains("not")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateNotBending, kTRUE);
-            else PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateBending, kTRUE);
+            if(y.Contains("not")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateNotBending,kTRUE,onlyDarkPoints);
+            else PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanRateBending,kTRUE,onlyDarkPoints);
         }else if(y.Contains("integrated")||y.Contains("charge")){
-            PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanIntegratedCharge);
+            PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanIntegratedCharge,normalizedToArea,onlyDarkPoints);
         }
     }else{
         Double_t (AliRPCData::*Xptr)(Int_t, Int_t, Int_t, Bool_t)const;
@@ -1902,10 +1904,16 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
             if(x.Contains("not")) Xptr =&AliRPCData::GetAverageRateNotBending;
             else Xptr =&AliRPCData::GetAverageRateBending;
         }else return;
-        PlotSomethingVersusRPC(Graph,Xptr,Yptr);
+        PlotSomethingVersusRPC(Graph,Xptr,Yptr,normalizedToArea);
     }
     Graph->GetXaxis()->SetTitle(x);
     Graph->GetYaxis()->SetTitle(y);
+    
+    if(toFit) {
+        cout<<"fit of "<<x.Data()<<" vs "<<y.Data()<<":";
+        Graph->Fit("pol1","M0");
+        cout<<"\n\n##########\n\n";
+    }
 };
 
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
@@ -1994,20 +2002,29 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         TString plotType=((TObjString*)(commands->At(0)))->GetString();
         TString yaxsis=((TObjString*)(commands->At(1)))->GetString();
         TString xaxsis=((TObjString*)(commands->At(2)))->GetString();
-        TString listName=((TObjString*)(commands->At(3)))->GetString();
+        TString options=((TObjString*)(commands->At(3)))->GetString();
         
         cout<<"Plot type:\t"<<plotType.Data()<<endl;
-        cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<listName.Data()<<endl;
+        cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<options.Data()<<endl;
         
         //Get List useful on vs time plots
         TList *listPtr=0x0;
-        listName.Prepend("TLists/OCDB_AMANDA_Data_");
-        fGlobalDataContainer->GetObject(Form("%s",listName.Data()),listPtr);
+        options.Prepend("TLists/OCDB_AMANDA_Data_");
+        fGlobalDataContainer->GetObject(Form("%s",options.Data()),listPtr);
+        
+        Bool_t isDarkGraph=kFALSE;
+        Bool_t isNormalizedGraph=kFALSE;
+        Bool_t isFittedGraph=kFALSE;
+        
+        if(options.Contains("dark")) isDarkGraph=kTRUE;
+        if(options.Contains("normalized")) isNormalizedGraph=kTRUE;
+        if(options.Contains("fit")) isFittedGraph=kTRUE;
+
         
         //call correct function plot or distribution
         if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
-            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,listPtr);
+            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,isDarkGraph,isNormalizedGraph,isFittedGraph,listPtr);
         }else if(plotType.Contains("distribution")){
             graphBuffer=new TH1F();
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);

@@ -1641,8 +1641,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
     //save AliRPCData on File
     fGlobalDataContainer->cd();
     fAliRPCDataObject->Write("AliRPCDataObj", TObject::kSingleKey | TObject::kOverwrite);
-    fGlobalDataContainer->Write();
-
+    fGlobalDataContainer->Flush();
 };
 
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){

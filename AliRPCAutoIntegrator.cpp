@@ -1171,7 +1171,8 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
                             fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
-                            fOCDBDataTree[side][plane][RPC-1]->Fill();
+                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            cout<<fOCDBDataTree[side][plane][RPC-1]->Fill();
 //                                    cout<<"Filled tree! "<<fOCDBDataTree[side][plane][RPC-1]->GetEntries()<<endl;
                         }
 //                        //cout<<"\t"<<value->GetFloat()<<endl;
@@ -1200,12 +1201,14 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
                             fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
-                            fOCDBDataTree[side][plane][RPC-1]->Fill();
+                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            cout<<fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
                             fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
-                            fOCDBDataTree[side][plane][RPC-1]->Fill();
+                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            cout<<fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
@@ -1271,10 +1274,12 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         else {
                             fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
-                        fOCDBLBScalersTreeBufferW[cathode][plane][localBoard] = fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1];
 
-                        fOCDBRPCScalersTree[cathode][iSide][plane][iRPC09-1]->Fill();
-                        fOCDBLBScalersTree[cathode][plane][localBoard]->Fill();
+                        fOCDBRPCScalersTreeBranch[cathode][iSide][plane][iRPC09-1]->SetAddress(&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
+                        fOCDBLBScalersTreeBranch[cathode][plane][localBoard]->SetAddress(&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
+
+                        cout<<fOCDBRPCScalersTree[cathode][iSide][plane][iRPC09-1]->Fill();
+                        cout<<fOCDBLBScalersTree[cathode][plane][localBoard]->Fill();
 
 //                        printf(" MTR %d cathode %d LB %d RPC %d or %d_%s timestamp %lu fAMANDAData %d\n",fPlanes[plane],cathode,localBoard,iRPC017,iRPC09,(fSides[iSide]).Data(),SOR+elapsedTime,scalersData->GetLocScalStrip(cathode, plane, localBoard));
                     }
@@ -1340,7 +1345,9 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     //cout<<iList<<"/"<<sortedList->GetEntries()<<endl;
                     //L'elemento può essere una tensione o una corrente
 
-                    fOCDBDataTree[side][plane][RPC-1]->GetEntry(iOCDBData);
+                    fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                    
+                    if (fOCDBDataTree[side][plane][RPC-1]->GetEntry(iOCDBData) == 0) continue;
 //                    cout<<iOCDBData<<endl;
 
 //                    cout << valueDCS->GetRunNumber() << endl;
@@ -1348,7 +1355,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     if (valueDCS->IsVoltage()) {
                         //cast a tensione
                         cout<<"Cast a tensione"<<endl;
-                        AliRPCValueVoltage* valueVoltage= static_cast<AliRPCValueVoltage*>(fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                        AliRPCValueVoltage* valueVoltage = reinterpret_cast<AliRPCValueVoltage*>(valueDCS);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
                         valueVoltage=0x0;
@@ -1357,7 +1364,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     } else if (valueDCS->IsCurrent()) {
                         cout<<"Cast a corrente"<<endl;
                         //cast a corrente
-                        AliRPCValueCurrent* valueCurrent= static_cast<AliRPCValueCurrent*>(fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                        AliRPCValueCurrent* valueCurrent = reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
                         //se è un run di calibrazione fatto a tensione di lavoro
                         if (valueCurrent->IsCalib()==kTRUE && voltageOkFlag==kTRUE) {
                             //rimangono alcune letture a 0.0A, così si tolgono ###GIUSTO?###

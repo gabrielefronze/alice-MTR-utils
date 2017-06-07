@@ -42,3 +42,5 @@ CMakeCache\.txt
 Makefile
 
 *.webarchive
+
+*.pcm

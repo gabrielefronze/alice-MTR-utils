@@ -102,6 +102,9 @@ public:
     TSmartTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
     TSmartTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
 
+    TBranch *fOCDBDataTreeBranch[kNSides][kNPlanes][kNRPC];
+    TBranch *fOCDBRPCScalersTreeBranch[2][kNSides][kNPlanes][kNRPC];
+    TBranch *fOCDBLBScalersTreeBranch[kNCathodes][kNPlanes][kNLocalBoards];
     AliRPCValueDCS *fOCDBDataTreeBufferW[kNSides][kNPlanes][kNRPC];
     AliRPCValueScaler *fOCDBRPCScalersTreeBufferW[2][kNSides][kNPlanes][kNRPC];
     AliRPCValueScaler *fOCDBLBScalersTreeBufferW[kNCathodes][kNPlanes][kNLocalBoards];
@@ -112,11 +115,13 @@ public:
 
 //    TTree *fAMANDATree;
     TSmartTree *fAMANDADataTree[kNSides][kNPlanes][kNRPC];
+    TBranch *fAMANDADataTreeBranch[kNSides][kNPlanes][kNRPC];
     AliRPCValueDCS *fAMANDADataTreeBufferW[kNSides][kNPlanes][kNRPC];
 //    AliRPCValueDCS *fAMANDADataTreeBufferR[kNSides][kNPlanes][kNRPC];
     
 //    TTree *fGlobalTree;
     TSmartTree *fGlobalDataTree[kNSides][kNPlanes][kNRPC];
+    TBranch *fGlobalDataTreeBranch[kNSides][kNPlanes][kNRPC];
     AliRPCValueDCS *fGlobalDataTreeBufferW[kNSides][kNPlanes][kNRPC];
 //    AliRPCValueDCS *fGlobalDataTreeBufferR[kNSides][kNPlanes][kNRPC];
 

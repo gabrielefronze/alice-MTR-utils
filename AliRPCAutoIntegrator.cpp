@@ -148,12 +148,13 @@ fUpdateAMANDA(updateAMANDA){
                 ObjectName = Form("OCDB_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
                 if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fOCDBDataContainer->cd();
-                    fOCDBDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
-                    fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, &fOCDBDataTreeBufferW[side][plane][RPC],32000,0);
+                    fOCDBDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fOCDBDataTreeBranch[side][plane][RPC] = fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, &fOCDBDataTreeBufferW[side][plane][RPC],32000,0);
                     fOCDBDataTree[side][plane][RPC]->Write(ObjectName);
                     cout << "Created ";
                 } else {
                     fOCDBDataContainer->GetObject(ObjectName,fOCDBDataTree[side][plane][RPC]);
+                    fOCDBDataTreeBranch[side][plane][RPC] = fOCDBDataTree[side][plane][RPC]->GetBranch(ObjectName);
                     fOCDBDataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fOCDBDataTreeBufferW[side][plane][RPC]);
                     cout << "Loading ";
                 }
@@ -170,12 +171,13 @@ fUpdateAMANDA(updateAMANDA){
                 ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
-                    fOCDBRPCScalersTree[0][side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC],32000,0);
+                    fOCDBRPCScalersTree[0][side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fOCDBRPCScalersTreeBranch[0][side][plane][RPC] = fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC],32000,0);
                     fOCDBRPCScalersTree[0][side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
                     fOCDBDataContainer->GetObject(ObjectName,fOCDBRPCScalersTree[0][side][plane][RPC]);
+                    fOCDBRPCScalersTreeBranch[0][side][plane][RPC] = fOCDBRPCScalersTree[0][side][plane][RPC]->GetBranch(ObjectName);
                     fOCDBRPCScalersTree[0][side][plane][RPC]->SetBranchAddress(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC]);
                     cout<<"Loading ";
                 }
@@ -192,12 +194,13 @@ fUpdateAMANDA(updateAMANDA){
                 ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fOCDBDataContainer->cd();
-                    fOCDBRPCScalersTree[1][side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC],32000,0);
+                    fOCDBRPCScalersTree[1][side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fOCDBRPCScalersTreeBranch[1][side][plane][RPC] = fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC],32000,0);
                     fOCDBRPCScalersTree[1][side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
                     fOCDBDataContainer->GetObject(ObjectName,fOCDBRPCScalersTree[1][side][plane][RPC]);
+                    fOCDBRPCScalersTreeBranch[1][side][plane][RPC] = fOCDBRPCScalersTree[1][side][plane][RPC]->GetBranch(ObjectName);
                     fOCDBRPCScalersTree[1][side][plane][RPC]->SetBranchAddress(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC]);
                     cout<<"Loading ";
                 }
@@ -216,12 +219,13 @@ fUpdateAMANDA(updateAMANDA){
                 ObjectName = Form("Global_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
                 if (!(fGlobalDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                     fGlobalDataContainer->cd();
-                    fGlobalDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName);
-                    fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, &fGlobalDataTreeBufferW[side][plane][RPC],32000,0);
+                    fGlobalDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fGlobalDataTreeBranch[side][plane][RPC] = fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, &fGlobalDataTreeBufferW[side][plane][RPC],32000,0);
                     fGlobalDataTree[side][plane][RPC]->Write(ObjectName);
                     cout << "Created ";
                 } else {
                     fGlobalDataContainer->GetObject(ObjectName,fGlobalDataTree[side][plane][RPC]);
+                    fGlobalDataTreeBranch[side][plane][RPC] = fGlobalDataTree[side][plane][RPC]->GetBranch(ObjectName);
                     fGlobalDataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fGlobalDataTreeBufferW[side][plane][RPC]);
                     cout << "Loading ";
                 }
@@ -240,12 +244,13 @@ fUpdateAMANDA(updateAMANDA){
                 ObjectName = Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC+1);
                 if ( !(fAMANDADataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                     fAMANDADataContainer->cd();
-                    fAMANDADataTree[side][plane][RPC] = new TSmartTree(ObjectName,ObjectName);
-                    fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC],32000,0);
+                    fAMANDADataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fAMANDADataTreeBranch[side][plane][RPC] = fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC],32000,0);
                     fAMANDADataTree[side][plane][RPC]->Write(ObjectName);
                     cout<<"Created ";
                 } else {
                     fAMANDADataContainer->GetObject(ObjectName,fAMANDADataTree[side][plane][RPC]);
+                    fAMANDADataTreeBranch[side][plane][RPC] = fAMANDADataTree[side][plane][RPC]->GetBranch(ObjectName);
                     fAMANDADataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC]);
                     cout<<"Loading ";
                 }
@@ -264,12 +269,13 @@ fUpdateAMANDA(updateAMANDA){
             ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d", (fCathodes[0]).Data(), fPlanes[plane], local + 1);
             if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
                 fOCDBDataContainer->cd();
-                fOCDBLBScalersTree[0][plane][local] = new TSmartTree(ObjectName, ObjectName);
-                fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, &fOCDBLBScalersTreeBufferW[0][plane][local],32000,0);
+                fOCDBLBScalersTree[0][plane][local] = new TSmartTree(ObjectName, ObjectName, 0);
+                fOCDBLBScalersTreeBranch[0][plane][local] = fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, &fOCDBLBScalersTreeBufferW[0][plane][local],32000,0);
                 fOCDBLBScalersTree[0][plane][local]->Write(ObjectName);
                 cout << "Created ";
             } else {
                 fOCDBDataContainer->GetObject(ObjectName,fOCDBLBScalersTree[0][plane][local]);
+                fOCDBLBScalersTreeBranch[0][plane][local] = fOCDBLBScalersTree[0][plane][local]->GetBranch(ObjectName);
                 fOCDBLBScalersTree[0][plane][local]->SetBranchAddress(ObjectName,&fOCDBLBScalersTreeBufferW[0][plane][local]);
                 cout << "Loading ";
             }
@@ -284,12 +290,13 @@ fUpdateAMANDA(updateAMANDA){
             ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[1]).Data(),fPlanes[plane],local+1);
             if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
                 fOCDBDataContainer->cd();
-                fOCDBLBScalersTree[1][plane][local] = new TSmartTree(ObjectName,ObjectName);
-                fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local],32000,0);
+                fOCDBLBScalersTree[1][plane][local] = new TSmartTree(ObjectName, ObjectName, 0);
+                fOCDBLBScalersTreeBranch[1][plane][local] = fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local],32000,0);
                 fOCDBLBScalersTree[1][plane][local]->Write(ObjectName);
                 cout<<"Created ";
             } else {
                 fOCDBDataContainer->GetObject(ObjectName,fOCDBLBScalersTree[1][plane][local]);
+                fOCDBLBScalersTreeBranch[1][plane][local] = fOCDBLBScalersTree[1][plane][local]->GetBranch(ObjectName);
                 fOCDBLBScalersTree[1][plane][local]->SetBranchAddress(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local]);
                 cout<<"Loading ";
             }

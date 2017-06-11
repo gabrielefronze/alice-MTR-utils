@@ -2145,7 +2145,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
  */
 void AliRPCAutoIntegrator::PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
-  printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
+    printf("RPC: MTR_%s_MT%d_RPC%d %3d out of %3d\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;
 }
 

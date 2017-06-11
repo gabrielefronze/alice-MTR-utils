@@ -23,7 +23,7 @@ public:
 
     Double_t GetValue(Int_t) const {return (Double_t)fVSupp; };
     
-    ClassDef(AliRPCValueVoltage,1);
+    ClassDef(AliRPCValueVoltage,2);
 };
 
 #endif /* AliRPCValueVoltage_h */

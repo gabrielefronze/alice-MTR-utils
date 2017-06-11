@@ -87,6 +87,17 @@ void AliRPCAutoIntegrator::InitDataMembers(){
             //cout<<iLB+1<<" "<<LBAreas[iLB][iPlane]<<endl;
         }
     }
+    
+    TObjArray *check=0x0;
+    if(fGlobalDataContainer) fGlobalDataContainer->GetObject("DownloadedRuns",check);
+    if(check){
+        fOCDBRunListDownloaded=check;
+        cout<<"Loaded downloaded run list"<<endl<<flush;
+
+    }else{
+        fOCDBRunListDownloaded=new TObjArray();
+        cout<<"Created new downloaded run list"<<endl<<flush;
+    }
 }
 
 // Default constructor
@@ -320,11 +331,12 @@ fUpdateAMANDA(updateAMANDA){
         cout << "Reading old AliRPCData with " << fAliRPCDataObject->GetTotalEntries() << " entries"<< endl << flush;
     }
 
+    InitDataMembers();
+
+    
     // Calling this method to preload the runs of which the OCDB fAMANDAData has to be
     // downloaded
     OCDBRunListReader();
-
-    InitDataMembers();
 }
 
 //  Destructor will dellaocate any fAMANDAData member allocated in the heap
@@ -410,19 +422,23 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
 // Method to parse a text file containing the run list for OCDB downloader
 void AliRPCAutoIntegrator::OCDBRunListReader(){
     ifstream fin;
-    AliOCDBRun runBuffer;
-    runBuffer.fYear = 0000;
+    TObject *runBuffer;
     fin.open(fRunListFileName.Data());
     if(!fin.is_open()) {
      cout<<"File not found"<<endl<<flush;
         return;
     }
     while(kTRUE){
-        fin >> runBuffer.fRunNumber;
+        runBuffer=new AliOCDBRun();
+        ((AliOCDBRun*)runBuffer)->fYear = 0000;
+        
+        fin >> ((AliOCDBRun*)runBuffer)->fRunNumber;
         if(fin.eof()) break;
-        Int_t dummyindex = 0;
-//        if(fAliRPCDataObject->IsThereThisRun(1,1,1,runBuffer.fRunNumber,dummyindex)) continue;
-        fOCDBRunListToAdd.push_back(runBuffer);
+        //check if run is already downloaded
+        if(!fOCDBRunListDownloaded->FindObject(runBuffer)){
+            fOCDBRunListToAdd.push_back(*((AliOCDBRun*)runBuffer));
+        }
+        runBuffer=0x0;
         //cout<<runBuffer.fRunNumber<<endl<<flush;
     }
     fin.close();
@@ -984,7 +1000,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     Bool_t isCalib=kFALSE;
     Bool_t isBeamPresent=kFALSE;
 
-    auto beginOfBlock = fOCDBRunListToAdd.begin();;
+    auto beginOfBlock = fOCDBRunListToAdd.begin();
     auto endOfBlock = fOCDBRunListToAdd.end();
 
     if ( blockNumber == -1 ){
@@ -1016,7 +1032,9 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
     //loop sui run inseriti
     for (std::vector<AliOCDBRun>::iterator runIterator = beginOfBlock; runIterator != endOfBlock; ++runIterator) {
+        TObject *downoadedRunToAdd=new AliOCDBRun(runIterator->fRunNumber,runIterator->fYear);
 
+        
         AliCDBManager *managerYearCheck = managerPrototype;
 
         for (Int_t year = 2017; year>2009; year--){
@@ -1043,6 +1061,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
         }
 
         Int_t RunYear=(*runIterator).fYear;
+        
+        if(fOCDBRunListDownloaded->FindObject(downoadedRunToAdd)){
+            continue;
+        }
+        
 
         //cout<<"YEar retrieved"<<endl;
 
@@ -1301,6 +1324,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
         delete LHCState;
     }
 
+//        fOCDBDataContainer->Write();
+        
+        fOCDBRunListDownloaded->Add(downoadedRunToAdd);
+        
+        //delete runType, beamType, LHCState;
     printf("\n\n\nData retrieving complete\n\n\n");
 
     for (Int_t plane=0; plane<kNPlanes; plane++) {
@@ -1456,6 +1484,11 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
             }
         }
     }
+
+    fGlobalDataContainer->cd();
+    fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kOverwrite);
+    
+    return allBlocksDone;
 }
 
 
@@ -1689,6 +1722,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
 
+                        statsBuffer->PrintHumanReadable();
+                        
                         actualRunNumber=0;
                         timeStampStart=0;
                         timeStampStop=0;
@@ -2192,7 +2227,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
  */
 void AliRPCAutoIntegrator::PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
-  printf("RPC:%3d out of %3d\n",kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
+    printf("RPC: MTR_%s_MT%d_RPC%d %3d out of %3d\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
   return;
 }
 

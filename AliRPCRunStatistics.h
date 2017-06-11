@@ -34,14 +34,20 @@ public:
     inline Double_t GetMeanRateBending() const { return (Double_t)fTotalScalerCountsBending/(Double_t)(fTimeStampStop-fTimeStampStart); };
     inline Double_t GetMeanRateNotBending() const { return (Double_t)fTotalScalerCountsNotBending/(Double_t)(fTimeStampStop-fTimeStampStart); };
     inline Double_t GetIntegratedCharge() const { if(fTimeStampStop==0 || fTimeStampStart==0) return 0; else return (fMeanTotalCurrent-fMeanDarkCurrent)*(Double_t)(fTimeStampStop-fTimeStampStart); };
+   
+    //useful to sort std::vector
     inline static Bool_t SortRunStatistics(AliRPCRunStatistics* a, AliRPCRunStatistics* b ){
         return a->GetTimeStampStart()<b->GetTimeStampStart();
     }
 
+    //useful to sort TList
     Bool_t IsEqual (const TObject *obj) const;
     Int_t Compare(const TObject *obj) const;
     Bool_t IsSortable() const { return kTRUE; };
     
+    
+    void PrintHumanReadable();
+
 private:
     UInt_t fRunNumber;
     ULong64_t fTimeStampStart;

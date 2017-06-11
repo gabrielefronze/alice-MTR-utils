@@ -98,6 +98,8 @@ void AliRPCAutoIntegrator::InitDataMembers(){
         fOCDBRunListDownloaded=new TObjArray();
         cout<<"Created new downloaded run list"<<endl<<flush;
     }
+    
+    fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","RECREATE");
 }
 
 // Default constructor
@@ -1667,6 +1669,10 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         cout<<"setting "<<previousRunNumber<<" complete"<<endl;
                         //cout<<totalScalerCounts[0]<<"\t"<<totalScalerCounts[1]<<endl;
                         //cout<<(isDark?"Dark":"NODARK")<<endl;
+                        
+                       
+                        
+                        
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
 
@@ -2124,8 +2130,6 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         return;
     }
 
-    TFile *PlotFile=new TFile(filename.Append(".root"),"RECREATE");
-
     string line;
     TObject *graphBuffer=0x0;
     
@@ -2160,14 +2164,14 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
             CreateDistributionSomething((TH1*)graphBuffer,yaxsis,listPtr, RunList);
         }
         
-        PlotFile->cd();
+        fPlotContainer->cd();
         graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
         graphBuffer=0x0;
         commands=0x0;
     }
     
     file.close();
-    PlotFile->Close();
+    fPlotContainer->Close();
 }
 
 /*

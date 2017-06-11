@@ -67,6 +67,7 @@ public:
     TFile *fOCDBDataContainer;
     TFile *fAMANDADataContainer;
     TFile *fGlobalDataContainer;
+    TFile *fPlotContainer;
 
 private:
     Bool_t fUpdateOCDB;

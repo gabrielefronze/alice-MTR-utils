@@ -28,11 +28,19 @@ typedef enum{
     kRAMP
 } TLHCStatus;
 
+typedef enum{
+    kCurrent,
+    kVoltage,
+    kScaler,
+    kOverflowData,
+    kNoType
+} DCSDataType;
+
 class AliRPCValueDCS : public TObject{
 public:
     AliRPCValueDCS();
     AliRPCValueDCS(const AliRPCValueDCS &obj)  : TObject(obj){};
-    AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, UInt_t runYear, Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA);
+    AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, UInt_t runYear, Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA, DCSDataType dataType = DCSDataType::kNoType);
     ~AliRPCValueDCS(){};
     inline UInt_t GetRunNumber() const { return fRunNumber; };
     inline ULong64_t GetTimeStamp() const { return fTimeStamp; };
@@ -40,10 +48,10 @@ public:
     Int_t Compare(const TObject *obj) const;
     Bool_t IsSortable() const { return kTRUE; };
     TString *WhatIsThis() const;
-    inline Bool_t IsCurrent() const {return (Bool_t)((TString*)(WhatIsThis())->Contains("current"));};
-    inline Bool_t IsVoltage() const {return (Bool_t)((TString*)(WhatIsThis())->Contains("voltage"));};
-    inline Bool_t IsScaler() const {return (Bool_t)((TString*)(WhatIsThis())->Contains("scaler"));};
-    inline Bool_t IsOverflow() const {return (Bool_t)((TString*)(WhatIsThis())->Contains("overflow"));};
+    inline Bool_t IsCurrent() const {return fDataType == DCSDataType::kCurrent;};
+    inline Bool_t IsVoltage() const {return fDataType == DCSDataType::kVoltage;};
+    inline Bool_t IsScaler() const {return fDataType == DCSDataType::kScaler;};
+    inline Bool_t IsOverflow() const {return fDataType == DCSDataType::kOverflowData;};
     inline Bool_t IsAMANDA() const {return fIsAMANDA;};
 
     inline void SetIsAMANDA(Bool_t isAMANDA){fIsAMANDA = isAMANDA;};
@@ -94,6 +102,18 @@ private:
 
     Bool_t fIsCalib;
     Bool_t fIsAMANDA;
+
+protected:
+    DCSDataType fDataType;
+    Long64_t fScalerCounts;
+    Bool_t fOverflow;
+    Float_t fDeltaT;
+    Float_t fVSupp;
+    UInt_t fCalibRunNumber;
+    Double_t fITot;
+    Double_t fIDark;
+    UInt_t fOverflowLBCount;
+    UInt_t fUnderflowLBCount;
 
     TString fHumanBeamType() const;
     TString fHumanLHCStatusType() const;

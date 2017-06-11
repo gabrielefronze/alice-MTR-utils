@@ -12,7 +12,7 @@ using namespace std;
 ClassImp(AliRPCAutoIntegrator);
 
 ////////////////////////////////////////////////////////////////////////////////
-// Filling of data members (const) needed for conversione notation.
+// Filling of fAMANDAData members (const) needed for conversione notation.
 // This method allows a direct filling of arrays even if defined as const void*
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -113,8 +113,8 @@ fOutputFileName(OutputFileName),
 fUpdateOCDB(updateOCDB),
 fUpdateAMANDA(updateAMANDA){
 
-    // The update data variable allows the user to decide wether the data has to
-    // be reloaded in the *DataContainer.root files or not (data already there)
+    // The update fAMANDAData variable allows the user to decide wether the fAMANDAData has to
+    // be reloaded in the *DataContainer.root files or not (fAMANDAData already there)
     if(fUpdateOCDB){
         fOCDBDataContainer= new TFile("OCDBDataContainer.root","UPDATE");
         //fAMANDADataContainer= new TFile("AMANDADataContainer.root","RECREATE");
@@ -139,13 +139,183 @@ fUpdateAMANDA(updateAMANDA){
         cout<<"File doesn't exist"<<endl;
         fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
         fGlobalDataContainer->cd();
-        fGlobalDataContainer->mkdir("TLists");
+        fGlobalDataContainer->mkdir("TObjArrays");
         fGlobalDataContainer->mkdir("iNet_Graphs");
         fGlobalDataContainer->mkdir("integrated_charge_Graphs");
     } else {
         cout<<"File exists"<<endl;
         fGlobalDataContainer = new TFile(Form("%s",OutputFileName.Data()),"UPDATE");;
     }
+
+    TString ObjectName;
+    for (Int_t plane=0; plane<kNPlanes; plane++) {
+
+        fOCDBDataContainer->cd();
+
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
+                fOCDBDataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
+//                fOCDBDataTreeBufferR[side][plane][RPC] = fOCDBDataTreeBufferW[side][plane][RPC];
+                ObjectName = Form("OCDB_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
+                if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
+                    fOCDBDataContainer->cd();
+                    fOCDBDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fOCDBDataTreeBranch[side][plane][RPC] = fOCDBDataTree[side][plane][RPC]->Branch(ObjectName, &fOCDBDataTreeBufferW[side][plane][RPC],32000,0);
+                    fOCDBDataTree[side][plane][RPC]->Write(ObjectName);
+                    cout << "Created ";
+                } else {
+                    fOCDBDataContainer->GetObject(ObjectName,fOCDBDataTree[side][plane][RPC]);
+                    fOCDBDataTreeBranch[side][plane][RPC] = fOCDBDataTree[side][plane][RPC]->GetBranch(ObjectName);
+                    fOCDBDataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fOCDBDataTreeBufferW[side][plane][RPC]);
+                    cout << "Loading ";
+                }
+                cout << ObjectName << " #Entries: "<< fOCDBDataTree[side][plane][RPC]->GetEntries() << "\r";
+            }
+        }
+
+        cout<<endl;
+
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
+                fOCDBRPCScalersTreeBufferW[0][side][plane][RPC] = new AliRPCValueScaler();
+//                fOCDBRPCScalersTreeBufferR[0][side][plane][RPC] = fOCDBRPCScalersTreeBufferW[0][side][plane][RPC];
+                ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC+1);
+                if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
+                    fOCDBDataContainer->cd();
+                    fOCDBRPCScalersTree[0][side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fOCDBRPCScalersTreeBranch[0][side][plane][RPC] = fOCDBRPCScalersTree[0][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC],32000,0);
+                    fOCDBRPCScalersTree[0][side][plane][RPC]->Write(ObjectName);
+                    cout<<"Created ";
+                } else {
+                    fOCDBDataContainer->GetObject(ObjectName,fOCDBRPCScalersTree[0][side][plane][RPC]);
+                    fOCDBRPCScalersTreeBranch[0][side][plane][RPC] = fOCDBRPCScalersTree[0][side][plane][RPC]->GetBranch(ObjectName);
+                    fOCDBRPCScalersTree[0][side][plane][RPC]->SetBranchAddress(ObjectName,&fOCDBRPCScalersTreeBufferW[0][side][plane][RPC]);
+                    cout<<"Loading ";
+                }
+                cout<<ObjectName << " #Entries: "<< fOCDBRPCScalersTree[0][side][plane][RPC]->GetEntries() << "\r";
+            }
+        }
+
+        cout<<endl;
+
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
+                fOCDBRPCScalersTreeBufferW[1][side][plane][RPC] = new AliRPCValueScaler();
+//                fOCDBRPCScalersTreeBufferR[1][side][plane][RPC] = fOCDBRPCScalersTreeBufferW[1][side][plane][RPC];
+                ObjectName = Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC+1);
+                if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
+                    fOCDBDataContainer->cd();
+                    fOCDBRPCScalersTree[1][side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fOCDBRPCScalersTreeBranch[1][side][plane][RPC] = fOCDBRPCScalersTree[1][side][plane][RPC]->Branch(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC],32000,0);
+                    fOCDBRPCScalersTree[1][side][plane][RPC]->Write(ObjectName);
+                    cout<<"Created ";
+                } else {
+                    fOCDBDataContainer->GetObject(ObjectName,fOCDBRPCScalersTree[1][side][plane][RPC]);
+                    fOCDBRPCScalersTreeBranch[1][side][plane][RPC] = fOCDBRPCScalersTree[1][side][plane][RPC]->GetBranch(ObjectName);
+                    fOCDBRPCScalersTree[1][side][plane][RPC]->SetBranchAddress(ObjectName,&fOCDBRPCScalersTreeBufferW[1][side][plane][RPC]);
+                    cout<<"Loading ";
+                }
+                cout<<ObjectName << " #Entries: "<< fOCDBRPCScalersTree[1][side][plane][RPC]->GetEntries() << "\r";
+            }
+        }
+
+        cout<<endl;
+        
+        fGlobalDataContainer->cd();
+        
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
+                fGlobalDataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
+//                fGlobalDataTreeBufferR[side][plane][RPC] = fGlobalDataTreeBufferW[side][plane][RPC];
+                ObjectName = Form("Global_Data_MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC + 1);
+                if (!(fGlobalDataContainer->GetListOfKeys()->Contains(ObjectName))) {
+                    fGlobalDataContainer->cd();
+                    fGlobalDataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fGlobalDataTreeBranch[side][plane][RPC] = fGlobalDataTree[side][plane][RPC]->Branch(ObjectName, &fGlobalDataTreeBufferW[side][plane][RPC],32000,0);
+                    fGlobalDataTree[side][plane][RPC]->Write(ObjectName);
+                    cout << "Created ";
+                } else {
+                    fGlobalDataContainer->GetObject(ObjectName,fGlobalDataTree[side][plane][RPC]);
+                    fGlobalDataTreeBranch[side][plane][RPC] = fGlobalDataTree[side][plane][RPC]->GetBranch(ObjectName);
+                    fGlobalDataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fGlobalDataTreeBufferW[side][plane][RPC]);
+                    cout << "Loading ";
+                }
+                cout << ObjectName << " #Entries: "<< fGlobalDataTree[side][plane][RPC]->GetEntries() << "\r";
+            }
+        }
+        
+        cout<<endl;
+
+        fAMANDADataContainer->cd();
+
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 0; RPC < kNRPC; RPC++) {
+                fAMANDADataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
+//                fAMANDADataTreeBufferR[side][plane][RPC] = fAMANDADataTreeBufferW[side][plane][RPC];
+                ObjectName = Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC+1);
+                if ( !(fAMANDADataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
+                    fAMANDADataContainer->cd();
+                    fAMANDADataTree[side][plane][RPC] = new TSmartTree(ObjectName, ObjectName, 0);
+                    fAMANDADataTreeBranch[side][plane][RPC] = fAMANDADataTree[side][plane][RPC]->Branch(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC],32000,0);
+                    fAMANDADataTree[side][plane][RPC]->Write(ObjectName);
+                    cout<<"Created ";
+                } else {
+                    fAMANDADataContainer->GetObject(ObjectName,fAMANDADataTree[side][plane][RPC]);
+                    fAMANDADataTreeBranch[side][plane][RPC] = fAMANDADataTree[side][plane][RPC]->GetBranch(ObjectName);
+                    fAMANDADataTree[side][plane][RPC]->SetBranchAddress(ObjectName,&fAMANDADataTreeBufferW[side][plane][RPC]);
+                    cout<<"Loading ";
+                }
+                cout<<ObjectName << " #Entries: "<< fAMANDADataTree[side][plane][RPC]->GetEntries() << "\r";
+            }
+        }
+
+        cout<<endl;
+
+        fOCDBDataContainer->cd();
+
+        cout<<"Beginning LBs"<<endl;
+        for(Int_t local=0;local<kNLocalBoards;local++) {
+            fOCDBLBScalersTreeBufferW[0][plane][local] = new AliRPCValueScaler();
+//            fOCDBLBScalersTreeBufferR[0][plane][local] = fOCDBLBScalersTreeBufferW[0][plane][local];
+            ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d", (fCathodes[0]).Data(), fPlanes[plane], local + 1);
+            if (!(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName))) {
+                fOCDBDataContainer->cd();
+                fOCDBLBScalersTree[0][plane][local] = new TSmartTree(ObjectName, ObjectName, 0);
+                fOCDBLBScalersTreeBranch[0][plane][local] = fOCDBLBScalersTree[0][plane][local]->Branch(ObjectName, &fOCDBLBScalersTreeBufferW[0][plane][local],32000,0);
+                fOCDBLBScalersTree[0][plane][local]->Write(ObjectName);
+                cout << "Created ";
+            } else {
+                fOCDBDataContainer->GetObject(ObjectName,fOCDBLBScalersTree[0][plane][local]);
+                fOCDBLBScalersTreeBranch[0][plane][local] = fOCDBLBScalersTree[0][plane][local]->GetBranch(ObjectName);
+                fOCDBLBScalersTree[0][plane][local]->SetBranchAddress(ObjectName,&fOCDBLBScalersTreeBufferW[0][plane][local]);
+                cout << "Loading ";
+            }
+            cout << ObjectName << " #Entries: "<< fOCDBLBScalersTree[0][plane][local]->GetEntries() << "\r";
+        }
+
+        cout<<endl;
+
+        for(Int_t local=0;local<kNLocalBoards;local++){
+            fOCDBLBScalersTreeBufferW[1][plane][local] = new AliRPCValueScaler();
+//            fOCDBLBScalersTreeBufferR[1][plane][local] = fOCDBLBScalersTreeBufferW[1][plane][local];
+            ObjectName = Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[1]).Data(),fPlanes[plane],local+1);
+            if ( !(fOCDBDataContainer->GetListOfKeys()->Contains(ObjectName)) ) {
+                fOCDBDataContainer->cd();
+                fOCDBLBScalersTree[1][plane][local] = new TSmartTree(ObjectName, ObjectName, 0);
+                fOCDBLBScalersTreeBranch[1][plane][local] = fOCDBLBScalersTree[1][plane][local]->Branch(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local],32000,0);
+                fOCDBLBScalersTree[1][plane][local]->Write(ObjectName);
+                cout<<"Created ";
+            } else {
+                fOCDBDataContainer->GetObject(ObjectName,fOCDBLBScalersTree[1][plane][local]);
+                fOCDBLBScalersTreeBranch[1][plane][local] = fOCDBLBScalersTree[1][plane][local]->GetBranch(ObjectName);
+                fOCDBLBScalersTree[1][plane][local]->SetBranchAddress(ObjectName,&fOCDBLBScalersTreeBufferW[1][plane][local]);
+                cout<<"Loading ";
+            }
+            cout<<ObjectName << " #Entries: "<< fOCDBLBScalersTree[1][plane][local]->GetEntries() << "\r";
+        }
+        cout<<endl<<endl;
+    }
+
 
     //check if AliRPCData already exists
     AliRPCData *AliRPCDataBuffer;
@@ -163,14 +333,31 @@ fUpdateAMANDA(updateAMANDA){
     
     InitDataMembers();
 
-    // Calling this method to preload the runs of which the OCDB data has to be
+    // Calling this method to preload the runs of which the OCDB fAMANDAData has to be
     // downloaded
     OCDBRunListReader();
 
 }
 
-//  Destructor will dellaocate any data member allocated in the heap
+//  Destructor will dellaocate any fAMANDAData member allocated in the heap
 AliRPCAutoIntegrator::~AliRPCAutoIntegrator(){
+
+//    for (Int_t plane=0; plane<kNPlanes; plane++) {
+//        for (Int_t side = 0; side < kNSides; side++) {
+//            for (Int_t RPC = 1; RPC <= kNRPC; RPC++) {
+//                delete fOCDBDataTreeBufferW[side][plane][RPC - 1];
+//                delete fOCDBRPCScalersTreeBufferW[0][side][plane][RPC - 1];
+//                delete fOCDBRPCScalersTreeBufferW[1][side][plane][RPC - 1];
+//                delete fAMANDADataTreeBufferW[side][plane][RPC-1];
+//            }
+//        }
+//
+//        for (Int_t local = 0; local < kNLocalBoards; local++) {
+//            delete fOCDBLBScalersTreeBufferW[0][plane][local + 1];
+//            delete fOCDBLBScalersTreeBufferW[1][plane][local + 1];
+//        }
+//    }
+
     fOCDBDataContainer->Close();
     fAMANDADataContainer->Close();
     fGlobalDataContainer->Close();
@@ -189,16 +376,16 @@ AliRPCAutoIntegrator::~AliRPCAutoIntegrator(){
 // which have to be called in sequence to
 void AliRPCAutoIntegrator::RunAutoIntegrator(){
 
-    // If user wants to update the data then the macro has to connect to OCDB.
-    // Note that if data are already in the file there is nothing else to do.
+    // If user wants to update the fAMANDAData then the macro has to connect to OCDB.
+    // Note that if fAMANDAData are already in the file there is nothing else to do.
     if (fUpdateOCDB){
-        cout<<"Starting OCDB data retrieving...\n";
-        OCDBDataToCParser();
+        cout<<"Starting OCDB fAMANDAData retrieving...\n";
+        OCDBDataToCParser(true,1);
         cout<<"DONE\n"<<endl;
     }
 
     if (fUpdateAMANDA){
-        cout<<"Starting AMANDA data parsing...\n";
+        cout<<"Starting AMANDA fAMANDAData parsing...\n";
         AMANDATextToCParser();
 
         cout<<"Setting Amanda Parameters...\n";
@@ -207,11 +394,11 @@ void AliRPCAutoIntegrator::RunAutoIntegrator(){
     }
 
 
-    cout<<"Starting data aggregation...\n";
+    cout<<"Starting fAMANDAData aggregation...\n";
     Aggregator();
     cout<<"DONE\n"<<endl;
 
-    cout<<"Starting data elaboration...\n";
+    cout<<"Starting fAMANDAData elaboration...\n";
     Subtractor();
     cout<<"DONE\n"<<endl;
 
@@ -259,60 +446,33 @@ void AliRPCAutoIntegrator::OCDBRunListReader(){
     
 }
 
-// Method to merge the two files: AMANDA data and OCDB data.
-// This procedure is needed to have chronologically ordered data with continuous
+// Method to merge the two files: AMANDA fAMANDAData and OCDB fAMANDAData.
+// This procedure is needed to have chronologically ordered fAMANDAData with continuous
 // current measurements (AMANDA) and "dark current" measurements from without
 // beam runs (OCDB). This allows one to use subtract the dark current from
-// AMANDA data in the most detailed way.
+// AMANDA fAMANDAData in the most detailed way.
 void AliRPCAutoIntegrator::Aggregator(){
-    TList *listBufferAMANDA = 0x0;
-    TList *listBufferOCDB = 0x0;
-    TList *mergedData[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
 
-                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBufferAMANDA);
-                fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBufferOCDB);
+                fGlobalDataContainer->cd();
 
-                // if any data list is missing, then the channel
-                // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
-                // analysis
-                if (!listBufferAMANDA) {
-                    printf("AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
-                if (!listBufferOCDB) {
-                    printf("OCDB_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
+                for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
+                    fGlobalDataTreeBufferW[iSide][iPlane][iRPC] = fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
+                    fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
                 }
 
-                mergedData[iSide][iPlane][iRPC]=new TList();
-                mergedData[iSide][iPlane][iRPC]->SetName(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-
-                TIter iterValueAMANDA(listBufferAMANDA);
-                while(iterValueAMANDA()){
-                    ((AliRPCValueCurrent*)*iterValueAMANDA)->SetIsAMANDA(kTRUE);
-                    mergedData[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
+                    fGlobalDataTreeBufferW[iSide][iPlane][iRPC] = fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
+                    fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
                 }
 
+                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
 
-                TIter iterValueOCDB(listBufferOCDB);
-                while(iterValueOCDB()){
-                    mergedData[iSide][iPlane][iRPC]->Add(*iterValueOCDB);
-                }
-
-                // the sorting will take place with respect to the timestamp of
-                // each entry
-                mergedData[iSide][iPlane][iRPC]->Sort();
-
-                fGlobalDataContainer->cd("TLists");
-                mergedData[iSide][iPlane][iRPC]->Write(Form("OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
-                PrintWhichRPC(iRPC, iSide, iPlane);
-
-                listBufferAMANDA = 0x0;
-                listBufferOCDB = 0x0;
+                fGlobalDataContainer->cd();
+                fGlobalDataTree[iSide][iPlane][iRPC]->Write("",TObject::kOverwrite);
             }
         }
     }
@@ -323,7 +483,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsITot[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
-    TList *listBuffer;
+    TObjArray *listBuffer;
     
     TObject *IsDirThere;
     fGlobalDataContainer->GetObject("iTot_Graphs",IsDirThere);
@@ -338,10 +498,10 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
+                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
 
                 if (!listBuffer) {
-                    printf("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
+                    printf("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
                     continue;
                 }
 
@@ -400,22 +560,12 @@ void AliRPCAutoIntegrator::GeneratePlots() {
 //      dark current value for each AMANDA value falling between the two
 //      interpolated dark current values.
 void AliRPCAutoIntegrator::Subtractor(){
-    TList *buffer;
+    TObjArray *buffer;
     TGraph *AMANDAPlotsINet[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
-                buffer->Sort();
-
-                // if any data list is missing, then the channel
-                // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
-                // analysis
-                if (!buffer){
-                    printf("TList/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
 
                 AMANDAPlotsINet[iSide][iPlane][iRPC]=new TGraph();
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -423,7 +573,6 @@ void AliRPCAutoIntegrator::Subtractor(){
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
-                TIter iterValueGlobal(buffer);
                 Double_t darkCurrentValue = 0.;
                 Double_t startTimeStamp = 0.;
                 Int_t counter=0;
@@ -433,10 +582,18 @@ void AliRPCAutoIntegrator::Subtractor(){
                 Double_t iDarkt1 = 0.;
                 Double_t t1 = 0.;
 
-                while(iterValueGlobal()){
+                if(!fGlobalDataTree[iSide][iPlane][iRPC]->GetIsSorted()) fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimestamp");
+
+                AliRPCValueDCS *bufferValue = 0x0;
+
+                for (Long64_t iGlobalData=0; iGlobalData < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); fGlobalDataTree[iSide][iPlane][iRPC]->GetEntry(iGlobalData++)) {
+
+                    fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
+
+                    bufferValue = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
 
                     //skip if is not current
-                    if ( !((AliRPCValueDCS*)*iterValueGlobal)->IsCurrent() ) continue;
+                    if ( !((AliRPCValueDCS*)bufferValue)->IsCurrent() ) continue;
 
                     // if the read value is an AMANDA or OCDB with run reading, then the dark
                     // current subtraction must take place. To do that via
@@ -488,7 +645,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                     // If the current value is flagged as a dark current we want to get the following dark current
                     // and load the current values and timestamps. These values will be used later.
-                    if ( ((AliRPCValueDCS*)*iterValueGlobal)->IsOkForIDark() ) {
+                    if ( ((AliRPCValueDCS*)bufferValue)->IsOkForIDark() ) {
 
                         iDarkt0 = 0.;
                         t0 = 0.;
@@ -496,23 +653,27 @@ void AliRPCAutoIntegrator::Subtractor(){
                         t1 = 0.;
 
 
-                        if (((AliRPCValueCurrent*)*iterValueGlobal)) {
-                            iDarkt0 = ((AliRPCValueCurrent *) *iterValueGlobal)->GetITot();
-                            t0 = ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp();
+                        if (((AliRPCValueCurrent*)bufferValue)) {
+                            iDarkt0 = ((AliRPCValueCurrent *) bufferValue)->GetITot();
+                            t0 = ((AliRPCValueCurrent *) bufferValue)->GetTimeStamp();
 
-                            TIter iterValueGlobalNext = iterValueGlobal;
-                            //iterValueGlobalNext();
 
-                            while (iterValueGlobalNext()) {
-                                if (((AliRPCValueDCS *) *iterValueGlobalNext)->IsOkForIDark()) break;
+                            for (Long64_t iGlobalDataNext=iGlobalData+1; iGlobalDataNext < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); fGlobalDataTree[iSide][iPlane][iRPC]->GetEntry(iGlobalDataNext++)) {
+
+                                fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalDataNext);
+
+                                if (((AliRPCValueDCS *) bufferValue)->IsOkForIDark()) break;
+
+
+                                if (((AliRPCValueCurrent*)bufferValue)) {
+                                    iDarkt1 = ((AliRPCValueCurrent *) bufferValue)->GetITot();
+                                    t1 = ((AliRPCValueCurrent *) bufferValue)->GetTimeStamp();
+                                }
+
+                                    //printf("%f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
                             }
 
-                            if (((AliRPCValueCurrent*)*iterValueGlobalNext)) {
-                                iDarkt1 = ((AliRPCValueCurrent *) *iterValueGlobalNext)->GetITot();
-                                t1 = ((AliRPCValueCurrent *) *iterValueGlobalNext)->GetTimeStamp();
-
-                                //printf("%f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
-                            }
+                            fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
                         }
                     }
 
@@ -523,15 +684,15 @@ void AliRPCAutoIntegrator::Subtractor(){
                         //printf("IDark %f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
 
                         // current timestamp is neede for the linear interpolation of the dark current
-                        Double_t tnow = ((AliRPCValueCurrent*)*iterValueGlobal)->GetTimeStamp();
+                        Double_t tnow = ((AliRPCValueCurrent*)bufferValue)->GetTimeStamp();
                         Double_t darkCurrent = tnow * (iDarkt1 - iDarkt0) / (t1 - t0) + iDarkt0;
 
                         //printf("tnow %f \n", tnow);
 
                         // negative dark current is non physical...
                         if (darkCurrent < 0.) darkCurrent = 0;
-                        ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark(darkCurrent);
-                        if ( ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() == 0.)  ((AliRPCValueCurrent *) *iterValueGlobal)->SetIDark((iDarkt1 + iDarkt0)/2.);
+                        ((AliRPCValueCurrent *) bufferValue)->SetIDark(darkCurrent);
+                        if ( ((AliRPCValueCurrent *) bufferValue)->GetINet() == 0.)  ((AliRPCValueCurrent *) bufferValue)->SetIDark((iDarkt1 + iDarkt0)/2.);
 
                         //cout<<" dark current set "<< ((AliRPCValueCurrent *) *iterValueGlobal)->GetIDark() << endl;
 
@@ -540,11 +701,11 @@ void AliRPCAutoIntegrator::Subtractor(){
                         // The subtraction will take place at the moment of
                         // asking the reading the iNET value
                         // (since it returns iTOT-iDARK).
-                        if (((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp() > 8000 &&
-                            ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() >= 0.)
+                        if (((AliRPCValueCurrent *) bufferValue)->GetTimeStamp() > 8000 &&
+                            ((AliRPCValueCurrent *) bufferValue)->GetINet() >= 0.)
                             AMANDAPlotsINet[iSide][iPlane][iRPC]->SetPoint(counter++,
-                                                                           ((AliRPCValueCurrent *) *iterValueGlobal)->GetTimeStamp(),
-                                                                           ((AliRPCValueCurrent *) *iterValueGlobal)->GetINet() /
+                                                                           ((AliRPCValueCurrent *) bufferValue)->GetTimeStamp(),
+                                                                           ((AliRPCValueCurrent *) bufferValue)->GetINet() /
                                                                            fRPCAreas[iRPC][iPlane]);
                     }
                 }
@@ -576,7 +737,7 @@ void AliRPCAutoIntegrator::Integrator(){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
                 fGlobalDataContainer->GetObject(Form("iNet_Graphs/iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),buffer);
 
-                // if any data list is missing, then the channel
+                // if any fAMANDAData list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped from the whole following
                 // analysis
                 if (!buffer){
@@ -779,34 +940,10 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
     mts[21]=2;
     mts[22]=3;
 
-    TList *bufferOutputList;
-
-    TList *data[kNSides][kNPlanes][kNRPC];
-    for(Int_t iSide=0;iSide<kNSides;iSide++){
-        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
-            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                // The idea is to try to get the corresponding object from the
-                // root file. If it is already there the new data will be
-                // added to the list after the data already there. If not the
-                //  object will be created.
-                fAMANDADataContainer->cd();
-                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),bufferOutputList);
-                if (!bufferOutputList) {
-                    data[iSide][iPlane][iRPC]=new TList();
-                    data[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
-                } else {
-                    data[iSide][iPlane][iRPC] = bufferOutputList;
-                }
-                bufferOutputList = 0x0;
-                //cout<<"created "<<data[iSide][iPlane][iRPC]->GetName()<<endl;
-            }
-        }
-    }
-
     Bool_t isZero=kFALSE;
 
     ULong64_t dummyTimeStamp=0;
-    ULong64_t timeStamp=0;
+    Double_t timeStamp=0;
     Double_t current=0.;
     Int_t MT=0;
     Int_t RPC=0;
@@ -814,12 +951,14 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
 
     string line;
     ifstream fin (fAMANDAInputFileName.Data());
+    Int_t linesCounter = 0;
     if (fin.is_open())
     {
         while (! fin.eof() )
         {
           getline (fin,line);
           if (fin.eof()) break;
+          cout<<linesCounter++<<"\r";
           const char *charbuffer = (char*)line.c_str();
           if (!charbuffer) continue;
           sscanf(charbuffer,"%llu;MTR_%c",&dummyTimeStamp,&InsideOutside);
@@ -829,45 +968,80 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
         //   cout<<current<<endl;
 
           if((current!=0. || (current==0. && isZero)) && timeStamp>8000000.){
-            //printf("%f %c=%d %d %d %.17f\n\n",timeStamp,InsideOutside,(InsideOutside=='I'?0:1),MT,RPC,current);
-            //cout<<timeStamp<<endl;
-            AliRPCValueCurrent *currentBuffer = new AliRPCValueCurrent(0, timeStamp, 0, current, 0., kFALSE,"",0.f,"", 0, kTRUE);
-            currentBuffer->SetIsAMANDA(kTRUE);
+//            printf("%f %c=%d %d %d %.17f\n\n",timeStamp,InsideOutside,(InsideOutside=='I'?0:1),MT,RPC,current);
+//            cout<<timeStamp<<endl;
+              fAMANDADataTreeBufferW[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1] = new AliRPCValueCurrent(0, timeStamp, 0, current, 0., kFALSE,"",0.f,"", 0, kTRUE);
+              fAMANDADataTreeBufferW[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->SetIsAMANDA(kTRUE);
+              fAMANDADataTree[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->Fill();
+//              cout<<"filled"<<endl;
             // //if (timeStamp<8000000) continue;
-            //if (!(data[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1])) continue;
-            data[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1]->Add(currentBuffer);
-            currentBuffer = 0x0;
+            //if (!(fAMANDAData[(InsideOutside=='I'?0:1)][mts[MT]][RPC-1])) continue;
         } //else cout<<"#### skip ###"<<endl;
         }
+        cout<<endl;
         fin.close();
     }
     else cout << "Unable to open file";
 
-    for(Int_t iSide=0;iSide<kNSides;iSide++){
-        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
-            for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fAMANDADataContainer->cd();
-                if (data[iSide][iPlane][iRPC]->GetEntries()==0) continue;
-                data[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey | TObject::kOverwrite);
+    fAMANDADataContainer->Write();
+}
 
-            }
-        }
+void AliRPCAutoIntegrator::OCDBDataToCParser(bool blockMode, UInt_t blockSize){
+    if (!blockMode) OCDBDataToCParserBlocks(-1);
+    else{
+        Int_t blockNumber = 0;
+        while(!OCDBDataToCParserBlocks(blockNumber++, blockSize));
     }
 }
 
-void AliRPCAutoIntegrator::OCDBDataToCParser(){
+bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blockSize){
+
+    bool allBlocksDone = false;
 
     //flag che è kTRUE se l'evento è di calibrazione
     Bool_t isCalib=kFALSE;
     Bool_t isBeamPresent=kFALSE;
-    
-    AliCDBManager *managerYearCheck = AliCDBManager::Instance();
-    for(Int_t i=0;i<fOCDBRunListToAdd->GetEntries();i++){
-        AliOCDBRun *runIteratorYearChecker=(AliOCDBRun*)fOCDBRunListToAdd->At(i);
+
+
+    auto beginOfBlock = fOCDBRunListToAdd.begin();;
+    auto endOfBlock = fOCDBRunListToAdd.end();
+
+    if ( blockNumber == -1 ){
+
+        printf("Running in single block mode.\n");
+
+    } else {
+
+        printf("Running in block mode.\n");
+
+        beginOfBlock = fOCDBRunListToAdd.begin() + blockSize * blockNumber;
+        endOfBlock = beginOfBlock + blockSize;
+
+        if (beginOfBlock > fOCDBRunListToAdd.end()) {
+            printf("Download of fAMANDAData ended.\n");
+            allBlocksDone = true;
+            return allBlocksDone;
+        }
+
+        if (endOfBlock > fOCDBRunListToAdd.end()) {
+            printf("Last block to process.\n");
+            endOfBlock = fOCDBRunListToAdd.end();
+            allBlocksDone = true;
+        }
+    }
+
+    //manager per interfacciarsi con gli OCDB
+    AliCDBManager *managerPrototype = AliCDBManager::Instance();
+
+    //loop sui run inseriti
+    for (std::vector<AliOCDBRun>::iterator runIterator = beginOfBlock; runIterator != endOfBlock; ++runIterator) {
+
+        AliCDBManager *managerYearCheck = managerPrototype;
+
         for (Int_t year = 2017; year>2009; year--){
             managerYearCheck->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
             AliCDBStorage *defStorageYear = managerYearCheck->GetDefaultStorage();
-            defStorageYear->QueryCDB((*runIteratorYearChecker).fRunNumber);
+            defStorageYear->QueryCDB((*runIterator).fRunNumber);
             TObjArray* arrCDBIDYear = defStorageYear->GetQueryCDBList();
             TIter nxt(arrCDBIDYear);
             AliCDBId* cdbIDYear = 0;
@@ -876,129 +1050,31 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 if (cdbIDYear->GetPath() == "GRP/GRP/Data") {hasGRP = kTRUE; break;}
             }
             if(!hasGRP){
-                printf("\n\n### Can't find run %d\n\n",(*runIteratorYearChecker).fRunNumber);
-                (*runIteratorYearChecker).fYear = 0000;
+                printf("\n\n### Can't find run %d\n\n",(*runIterator).fRunNumber);
+                (*runIterator).fYear = 0000;
                 continue;
             } else {
-                printf("\n\n### Run %d belongs to year %d\n\n",(*runIteratorYearChecker).fRunNumber,year);
-                (*runIteratorYearChecker).fYear = year;
+                printf("\n\n### Run %d belongs to year %d\n\n",(*runIterator).fRunNumber,year);
+                (*runIterator).fYear = year;
                 break;
             }
+            continue; //if year is not found skip run number
         }
-    }
-    
-    //manager per interfacciarsi con gli OCDB
-    AliCDBManager *managerCurrent = AliCDBManager::Instance();
-    AliCDBManager *managerVoltage = AliCDBManager::Instance();
-    AliCDBManager *managerRunType = AliCDBManager::Instance();
-    AliCDBManager *managerScaler  = AliCDBManager::Instance();
 
-
-    //array 3D di liste di dati. le TList sono già ordinate dopo ogni inserimento
-    TList *dataList[kNSides][kNPlanes][kNRPC];
-    TList *scalersDataList[2][kNSides][kNPlanes][kNRPC];
-    TList *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
-
-    TList *bufferDataList;
-    TList *bufferScalersDataList0;
-    TList *bufferScalersDataList1;
-
-    for (Int_t plane=0; plane<kNPlanes; plane++) {
-        for (Int_t side=0; side<kNSides; side++) {
-            for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-                // The idea is to try to get the corresponding object from the
-                // root file. If it is already there the new data will be
-                // added to the list after the data already there. If not the
-                //  object will be created.
-                fOCDBDataContainer->cd();
-                fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),bufferDataList);
-                fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC),bufferScalersDataList0);
-                fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC),bufferScalersDataList1);
-
-                if (!bufferDataList) {
-                    dataList[side][plane][RPC-1]=new TList();
-                    dataList[side][plane][RPC-1]->SetName(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC));
-                } else {
-                    dataList[side][plane][RPC-1] = bufferDataList;
-                }
-                bufferDataList = 0x0;
-
-                if (!bufferScalersDataList0) {
-                    scalersDataList[0][side][plane][RPC-1]=new TList();
-                    scalersDataList[0][side][plane][RPC-1]->SetName(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC));
-                } else {
-                    scalersDataList[0][side][plane][RPC-1] = bufferScalersDataList0;
-                }
-                bufferScalersDataList0 = 0x0;
-
-                if (!bufferScalersDataList1) {
-                    scalersDataList[1][side][plane][RPC-1]=new TList();
-                    scalersDataList[1][side][plane][RPC-1]->SetName(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC));
-                } else {
-                    scalersDataList[1][side][plane][RPC-1] = bufferScalersDataList1;
-                }
-                bufferScalersDataList1 = 0x0;
-
-
-            }
-        }
-    }
-
-    bufferDataList = 0x0;
-    bufferScalersDataList0 = 0x0;
-    bufferScalersDataList1 = 0x0;
-
-    TList *bufferScalersLocalBoardList1;
-
-    for(Int_t cathode=0;cathode<kNCathodes;cathode++){
-        for(Int_t plane=0;plane<kNPlanes;plane++){
-            for(Int_t local=0;local<kNLocalBoards;local++){
-                // The idea is to try to get the corresponding object from the
-                // root file. If it is already there the new data will be
-                // added to the list after the data already there. If not the
-                //  object will be created.
-                fOCDBDataContainer->cd();
-                fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),bufferScalersLocalBoardList1);
-
-                if (!bufferScalersLocalBoardList1) {
-                    scalersLocalBoardList[cathode][plane][local]=new TList();
-                    scalersLocalBoardList[cathode][plane][local]->SetName(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1));
-                } else {
-                    scalersLocalBoardList[cathode][plane][local] = bufferScalersLocalBoardList1;
-                }
-                bufferScalersLocalBoardList1 = 0x0;
-            }
-        }
-    }
-
-    bufferScalersLocalBoardList1 = 0x0;
-
-    //loop sui run inseriti
-    for(Int_t i=0;i<fOCDBRunListToAdd->GetEntries();i++){
-        AliOCDBRun *runIterator=(AliOCDBRun*)fOCDBRunListToAdd->At(i);
-        if (runIterator->fYear == 0) continue;
-        UInt_t RunYear=(*runIterator).fYear;
-        
         //cout<<"YEar retrieved"<<endl;
         
         //inizializzazione dei manager
-        managerCurrent->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
-        managerVoltage->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
-        managerRunType->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
-        managerScaler->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
+        managerPrototype->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",(*runIterator).fYear));
 
         //i manager puntano al run desiderato
-        managerCurrent->SetRun((*runIterator).fRunNumber);
-        managerVoltage->SetRun((*runIterator).fRunNumber);
-        managerRunType->SetRun((*runIterator).fRunNumber);
-        managerScaler->SetRun((*runIterator).fRunNumber);
+        managerPrototype->SetRun((*runIterator).fRunNumber);
 
-        //cout<<"Managers retrieved"<<endl;
+        if(CheckPointer((TNamed*)managerPrototype)) continue;
 
-        if(CheckPointer((TNamed*)managerCurrent)) continue;
-        if(CheckPointer((TNamed*)managerVoltage)) continue;
-        if(CheckPointer((TNamed*)managerRunType)) continue;
-        if(CheckPointer((TNamed*)managerScaler)) continue;
+        AliCDBManager *managerCurrent = managerPrototype;
+        AliCDBManager *managerVoltage = managerPrototype;
+        AliCDBManager *managerRunType = managerPrototype;
+        AliCDBManager *managerScaler  = managerPrototype;
 
         AliCDBStorage *defStorage = managerCurrent->GetDefaultStorage();
         if(CheckPointer((TNamed*)defStorage)) continue;
@@ -1107,7 +1183,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         break;
                     }
 
-                    //cout<<"N voltage entries= "<<dataArrayVoltage->GetEntries()<<endl;
+//                    cout<<"N voltage entries= "<<dataArrayVoltage->GetEntries()<<endl;
 
                     Bool_t isVoltageOk=kTRUE;
 
@@ -1121,11 +1197,17 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                             break;
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
-                            dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
+                            fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
+                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            cout<<fOCDBDataTree[side][plane][RPC-1]->Fill();
+//                                    cout<<"Filled tree! "<<fOCDBDataTree[side][plane][RPC-1]->GetEntries()<<endl;
                         }
-                        //cout<<"\t"<<value->GetFloat()<<endl;
-                        dataList[side][plane][RPC-1]->Add(new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState));
-                        value = 0x0;
+//                        //cout<<"\t"<<value->GetFloat()<<endl;
+//                        auto buffer = new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
+//                        fOCDBData[side][plane][RPC-1]->Add(buffer->Clone());
+//                        fOCDBData[side][plane][RPC-1]->SetOwner(kTRUE);
+//                        delete buffer;
+//                        value = 0x0;
                     }
 
                     if (isVoltageOk==kFALSE) break;
@@ -1139,28 +1221,34 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                     }
                     //printf("%d-%d-%d\n",plane,side,RPC);
                     //loop sulle entry del vettore di misure di corrente
-                    //cout<<"N current entries= "<<dataArrayCurrents->GetEntries()<<endl;
+//                    cout<<"N current entries= "<<dataArrayCurrents->GetEntries()<<endl;
                     for (Int_t arrayIndex=0; arrayIndex<(dataArrayCurrents->GetEntries()); arrayIndex++) {
                         //puntatore all'elemento i-esimo
                         AliDCSValue *value = (AliDCSValue*)dataArrayCurrents->At(arrayIndex);
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
-                            dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0));
-                            //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
+                            fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
+                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            cout<<fOCDBDataTree[side][plane][RPC-1]->Fill();
+                            //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
-                            dataList[side][plane][RPC-1]->Add(new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0));
-                            //((AliRPCValueDCS*)dataList[side][plane][RPC-1]->Last())->PrintBeamStatus();
+                            fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
+                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            cout<<fOCDBDataTree[side][plane][RPC-1]->Fill();
+                            //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
                         //cout<<"\t"<<value->GetFloat()<<"   "<<value->GetTimeStamp()<<endl;
                         value = 0x0;
                     }
+
+//                    fOCDBDataTree[side][plane][RPC-1]->Write(0,TObject::kWriteDelete,0);
                     //Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC)
                 }
             }
         }
 
-        //if(arrayScalers)printf("\n\n\n##### Scalers %d ######\n\n\n",arrayScalers->GetEntries());
+//        if(arrayScalers)printf("\n\n\n##### Scalers %d ######\n\n\n",arrayScalers->GetEntries());
 
         ULong64_t elapsedTime=0;
         UInt_t readLB[kNCathodes][kNSides][kNPlanes][kNRPC];
@@ -1176,7 +1264,7 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
             }
         }
         //loop sulle entries, sui piani, i catodi (bending e non bending) e le Local Boards (234 per piano)
-        //cout<<"entries: "<<arrayScalers->GetEntries()<<endl;
+//        cout<<"entries: "<<arrayScalers->GetEntries()<<endl;
         AliMUONTriggerScalers *scalersData;
         for (Int_t scalerEntry=0; scalerEntry<arrayScalers->GetEntries() && isCalib==kFALSE; scalerEntry++){
             scalersData=(AliMUONTriggerScalers*)arrayScalers->At(scalerEntry);
@@ -1192,32 +1280,35 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         Int_t iRPC09=kRPCIndexes[iRPC017];
                         Int_t iSide=kRPCSides[iRPC017];
 
-                        //cout<<"{"<<localBoard<<","<<iRPC09<<","<<iSide<<"},";
+//                        cout<<"{"<<localBoard<<","<<iRPC09<<","<<iSide<<"},";
+
 
                         // se c'è overflow scarto il dato
                         readLB[cathode][iSide][plane][iRPC09-1]++;
                         Bool_t isOverflow=kFALSE;
                         if (scalersData->GetLocScalStripOver(cathode, plane, localBoard)!=0. ){//| scalersData->GetLocScalStrip(cathode, plane, localBoard)==0.) {
-                            //printf(" MTR %d cathode %d LB %d RPC %d or %d_%s timestamp %lu data %d OVERFLOW\n",fPlanes[plane],cathode,localBoard,iRPC017,iRPC09,(fSides[iSide]).Data(),SOR+elapsedTime,scalersData->GetLocScalStrip(cathode, plane, localBoard));
+//                            printf(" MTR %d cathode %d LB %d RPC %d or %d_%s timestamp %lu fAMANDAData %d OVERFLOW\n",fPlanes[plane],cathode,localBoard,iRPC017,iRPC09,(fSides[iSide]).Data(),SOR+elapsedTime,scalersData->GetLocScalStrip(cathode, plane, localBoard));
                             overflowLB[cathode][iSide][plane][iRPC09-1]++;
                             readLB[cathode][iSide][plane][iRPC09-1]--;
                             isOverflow=kTRUE;
                         }
+
                         // se la lettura non è quella a fine run immagazzino il dato con timestamp pari a SOR+DeltaT
                         if(scalerEntry!=arrayScalersEntries-1){
-                            AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
-                            scalersDataList[cathode][iSide][plane][iRPC09-1]->Add(buffer);
-                            scalersLocalBoardList[cathode][plane][localBoard]->Add(buffer);
-                            //delete buffer;
+                            fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, SOR+elapsedTime,RunYear, scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
                             // altrimenti il timestamp è pari all'EOR
                         else {
-                            AliRPCValueScaler *buffer=new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
-                            scalersDataList[cathode][iSide][plane][iRPC09-1]->Add(buffer);
-                            scalersLocalBoardList[cathode][plane][localBoard]->Add(buffer);
-                            //delete buffer;
+                            fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
-                        //printf(" MTR %d cathode %d LB %d RPC %d or %d_%s timestamp %lu data %d\n",fPlanes[plane],cathode,localBoard,iRPC017,iRPC09,(fSides[iSide]).Data(),SOR+elapsedTime,scalersData->GetLocScalStrip(cathode, plane, localBoard));
+
+                        fOCDBRPCScalersTreeBranch[cathode][iSide][plane][iRPC09-1]->SetAddress(&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
+                        fOCDBLBScalersTreeBranch[cathode][plane][localBoard]->SetAddress(&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
+
+                        cout<<fOCDBRPCScalersTree[cathode][iSide][plane][iRPC09-1]->Fill();
+                        cout<<fOCDBLBScalersTree[cathode][plane][localBoard]->Fill();
+
+//                        printf(" MTR %d cathode %d LB %d RPC %d or %d_%s timestamp %lu fAMANDAData %d\n",fPlanes[plane],cathode,localBoard,iRPC017,iRPC09,(fSides[iSide]).Data(),SOR+elapsedTime,scalersData->GetLocScalStrip(cathode, plane, localBoard));
                     }
                     //cout<<"}"<<endl;
                 }
@@ -1226,20 +1317,25 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
         }
         delete scalersData;
 
-        //printf("scalers reading complete.\n");
+        printf("scalers reading complete.\n");
 
-        for (Int_t plane=0; plane<kNPlanes; plane++) {
-            for (Int_t side=0; side<kNSides; side++) {
-                for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-                    for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
-                        scalersDataList[cathode][side][plane][RPC-1]->Add(new AliRPCOverflowStatistics((*runIterator).fRunNumber, EOR, overflowLB[cathode][side][plane][RPC-1], readLB[cathode][side][plane][RPC-1], isCalib,*beamType,beamEnergy,*LHCState ));
-                        //cout<<"RUN"<<(*runIterator).runNumber<<" side:"<<side<<" plane "<<plane<<" RPC "<<RPC<<" cathode "<<cathode<<" READ="<<readLB[cathode][side][plane][RPC-1]<<" OVERFLOW="<<overflowLB[cathode][side][plane][RPC-1]<<endl<<endl;
-                    }
-                }
-            }
-        }
-        //printf("data saved.\n");
+//        for (Int_t plane=0; plane<kNPlanes; plane++) {
+//            for (Int_t side=0; side<kNSides; side++) {
+//                for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
+//                    for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
+//                        fOCDBRPCScalersTreeBufferW[cathode][side][plane][RPC-1] = AliRPCOverflowStatistics((*runIterator).fRunNumber, EOR, overflowLB[cathode][side][plane][RPC-1], readLB[cathode][side][plane][RPC-1], isCalib,*beamType,beamEnergy,*LHCState );
+//                        fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Fill();
+////                        fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Write(0,TObject::kWriteDelete,0);
+//                        //cout<<"RUN"<<(*runIterator).runNumber<<" side:"<<side<<" plane "<<plane<<" RPC "<<RPC<<" cathode "<<cathode<<" READ="<<readLB[cathode][side][plane][RPC-1]<<" OVERFLOW="<<overflowLB[cathode][side][plane][RPC-1]<<endl<<endl;
+//                    }
+//                }
+//            }
+//        }
+        //printf("fAMANDAData saved.\n");
 
+//        fOCDBDataContainer->Write();
+
+        delete runType, beamType, LHCState;
     }
 
     printf("\n\n\nData retrieving complete\n\n\n");
@@ -1248,9 +1344,9 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
     for (Int_t plane=0; plane<kNPlanes; plane++) {
         for (Int_t side=0; side<kNSides; side++) {
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-                //alias all'elemento dell'array 3D di TLists*
-                TList *sortedList=dataList[side][plane][RPC-1];
-                sortedList->Sort();
+//                //alias all'elemento dell'array 3D di TObjArrays*
+//                TObjArray *sortedList=0x0;//fOCDBData[side][plane][RPC-1];
+//                sortedList->Sort();
 
                 //contenitore per il run number del run dal quale deriva la misura di dark current
                 UInt_t calibRunNumber=0;
@@ -1261,24 +1357,41 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                 //flag positivo se la precedente misura di tensione è >=8500.V
                 Bool_t voltageOkFlag=kFALSE;
 
-                //printf("MT%d_%s_%d\n",fPlanes[plane],fSides[side].Data(),RPC);
+                cout<<"cieo"<<endl<<endl;
+
+                printf("Processing: MT%d_%s_%d\r",fPlanes[plane],fSides[side].Data(),RPC);
 
                 //loop sulle entries della lisa di dati
-                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
+//                TIter valueDCSIterator(sortedList);
+//                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
+                fOCDBDataTree[side][plane][RPC-1]->Sort("fRunNumber","fTimeStamp");
+
+                AliRPCValueDCS *valueDCS= fOCDBDataTreeBufferW[side][plane][RPC-1];
+
+                for (int iOCDBData = 0; iOCDBData < fOCDBDataTree[side][plane][RPC-1]->GetEntries() ; ++iOCDBData) {
                     //cout<<iList<<"/"<<sortedList->GetEntries()<<endl;
                     //L'elemento può essere una tensione o una corrente
-                    AliRPCValueDCS *valueDCS=(AliRPCValueDCS*)(sortedList->At(iList));
+
+                    fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                    
+                    if (fOCDBDataTree[side][plane][RPC-1]->GetEntry(iOCDBData) == 0) continue;
+//                    cout<<iOCDBData<<endl;
+
+//                    cout << valueDCS->GetRunNumber() << endl;
                     //se è una tensione
                     if (valueDCS->IsVoltage()) {
                         //cast a tensione
-                        AliRPCValueVoltage* valueVoltage=(AliRPCValueVoltage*)valueDCS;
+                        cout<<"Cast a tensione"<<endl;
+                        AliRPCValueVoltage* valueVoltage = reinterpret_cast<AliRPCValueVoltage*>(valueDCS);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
                         valueVoltage=0x0;
+                        cout<<valueVoltage->GetVSupp()<<endl;
                         //se è una corrente
                     } else if (valueDCS->IsCurrent()) {
+                        cout<<"Cast a corrente"<<endl;
                         //cast a corrente
-                        AliRPCValueCurrent* valueCurrent=(AliRPCValueCurrent*)valueDCS;
+                        AliRPCValueCurrent* valueCurrent = reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
                         //se è un run di calibrazione fatto a tensione di lavoro
                         if (valueCurrent->IsCalib()==kTRUE && voltageOkFlag==kTRUE) {
                             //rimangono alcune letture a 0.0A, così si tolgono ###GIUSTO?###
@@ -1290,48 +1403,52 @@ void AliRPCAutoIntegrator::OCDBDataToCParser(){
                         } else {
                             valueCurrent->SetIDark(iDarkCalib);
                             valueCurrent->SetCalibRunNumber(calibRunNumber);
-                            //cout<<valueCurrent<<"\t"<<calibRunNumber<<endl;
+//                            cout<<valueCurrent<<"\t"<<calibRunNumber<<endl;
                         }
                         valueCurrent=0x0;
+                    } else {
+                        cout<<"Neither current or voltage"<<endl;
                     }
-                    //cout<<valueDCS->IsCalib()<<endl;
-                    valueDCS=0x0;
+//                    cout<<valueDCS->IsCalib()<<endl;
                 }
-
-                fOCDBDataContainer->cd();
-                sortedList->Sort();
-                scalersDataList[0][side][plane][RPC-1]->Sort();
-                scalersDataList[1][side][plane][RPC-1]->Sort();
-                sortedList->Write(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),TObject::kSingleKey | TObject::kOverwrite);
-                scalersDataList[0][side][plane][RPC-1]->Write(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[0]).Data(),fPlanes[plane],RPC),TObject::kSingleKey | TObject::kOverwrite);
-                scalersDataList[1][side][plane][RPC-1]->Write(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[1]).Data(),fPlanes[plane],RPC),TObject::kSingleKey | TObject::kOverwrite);
-            }
-        }
-    }
-
-    for(Int_t cathode=0;cathode<kNCathodes;cathode++){
-        for(Int_t plane=0;plane<kNPlanes;plane++){
-            for(Int_t local=0;local<kNLocalBoards;local++){
-                fOCDBDataContainer->cd();
-                scalersLocalBoardList[cathode][plane][local]->Sort();
-                scalersLocalBoardList[cathode][plane][local]->Write(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),TObject::kSingleKey | TObject::kOverwrite);
-                //printf("OCDB_Scalers_MTR_%s_MT%d_LB%d\n",(fCathodes[cathode]).Data(),fPlanes[plane],local+1);
             }
         }
     }
 
     printf("\n\n\nDark currents setting complete\n\n\n");
+
+    for (Int_t plane=0; plane<kNPlanes; plane++) {
+        for (Int_t side = 0; side < kNSides; side++) {
+            for (Int_t RPC = 1; RPC <= kNRPC; RPC++) {
+                fOCDBDataContainer->cd();
+                fOCDBDataTree[side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+                fOCDBDataContainer->cd();
+                fOCDBRPCScalersTree[0][side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+                fOCDBDataContainer->cd();
+                fOCDBRPCScalersTree[1][side][plane][RPC - 1]->Write("", TObject::kOverwrite);
+            }
+
+            for (Int_t localBoard=0; localBoard<kNLocalBoards; localBoard++) {
+                fOCDBDataContainer->cd();
+                fOCDBLBScalersTree[0][plane][localBoard]->Write("", TObject::kOverwrite);
+                fOCDBDataContainer->cd();
+                fOCDBLBScalersTree[1][plane][localBoard]->Write("", TObject::kOverwrite);
+            }
+        }
+    }
+
     fGlobalDataContainer->cd();
     fOCDBRunListToAdd->Write("DownloadedRuns",TObject::kSingleKey);
 
+    return allBlocksDone;
 }
 
 
 void AliRPCAutoIntegrator::FillAliRPCData(){
 
-    TList *sortedListData[kNSides][kNPlanes][kNRPC];
-    TList *sortedListScalers[kNSides][kNPlanes][kNRPC][kNCathodes];
-    TList *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
+    TObjArray *sortedListData[kNSides][kNPlanes][kNRPC];
+    TObjArray *sortedListScalers[kNSides][kNPlanes][kNRPC][kNCathodes];
+    TObjArray *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
 
     Int_t previousScalers[kNCathodes][kNPlanes][kNLocalBoards];
 
@@ -1345,15 +1462,15 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
     cout<<"Init done"<<endl;
 
-    TList *buffer=new TList();
+    TObjArray *buffer=new TObjArray();
     for (Int_t side=0; side<kNSides; side++) {
         //cout<<fSides[side].Data()<<endl;
         for (Int_t plane=0; plane<kNPlanes; plane++) {
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
                 //cout<<"\t\t"<<RPC<<endl;
-                //sortedListData[side][plane][RPC-1]=new TList();
-                fGlobalDataContainer->GetObject(Form("TLists/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),buffer);
+                //sortedListData[side][plane][RPC-1]=new TObjArray();
+                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[side]).Data(),fPlanes[plane],RPC),buffer);
                 if(!buffer){
                     cout<<"OCDB_AMANDA_Data NOT FOUND"<<endl;
                     continue;
@@ -1364,7 +1481,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                 for(Int_t cathode=0;cathode<kNCathodes;cathode++){
                     //cout<<"\t\t\t"<<fCathodes[cathode].Data()<<endl;
-                    //sortedListScalers[side][plane][RPC-1][cathode]=new TList();
+                    //sortedListScalers[side][plane][RPC-1][cathode]=new TObjArray();
                     fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_%s_MT%d_RPC%d",(fSides[side]).Data(),(fCathodes[cathode]).Data(),fPlanes[plane],RPC),buffer);
                     if(!buffer){
                         cout<<"Scalers NOT FOUND"<<endl;
@@ -1386,7 +1503,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for(Int_t local=0;local<kNLocalBoards;local++){
                 //cout<<"\t\t"<<local+1<<endl;
-                //scalersLocalBoardList[cathode][plane][local]=new TSortedList();
+                //fOCDBLBScalers[cathode][plane][local]=new TObjArray();
                 //printf("Scalers_MTR_%s_MT%d_LB%d\n",(cathodes[cathode]).Data(),planes[plane],local+1);
                 fOCDBDataContainer->GetObject(Form("OCDB_Scalers_MTR_%s_MT%d_LB%d",(fCathodes[cathode]).Data(),fPlanes[plane],local+1),buffer);
                 if(!buffer){
@@ -1545,8 +1662,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                     AliRPCValueScaler *valueScaler;
                                     while ((valueScaler = (AliRPCValueScaler *) iterValueScaler())) {
                                         if (valueScaler->GetScalerCounts() <= 0.) continue;
-                                        //for(Int_t iScaler=previousScalers[cathode][iPlane][localBoard-1];iScaler<scalersLocalBoardList[cathode][iPlane][localBoard-1]->GetEntries();iScaler++){
-                                        //AliRPCValueScaler *valueScaler=((AliRPCValueScaler*)scalersLocalBoardList[cathode][iPlane][localBoard-1]->At(iScaler));
+                                        //for(Int_t iScaler=previousScalers[cathode][iPlane][localBoard-1];iScaler<fOCDBLBScalers[cathode][iPlane][localBoard-1]->GetEntries();iScaler++){
+                                        //AliRPCValueScaler *valueScaler=((AliRPCValueScaler*)fOCDBLBScalers[cathode][iPlane][localBoard-1]->At(iScaler));
                                         readingCount++;
                                         if (valueScaler->GetRunNumber() < previousRunNumber) {
                                             //cout<<"continue"<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
@@ -1571,7 +1688,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                                 elapsedTime += valueScaler->GetDeltaT();
                                             }
                                         }
-                                        //scalersLocalBoardList[cathode][iPlane][localBoard-1]->RemoveAt(iScaler);
+                                        //fOCDBLBScalers[cathode][iPlane][localBoard-1]->RemoveAt(iScaler);
                                     }
 
                                     if (isAccepted == kTRUE) {
@@ -1653,9 +1770,9 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 };
 
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
-    TList *listBufferAMANDA=0x0;
-    TList *listBufferOCDB=0x0;
-    TSortedList *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
+    TObjArray *listBufferAMANDA=0x0;
+    TObjArray *listBufferOCDB=0x0;
+    TObjArray *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -1663,10 +1780,10 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferOCDB);
                 fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferAMANDA);
 
-                DataWithRunNumber[iSide][iPlane][iRPC]=new TSortedList();
+                DataWithRunNumber[iSide][iPlane][iRPC]=new TObjArray();
                 DataWithRunNumber[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
 
-                // if any data list is missing, then the channel
+                // if any fAMANDAData list is missing, then the channel
                 // (aka {iSide,iPlane,iRPC}) is skipped
                 if (!listBufferAMANDA) {
                     printf("AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
@@ -1686,68 +1803,151 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 TIter iterValueAMANDANext(listBufferAMANDA);
                 iterValueAMANDANext();
 
-                UInt_t runNumberBuffer=((AliRPCValueDCS *) listBufferOCDB->At(0))->GetRunNumber();
-                //it is intended as runnumber extends from runbegin to runend then
-                //at newbegin begins another run
-                ULong64_t runBeginBuffer=((AliRPCValueDCS *) listBufferOCDB->At(0))->GetTimeStamp();
-                ULong64_t newRunBeginBuffer=0;
+                UInt_t runNumberBuffer=0;
+                //it is intended as runnumber extends from runbegin to runend
+                ULong64_t runBeginBuffer=0;
                 ULong64_t runEndBuffer=0;
+
+                Int_t nCallOCDB = 0;
+                Int_t nCallAMANDA = 0;
+
+                UInt_t OCDBRunNumberBuffer;
+                ULong64_t OCDBTimeStampBuffer;
+                TBeamType OCDBRunTypeBuffer;
+                Float_t OCDBBeamEnergyBuffer;
+                TLHCStatus OCDBLHCStatusBuffer;
+                Bool_t OCDBIsCalibBuffer;
+                UInt_t OCDBRunYearBuffer;
+
+                AliRPCValueDCS *bufferAMANDA;
+
+                PrintWhichRPC(iRPC,iSide,iPlane);
+                cout<<listBufferOCDB->GetEntries()<<"   "<<listBufferAMANDA->GetEntries()<<endl;
 
                 //iter on OCDB until runnumber changes
                 while(iterValueOCDB()){
 
-                    TBeamType OCDBRunTypeBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamType();
-                    Float_t OCDBBeamEnergyBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamEnergy();
-                    TLHCStatus OCDBLHCStatusBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetLHCStatus();
-                    UInt_t OCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
-                    ULong64_t OCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
-                    Bool_t OCDBIsCalibBuffer=((AliRPCValueDCS *) *iterValueOCDB)->IsCalib();
-                    UInt_t OCDBRunYearBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetYear();
+                    nCallOCDB++;
 
-                    //check if OCDBTimestamp is updated
-                    if(OCDBRunNumberBuffer>runNumberBuffer){
-                        //if is updated iterator is in a new run and last endbuffer should not be updated
-                        newRunBeginBuffer=OCDBTimeStampBuffer;
+                    UInt_t localOCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
+                    ULong64_t localOCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
 
-                        //((AliRPCValueDCS *) *iterValueOCDB)->PrintBeamStatus();
-                        //printf("run: %d, start %llu, stop %llu \n",OCDBRunNumberBuffer,runBeginBuffer,runEndBuffer);
+//                    cout<<"OCDB ts: "<<localOCDBTimeStampBuffer<<endl;
 
+                    if (localOCDBRunNumberBuffer > runNumberBuffer){
 
-                        //iter over amanda to update the run from start to stop then look for next run
-                        while(iterValueAMANDA()) {
-                            ULong64_t AMANDATimeStamp = ((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
-                            if ((AMANDATimeStamp >= runBeginBuffer) && (AMANDATimeStamp <= runEndBuffer)) {
+                        while( (bufferAMANDA = (AliRPCValueDCS *)iterValueAMANDA()) ) {
 
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamType(OCDBRunTypeBuffer);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamEnergy(OCDBBeamEnergyBuffer);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetLHCStatus(OCDBLHCStatusBuffer);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetIsCalib(OCDBIsCalibBuffer);
-                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunYear(OCDBRunYearBuffer);
+                            nCallAMANDA++;
 
-                                //printf("###AMANDA###");
-                                //((AliRPCValueDCS *) *iterValueAMANDA)->PrintBeamStatus();
+                            ULong64_t AMANDATimeStamp = bufferAMANDA->GetTimeStamp();
+//                            cout<<nCallAMANDA++<<endl;
+//                            cout<<"AMANDA ts: "<<AMANDATimeStamp<<endl;
+//
+                            if ( AMANDATimeStamp < runBeginBuffer ) {
+//                                cout<<"Value is sooner"<<endl;
+                                continue;
+                            } //AMANDA value has been registered sooner than OCDB fAMANDAData skip AMANDA value
+                            else if ( AMANDATimeStamp >= runBeginBuffer ){ //if AMANDA value is after run begin
+                                if ( AMANDATimeStamp <= runEndBuffer ){ //if AMANDA value is sooner than run end
+                                    cout<<"Value is between"<<endl;
 
-                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-                            } else if ((AMANDATimeStamp < newRunBeginBuffer) && (AMANDATimeStamp > runEndBuffer)) {
-                                //now I add data with runnumber =0 (values get between two different runs)
-                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                                    bufferAMANDA->SetRunNumber(runNumberBuffer);
+                                    bufferAMANDA->SetBeamType(OCDBRunTypeBuffer);
+                                    bufferAMANDA->SetBeamEnergy(OCDBBeamEnergyBuffer);
+                                    bufferAMANDA->SetLHCStatus(OCDBLHCStatusBuffer);
+                                    bufferAMANDA->SetIsCalib(OCDBIsCalibBuffer);
+                                    bufferAMANDA->SetRunYear(OCDBRunYearBuffer);
+
+                                    DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+                                    DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+
+                                } else { //if AMANDA value is later than run end
+
+                                    if( AMANDATimeStamp < localOCDBTimeStampBuffer ){ //if AMANDA fAMANDAData refers to a moment without ongoing runs
+//                                        cout<<"Value is with no run"<<endl;
+//                                        bufferAMANDA->SetRunNumber(1);
+//                                        bufferAMANDA->SetBeamType(knone);
+//                                        bufferAMANDA->SetBeamEnergy(0.);
+//                                        bufferAMANDA->SetLHCStatus(kNONE);
+//                                        bufferAMANDA->SetIsCalib(kFALSE);
+//                                        bufferAMANDA->SetRunYear(OCDBRunYearBuffer);
+//
+//                                        DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+//                                        DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+                                    } else {
+//                                        cout<<"Value is next"<<endl;
+                                        break;
+                                    }
+                                }
                             }
 
-                            //when the run is passed exit the cycle
-                            if(iterValueAMANDANext()){
-                                if(AMANDATimeStamp>=newRunBeginBuffer) break;
-                            } else break;
                         }
 
-                        //printf("end of run:%u, begin of run %u\n",runNumberBuffer,OCDBRunNumberBuffer);
-
-                        runBeginBuffer=newRunBeginBuffer;
-                        runNumberBuffer=OCDBRunNumberBuffer;
-
-                    }else{
-                        runEndBuffer=OCDBTimeStampBuffer;
+                        runBeginBuffer = localOCDBTimeStampBuffer;
+                        runNumberBuffer = localOCDBRunNumberBuffer;
+                    } else {
+                        runEndBuffer = localOCDBTimeStampBuffer;
                     }
+
+//                    UInt_t localOCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
+//                    ULong64_t localOCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
+//
+//                    //check if OCDBTimestamp is updated
+//                    if(localOCDBRunNumberBuffer>runNumberBuffer){
+//
+//                        //((AliRPCValueDCS *) *iterValueOCDB)->PrintBeamStatus();
+//                        //printf("run: %d, start %llu, stop %llu \n",OCDBRunNumberBuffer,runBeginBuffer,runEndBuffer);
+//
+//
+//                        //iter over amanda to update the run from start to stop then look for next run
+//                        while(iterValueAMANDA()) {
+//
+//                            ULong64_t AMANDATimeStamp = ((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
+//                            cout<<nCallAMANDA++<<endl;
+//
+//                            if ((AMANDATimeStamp >= runBeginBuffer) && (AMANDATimeStamp <= runEndBuffer)) {
+//
+//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
+//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamType(OCDBRunTypeBuffer);
+//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamEnergy(OCDBBeamEnergyBuffer);
+//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetLHCStatus(OCDBLHCStatusBuffer);
+//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetIsCalib(OCDBIsCalibBuffer);
+//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunYear(OCDBRunYearBuffer);
+//
+//                                //printf("###AMANDA###");
+//                                //((AliRPCValueDCS *) *iterValueAMANDA)->PrintBeamStatus();
+//
+//                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+//                                DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+//                            } else {
+//                                //now I add fAMANDAData with runnumber =0 (values get between two different runs)
+//                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
+//                                DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+//                            }
+//
+//                            //when the run is passed exit the cycle
+//                            if(iterValueAMANDANext()){
+//                                if(((AliRPCValueDCS *) *iterValueAMANDANext)->GetTimeStamp()>localOCDBTimeStampBuffer) break;
+//                            } else break;
+//                        }
+//
+//                        //printf("end of run:%u, begin of run %u\n",runNumberBuffer,OCDBRunNumberBuffer);
+//
+//                        runBeginBuffer=localOCDBTimeStampBuffer;
+//                        runNumberBuffer=localOCDBRunNumberBuffer;
+//
+//                    }else{
+//                        runEndBuffer=localOCDBTimeStampBuffer;
+//                    }
+//
+////                    OCDBRunNumberBuffer= localOCDBRunNumberBuffer;
+//
+//                    OCDBRunTypeBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamType();
+//                    OCDBBeamEnergyBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamEnergy();
+//                    OCDBLHCStatusBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetLHCStatus();
+//                    OCDBIsCalibBuffer=((AliRPCValueDCS *) *iterValueOCDB)->IsCalib();
+//                    OCDBRunYearBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetYear();
 
                 }
 
@@ -1758,6 +1958,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 DataWithRunNumber[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
                 PrintWhichRPC(iRPC, iSide, iPlane);
+                cout<<nCallOCDB<< "   " <<nCallAMANDA<<endl;
 
                 listBufferAMANDA = 0x0;
                 listBufferOCDB = 0x0;
@@ -1770,7 +1971,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
     Int_t counter=0;
     TIter iterValue(list);
     counter=0;
@@ -1785,14 +1986,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list, UInt_t RunNumber, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, UInt_t RunNumber, Int_t whichValue){
     std::vector<AliOCDBRun*> RunDummyList;
     RunDummyList.push_back(new AliOCDBRun(RunNumber,0));
     PlotSomethingVersusTime(Graph, funky, list, RunDummyList, whichValue);
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *list,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
     for(AliOCDBRun* iter :RunNumberList){
         UInt_t temp=((UInt_t)iter->GetRunNumber());
@@ -1802,7 +2003,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const,TList *list, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const,TObjArray *list, Int_t whichValue){
     Int_t counter=0;
     TIter iterValue(list);
     counter=0;
@@ -1916,17 +2117,17 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
     }
 };
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TList *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
   TIter iterValue(DataList);
-  vector<UInt_t> RunNumberIntList;
+  vector<UInt_t> RunNumberInTObjArray;
   for(auto iter=RunNumberList.begin();iter!=RunNumberList.end();iter++){
       //cout<<(*iter)->GetRunNumber()<<endl<<flush;
-      RunNumberIntList.push_back((*iter)->GetRunNumber());
+      RunNumberInTObjArray.push_back((*iter)->GetRunNumber());
   }
 
   while (iterValue()) {
     UInt_t run=((AliRPCValueDCS *) *iterValue)->GetRunNumber();
-    if(!IsRunInList(RunNumberIntList,run)) continue;
+    if(!IsRunInList(RunNumberInTObjArray,run)) continue;
       if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 && (((AliRPCValueDCS *) *iterValue)->*funky)()) {
           ((TH1F*)Graph)->Fill((((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue)));
       }
@@ -1944,7 +2145,7 @@ if (strcmp(Graph->ClassName(),"TH1F")==0)
 
 }
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TList *list, vector <AliOCDBRun*> RunNumberList){
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TObjArray *list, vector <AliOCDBRun*> RunNumberList){
         if(label.Contains("current")) {
             ((TH1F*)Graph)->GetXaxis()->SetRangeUser(0,50);
             if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kITot);
@@ -1957,17 +2158,17 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label
         }
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, UInt_t RunNumber){
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list, UInt_t RunNumber){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, list, RunNumber, 0);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list, std::vector<UInt_t> RunNumberList){
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list, std::vector<UInt_t> RunNumberList){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list,RunNumberList,0);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
     return;
 }
@@ -1975,10 +2176,10 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TList* list){
 void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
     /*
      * format for file is
-     * [plot/distribution], [darcurrent, netcurrent, voltage, ratenotbending....], [time, run, ...], TLists/OCDB_AMANDA_MTR_INSIDE...
+     * [plot/distribution], [darcurrent, netcurrent, voltage, ratenotbending....], [time, run, ...], TObjArrays/OCDB_AMANDA_MTR_INSIDE...
      *
      * example
-     * plot, darkcurrent, ratenotbending, TLists/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3
+     * plot, darkcurrent, ratenotbending, TObjArrays/OCDB_AMANDA_Data_MTR_INSIDE_MT11_RPC3
      */
     ifstream file;
     file.open(filename.Data(), ios::in);
@@ -2008,6 +2209,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<options.Data()<<endl;
         
         //Get List useful on vs time plots
+
         TList *listPtr=0x0;
         options.Prepend("TLists/OCDB_AMANDA_Data_");
         fGlobalDataContainer->GetObject(Form("%s",options.Data()),listPtr);

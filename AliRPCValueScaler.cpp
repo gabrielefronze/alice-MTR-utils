@@ -9,14 +9,15 @@
 #include "AliRPCValueScaler.h"
 
 AliRPCValueScaler::AliRPCValueScaler() : AliRPCValueDCS(){
-    fScalerCounts=0.;
+    fDataType=DCSDataType::kScaler;
+    fScalerCounts=0;
     fOverflow=kFALSE;
-    fDeltaT=-1.;
+    fDeltaT=(Float_t)-1.;
 };
 
 AliRPCValueScaler::AliRPCValueScaler(UInt_t runNumber,ULong64_t timeStamp,UInt_t runYear, Long64_t scalerCounts,Bool_t isCalib,TString beamType, Float_t beamEnergy, TString LHCStatus, Double_t deltaT, Bool_t overflow) : AliRPCValueDCS(
-        runNumber, timeStamp, runYear, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
+        runNumber, timeStamp, runYear, isCalib, beamType, beamEnergy, LHCStatus, kFALSE, DCSDataType::kScaler) {
     fScalerCounts=scalerCounts;
     fOverflow=overflow;
-    fDeltaT=deltaT;
+    fDeltaT=(Float_t)deltaT;
 };

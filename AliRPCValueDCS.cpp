@@ -21,13 +21,14 @@ AliRPCValueDCS::AliRPCValueDCS() : TObject(){
 };
 
 AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, UInt_t runYear, Bool_t isCalib, TString beamType,
-                               Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA) : TObject(){
+                               Float_t beamEnergy, TString LHCStatus, Bool_t isAMANDA, DCSDataType dataType) : TObject(){
     fRunNumber=runNumber;
     fRunYear=runYear;
     fTimeStamp=timeStamp;
     fIsCalib=isCalib;
     fIsAMANDA=isAMANDA;
     fBeamType = knone;
+    fDataType = dataType;
 
     if(LHCStatus.Contains("BEAM")){
         if(LHCStatus.Contains("NO")){

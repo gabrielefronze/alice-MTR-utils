@@ -9,10 +9,11 @@
 #include "AliRPCValueVoltage.h"
 
 AliRPCValueVoltage::AliRPCValueVoltage() : AliRPCValueDCS(){
-    fVSupp=0.;
+    fDataType=DCSDataType::kVoltage;
+    fVSupp=(Float_t)0.;
 };
 
 AliRPCValueVoltage::AliRPCValueVoltage(UInt_t runNumber,ULong64_t timeStamp,UInt_t runYear,Double_t vSupp,Bool_t isCalib, TString beamType, Float_t beamEnergy, TString LHCStatus) : AliRPCValueDCS(
-        runNumber, timeStamp, runYear, isCalib, beamType, beamEnergy, LHCStatus, kFALSE) {
-    fVSupp=vSupp;
+        runNumber, timeStamp, runYear, isCalib, beamType, beamEnergy, LHCStatus, kFALSE, DCSDataType::kVoltage) {
+    fVSupp=(Float_t)vSupp;
 };

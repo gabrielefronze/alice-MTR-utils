@@ -1586,6 +1586,13 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 UInt_t nHV = 0;
                 Double_t RPCTotalRatePerArea[2] = {0., 0.};
                 ULong64_t totalScalerCounts[2] = {0, 0};
+                
+                Int_t AMANDAActualRunNumber=0;
+                ULong64_t AMANDATimeStampStart = 0;
+                ULong64_t AMANDATimeStampStop = 0;
+                ULong64_t AMANDAFakeRunTime=3*24*60*60;
+                Double_t AMANDAMeanTotalCurrent = 0.;
+                UInt_t AMANDANTotalCurrent = 0;
 
                 //printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
 
@@ -1616,6 +1623,46 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     } else {
                         //printf("Adding run %d for ",actualRunNumber);
                         //PrintWhichRPC(iRPC-1,iSide,iPlane);
+                    }
+                    
+                    //store AMANDA as negative run numbers;
+                    
+                    if(actualRunNumber==0){
+                        
+                        if(AMANDAActualRunNumber==0)
+                        {
+                            AMANDAActualRunNumber--;
+                            AMANDATimeStampStart=valueDCS->GetTimeStamp();
+                        }else {
+                            AMANDATimeStampStop=valueDCS->GetTimeStamp();
+                        }
+                        
+                        UInt_t AMANDAdeltaT=AMANDATimeStampStop-AMANDATimeStampStart;
+                        
+                        if(AMANDAdeltaT<=AMANDAFakeRunTime){
+                            cout<<"new AMANDA value"<<endl;
+                            AliRPCValueCurrent *currentBuffer=(AliRPCValueCurrent*)valueDCS;
+                            AMANDAMeanTotalCurrent+=currentBuffer->GetITot();
+                            AMANDANTotalCurrent++;
+                        }else{
+                            if(AMANDANTotalCurrent!=0) AMANDAMeanTotalCurrent/=AMANDANTotalCurrent;
+                            else AMANDAMeanTotalCurrent=0.;
+                            cout<<"new AMANDA Run"<<endl<<endl;
+                            cout<<"start: "<<AMANDATimeStampStart<<endl;
+                            cout<<"stop "<<AMANDATimeStampStop<<endl;
+                            cout<<"current "<<AMANDAMeanTotalCurrent;
+                            cout<<"RunNumber"<<AMANDAActualRunNumber;
+                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
+                            AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kFALSE, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
+                            fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
+                            
+                            AMANDAActualRunNumber-=1;
+                            AMANDATimeStampStart=AMANDATimeStampStop;
+                            AMANDATimeStampStop=0;
+                            AMANDAMeanTotalCurrent=0.;
+                            AMANDANTotalCurrent=0;
+                            
+                        }
                     }
                     
 

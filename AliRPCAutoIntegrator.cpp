@@ -1768,8 +1768,10 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         //cout<<totalScalerCounts[0]<<"\t"<<totalScalerCounts[1]<<endl;
                         //cout<<(isDark?"Dark":"NODARK")<<endl;
                         
-                       
-                        
+                        //if data are overflow (aka RPCTotalRatePerArea=-1) than we must be sure count are set to 0
+                        //note that only scalercounts are saved for future analysis
+                        if(RPCTotalRatePerArea[0]<0) totalScalerCounts[0]=0;
+                        if(RPCTotalRatePerArea[1]<0) totalScalerCounts[1]=0;
                         
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);

@@ -1032,7 +1032,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
     //loop sui run inseriti
     for (std::vector<AliOCDBRun>::iterator runIterator = beginOfBlock; runIterator != endOfBlock; ++runIterator) {
-        TObject *downoadedRunToAdd=new AliOCDBRun(runIterator->fRunNumber,runIterator->fYear);
+        TObject *downloadedRunToAdd=new AliOCDBRun(runIterator->fRunNumber,runIterator->fYear);
 
         
         AliCDBManager *managerYearCheck = managerPrototype;
@@ -1062,7 +1062,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
         Int_t RunYear=(*runIterator).fYear;
         
-        if(fOCDBRunListDownloaded->FindObject(downoadedRunToAdd)){
+        if(fOCDBRunListDownloaded->FindObject(downloadedRunToAdd)){
             continue;
         }
         
@@ -1319,14 +1319,15 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
         printf("scalers reading complete.\n");
 
+        fOCDBRunListDownloaded->Add(downloadedRunToAdd);
+        
         delete runType;
         delete beamType;
         delete LHCState;
     }
 
 //        fOCDBDataContainer->Write();
-        
-        fOCDBRunListDownloaded->Add(downoadedRunToAdd);
+
         
         //delete runType, beamType, LHCState;
     printf("\n\n\nData retrieving complete\n\n\n");
@@ -1350,7 +1351,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
             }
         }
     }
-    
+
     fGlobalDataContainer->cd();
     fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kOverwrite);
 

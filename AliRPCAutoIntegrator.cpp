@@ -1670,6 +1670,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
 
+                        statsBuffer->PrintHumanReadable();
+                        
                         actualRunNumber=0;
                         timeStampStart=0;
                         timeStampStop=0;

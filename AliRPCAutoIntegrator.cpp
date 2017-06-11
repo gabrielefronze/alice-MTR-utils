@@ -1358,8 +1358,8 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         AliRPCValueVoltage* valueVoltage = reinterpret_cast<AliRPCValueVoltage*>(valueDCS);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
-                        valueVoltage=0x0;
                         cout<<valueVoltage->GetVSupp()<<endl;
+                        valueVoltage=0x0;
                         //se è una corrente
                     } else if (valueDCS->IsCurrent()) {
                         cout<<"Cast a corrente"<<endl;

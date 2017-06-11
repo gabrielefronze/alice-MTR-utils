@@ -1350,6 +1350,9 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
             }
         }
     }
+    
+    fGlobalDataContainer->cd();
+    fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kOverwrite);
 
     return allBlocksDone;
 }
@@ -1484,11 +1487,6 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
             }
         }
     }
-
-    fGlobalDataContainer->cd();
-    fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kOverwrite);
-    
-    return allBlocksDone;
 }
 
 

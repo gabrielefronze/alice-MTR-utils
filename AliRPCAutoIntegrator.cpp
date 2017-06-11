@@ -1330,8 +1330,6 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 //flag positivo se la precedente misura di tensione è >=8500.V
                 Bool_t voltageOkFlag=kFALSE;
 
-                cout<<"cieo"<<endl<<endl;
-
                 printf("Processing: MT%d_%s_%d\r",fPlanes[plane],fSides[side].Data(),RPC);
 
                 //loop sulle entries della lisa di dati
@@ -1354,7 +1352,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     //se è una tensione
                     if (valueDCS->IsVoltage()) {
                         //cast a tensione
-                        cout<<"Cast a tensione"<<endl;
+//                        cout<<"Cast a tensione"<<endl;
                         AliRPCValueVoltage* valueVoltage = reinterpret_cast<AliRPCValueVoltage*>(valueDCS);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
@@ -1362,7 +1360,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         valueVoltage=0x0;
                         //se è una corrente
                     } else if (valueDCS->IsCurrent()) {
-                        cout<<"Cast a corrente"<<endl;
+//                        cout<<"Cast a corrente"<<endl;
                         //cast a corrente
                         AliRPCValueCurrent* valueCurrent = reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
                         //se è un run di calibrazione fatto a tensione di lavoro

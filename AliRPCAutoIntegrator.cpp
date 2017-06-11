@@ -723,8 +723,8 @@ void AliRPCAutoIntegrator::Integrator(){
     TGraph *AMANDAPlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
 
    //arrays contains {iSide, IPlane, IRPC, integratedCharge}
-    RPC RPCWhichIntegratedBest;
-    RPC RPCWhichIntegratedWorst;
+    RPC LessExposedRPC;
+    RPC MostExposedRPC;
     Double_t MaxCharge=0.;
     Double_t MinCharge=std::numeric_limits<Double_t>::max();
 
@@ -768,14 +768,14 @@ void AliRPCAutoIntegrator::Integrator(){
                 }
 
                 if(integratedCharge<MinCharge){
-                    RPCWhichIntegratedBest.Plane=iPlane;
-                    RPCWhichIntegratedBest.Side=iSide;
-                    RPCWhichIntegratedBest.RPC=iRPC+1;
+                    LessExposedRPC.Plane=iPlane;
+                    LessExposedRPC.Side=iSide;
+                    LessExposedRPC.RPC=iRPC+1;
                     MinCharge=integratedCharge;
                 }else if(integratedCharge>=MaxCharge){
-                    RPCWhichIntegratedWorst.Plane=iPlane;
-                    RPCWhichIntegratedWorst.Side=iSide;
-                    RPCWhichIntegratedWorst.RPC=iRPC+1;
+                    MostExposedRPC.Plane=iPlane;
+                    MostExposedRPC.Side=iSide;
+                    MostExposedRPC.RPC=iRPC+1;
                     MaxCharge=integratedCharge;
                 }
 
@@ -800,17 +800,17 @@ void AliRPCAutoIntegrator::Integrator(){
     }
 
     //Plot the best and the worst chamber
-    TMultiGraph *BestAndWorstGraph=new TMultiGraph("BestAndWorstGraph","BestAndWorstGraph");
+    TMultiGraph *MostAndLessExposedRPCMultiGraph=new TMultiGraph("MostAndLessExposedRPCMultiGraph","MostAndLessExposedRPCMultiGraph");
     //GetBest
-    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC+1),buffer);
-    BestAndWorstGraph->Add(buffer);
+    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC+1),buffer);
+    MostAndLessExposedRPCMultiGraph->Add(buffer);
     //GetWorst
-    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC+1),buffer);
-    BestAndWorstGraph->Add(buffer);
+    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC+1),buffer);
+    MostAndLessExposedRPCMultiGraph->Add(buffer);
     fGlobalDataContainer->cd("integrated_charge_Graphs");
-    BestAndWorstGraph->Write(Form("integrated_charge_Graph"),TObject::kOverwrite|TObject::kSingleKey);
-    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC,MinCharge);
-    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC,MaxCharge);
+    MostAndLessExposedRPCMultiGraph->Write(Form("integrated_charge_Graph"),TObject::kOverwrite|TObject::kSingleKey);
+    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,MinCharge);
+    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,MaxCharge);
 
     fGlobalDataContainer->Flush();
 }
@@ -821,13 +821,13 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     fGlobalDataContainer->cd("integrated_charge_Graphs");
     
     //arrays contains {iSide, IPlane, IRPC, integratedCharge}
-    RPC RPCWhichIntegratedBest;
-    RPC RPCWhichIntegratedWorst;
+    RPC LessExposedRPC;
+    RPC MostExposedRPC;
     Double_t MaxCharge=0.;
     Double_t MinCharge=std::numeric_limits<Double_t>::max();
     
     //Plot the best and the worst chamber
-    TMultiGraph *BestAndWorstGraph=new TMultiGraph("BestAndWorstGraph","BestAndWorstGraph");
+    TMultiGraph *MostAndLessExposedRPCMultiGraph=new TMultiGraph("MostAndLessExposedRPCMultiGraph","MostAndLessExposedRPCMultiGraph");
     TGraph *MeanGraph=new TGraph();
     TGraph *Best, *Worst;
     Int_t counter=0;
@@ -888,21 +888,21 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                 
                 //estimate max and min RPC
                 if(IntegratedCharge<MinCharge){
-                    RPCWhichIntegratedBest.Plane=iPlane;
-                    RPCWhichIntegratedBest.Side=iSide;
-                    RPCWhichIntegratedBest.RPC=iRPC+1;
+                    LessExposedRPC.Plane=iPlane;
+                    LessExposedRPC.Side=iSide;
+                    LessExposedRPC.RPC=iRPC+1;
                     MinCharge=IntegratedCharge;
                     Best=PlotsIntegratedCharge[iSide][iPlane][iRPC];
                 }else if(IntegratedCharge>=MaxCharge){
-                    RPCWhichIntegratedWorst.Plane=iPlane;
-                    RPCWhichIntegratedWorst.Side=iSide;
-                    RPCWhichIntegratedWorst.RPC=iRPC+1;
+                    MostExposedRPC.Plane=iPlane;
+                    MostExposedRPC.Side=iSide;
+                    MostExposedRPC.RPC=iRPC+1;
                     MaxCharge=IntegratedCharge;
                     Worst=PlotsIntegratedCharge[iSide][iPlane][iRPC];
                 }
                 
                 printf("RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,IntegratedCharge);
-                BestAndWorstGraph->Add(PlotsIntegratedCharge[iSide][iPlane][iRPC]);
+                MostAndLessExposedRPCMultiGraph->Add(PlotsIntegratedCharge[iSide][iPlane][iRPC]);
                 fGlobalDataContainer->cd("integrated_charge_Graphs");
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite||TObject::kSingleKey);
                 
@@ -917,13 +917,13 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     }
     
     
-    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedBest.Side]).Data(),fPlanes[RPCWhichIntegratedBest.Plane],RPCWhichIntegratedBest.RPC,MinCharge);
-    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[RPCWhichIntegratedWorst.Side]).Data(),fPlanes[RPCWhichIntegratedWorst.Plane],RPCWhichIntegratedWorst.RPC,MaxCharge);
+    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,MinCharge);
+    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,MaxCharge);
     MeanGraph->SetLineColor(kCyan-3);
     MeanGraph->SetMarkerSize(0.15);
     MeanGraph->SetMarkerColor(kCyan-3);
     MeanGraph->SetMarkerStyle(24);
-    BestAndWorstGraph->Add(MeanGraph);
+    MostAndLessExposedRPCMultiGraph->Add(MeanGraph);
     
     fGlobalDataContainer->Flush();
 }

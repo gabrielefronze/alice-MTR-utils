@@ -46,3 +46,5 @@ Makefile
 *.pcm
 
 \.ycm_extra_conf\.py
+
+\.AliRPCOverflowStatistics\.cpp\.swp

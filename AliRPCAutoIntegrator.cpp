@@ -1362,9 +1362,9 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
 void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
 
-    TSmartTree *OCDBDataTree[kNSides][kNPlanes][kNRPC];
-    TBranch *OCDBDataTreeBranch[kNSides][kNPlanes][kNRPC];
-    AliRPCValueDCS *OCDBDataTreeBufferW[kNSides][kNPlanes][kNRPC];
+    TSmartTree *OCDBDataTree;
+    TBranch *OCDBDataTreeBranch;
+    AliRPCValueDCS *OCDBDataTreeBuffer;
 
     //loop sui piani, i lati (inside e outside) e le RPC (9 per side)
     for (Int_t plane=0; plane<kNPlanes; plane++) {
@@ -1383,14 +1383,14 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
 
                 cout << "Name and Title" << endl << flush;
 
-                OCDBDataTreeBufferW[plane][side][RPC] = new AliRPCValueDCS();
+                OCDBDataTreeBuffer = new AliRPCValueDCS();
 
 //                fOCDBDataContainer->cd();
-                OCDBDataTree[plane][side][RPC] = new TSmartTree(Name,Title);
+                OCDBDataTree = new TSmartTree(Name,Title);
                 cout << "Created new tree" << endl << flush;
-                OCDBDataTreeBranch[side][plane][RPC] = OCDBDataTree[side][plane][RPC]->Branch(Name, &OCDBDataTreeBufferW[side][plane][RPC],32000,0);
+                OCDBDataTreeBranch = OCDBDataTree->Branch(Name, &OCDBDataTreeBuffer,32000,0);
                 cout << "Branch" << endl << flush;
-                OCDBDataTreeBranch[side][plane][RPC]->SetAddress(&OCDBDataTreeBufferW[side][plane][RPC]);
+                OCDBDataTreeBranch->SetAddress(&OCDBDataTreeBuffer);
 
                 cout << "Let's go" << endl << flush;
 
@@ -1420,7 +1420,7 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
 
                     fOCDBDataTreeBranch[side][plane][RPC]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC]);
 
-                    if (fOCDBDataTree[side][plane][RPC]->GetEntry(iOCDBData) == 0) continue;
+                    if (fOCDBDataTree[side][plane][RPC]->GetSortedEntry(iOCDBData) == 0) continue;
 //                    cout<<iOCDBData<<endl;
 
 //                    cout << valueDCS->GetRunNumber() << endl;
@@ -1432,8 +1432,8 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
 //                        cout<<valueVoltage->GetVSupp()<<endl;
-                        OCDBDataTreeBranch[side][plane][RPC]->SetAddress(&valueVoltage);
-                        OCDBDataTree[plane][side][RPC]->Fill();
+                        OCDBDataTreeBranch->SetAddress(&valueVoltage);
+                        OCDBDataTree->Fill();
                         valueVoltage=0x0;
                         //se è una corrente
                     } else if (input->IsCurrent()) {
@@ -1453,8 +1453,8 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
                             valueCurrent->SetCalibRunNumber(calibRunNumber);
 //                            cout<<valueCurrent<<"\t"<<calibRunNumber<<endl;
                         }
-                        OCDBDataTreeBranch[side][plane][RPC]->SetAddress(&valueCurrent);
-                        OCDBDataTree[plane][side][RPC]->Fill();
+                        OCDBDataTreeBranch->SetAddress(&valueCurrent);
+                        OCDBDataTree->Fill();
                         valueCurrent=0x0;
                     } else {
                         cout<<"Neither current or voltage"<<endl;
@@ -1463,8 +1463,8 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
                 }
 
                 fOCDBDataContainer->cd();
-                OCDBDataTree[side][plane][RPC]->Write(Name, TObject::kOverwrite);
-                cout << OCDBDataTree[side][plane][RPC]->GetEntries() << endl << flush;
+                OCDBDataTree->Write(Name, TObject::kOverwrite);
+                cout << OCDBDataTree->GetEntries() << endl << flush;
             }
         }
     }

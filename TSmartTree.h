@@ -41,9 +41,9 @@ public:
         return TTree::Fill();
     }
 
-    void GetSortedEntry(Long64_t i){
-        if(fIsSorted) this->GetEntry(fTreeIndex[i]);
-        else this->GetEntry(i);
+    int GetSortedEntry(Long64_t i){
+        if(fIsSorted) return this->GetEntry(fTreeIndex[i]);
+        else return this->GetEntry(i);
     }
 
     void operator[](Long64_t i){

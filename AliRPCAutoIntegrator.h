@@ -101,14 +101,13 @@ private:
 public:
 //    TTree *fOCDBTree;
     TSmartTree *fOCDBDataTree[kNSides][kNPlanes][kNRPC];
-    TSmartTree *fOCDBRPCScalersTree[2][kNSides][kNPlanes][kNRPC];
+    TSmartTree *fOCDBRPCScalersTree[kNCathodes][kNSides][kNPlanes][kNRPC];
     TSmartTree *fOCDBLBScalersTree[kNCathodes][kNPlanes][kNLocalBoards];
-
     TBranch *fOCDBDataTreeBranch[kNSides][kNPlanes][kNRPC];
-    TBranch *fOCDBRPCScalersTreeBranch[2][kNSides][kNPlanes][kNRPC];
+    TBranch *fOCDBRPCScalersTreeBranch[kNCathodes][kNSides][kNPlanes][kNRPC];
     TBranch *fOCDBLBScalersTreeBranch[kNCathodes][kNPlanes][kNLocalBoards];
     AliRPCValueDCS *fOCDBDataTreeBufferW[kNSides][kNPlanes][kNRPC];
-    AliRPCValueScaler *fOCDBRPCScalersTreeBufferW[2][kNSides][kNPlanes][kNRPC];
+    AliRPCValueScaler *fOCDBRPCScalersTreeBufferW[kNCathodes][kNSides][kNPlanes][kNRPC];
     AliRPCValueScaler *fOCDBLBScalersTreeBufferW[kNCathodes][kNPlanes][kNLocalBoards];
 //    AliRPCValueDCS *fOCDBDataTreeBufferR[kNSides][kNPlanes][kNRPC];
 //    AliRPCValueScaler *fOCDBRPCScalersTreeBufferR[2][kNSides][kNPlanes][kNRPC];

@@ -44,6 +44,11 @@ public:
         kINet
     };
 
+private:
+    UInt_t fCalibRunNumber;
+    Double_t fITot;
+    Double_t fIDark;
+
     ClassDef(AliRPCValueCurrent,2);
 };
 

@@ -1800,38 +1800,28 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 };
 
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
-    TObjArray *listBufferAMANDA=0x0;
-    TObjArray *listBufferOCDB=0x0;
-    TObjArray *DataWithRunNumber[kNSides][kNPlanes][kNRPC];
+
+    TSmartTree *AMANDADataTree;
+    TBranch *AMANDADataTreeBranch;
+    AliRPCValueDCS *AMANDADataTreeBuffer;
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fOCDBDataContainer->GetObject(Form("OCDB_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferOCDB);
-                fAMANDADataContainer->GetObject(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),listBufferAMANDA);
 
-                DataWithRunNumber[iSide][iPlane][iRPC]=new TObjArray();
-                DataWithRunNumber[iSide][iPlane][iRPC]->SetName(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+                printf("Processing: MT%d_%s_%d\r",fPlanes[iPlane],fSides[iSide].Data(),iRPC+1);
 
-                // if any fAMANDAData list is missing, then the channel
-                // (aka {iSide,iPlane,iRPC}) is skipped
-                if (!listBufferAMANDA) {
-                    printf("AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
+                fAMANDADataContainer->cd();
 
-                if (!listBufferOCDB) {
-                    printf("OCDB_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
+                // Creating a clone of the AMANDA tree: it will replace the standard one!
+                TString NameAMANDA = fAMANDADataTree[iSide][iPlane][iRPC]->GetName();
+                TString TitleAMANDA = fAMANDADataTree[iSide][iPlane][iRPC]->GetTitle();
 
-                if(!listBufferOCDB->IsSorted()) listBufferOCDB->Sort();
-                if(!listBufferAMANDA->IsSorted()) listBufferAMANDA->Sort();
-
-                TIter iterValueOCDB(listBufferOCDB);
-                TIter iterValueAMANDA(listBufferAMANDA);
-                TIter iterValueAMANDANext(listBufferAMANDA);
-                iterValueAMANDANext();
+                AMANDADataTreeBuffer = new AliRPCValueDCS();
+                AMANDADataTree = new TSmartTree(NameAMANDA,TitleAMANDA);
+                if ( !AMANDADataTree->GetIsSorted() ) AMANDADataTree->Sort("fTimeStamp");
+                AMANDADataTreeBranch = AMANDADataTree->Branch(NameAMANDA, &AMANDADataTreeBuffer,32000,0);
+                AMANDADataTreeBranch->SetAddress(&AMANDADataTreeBuffer);
 
                 UInt_t runNumberBuffer=0;
                 //it is intended as runnumber extends from runbegin to runend

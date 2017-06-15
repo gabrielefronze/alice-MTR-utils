@@ -1374,25 +1374,17 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
             for (Int_t RPC=0; RPC<kNRPC; RPC++) {
 
                 printf("Processing: MT%d_%s_%d\r",fPlanes[plane],fSides[side].Data(),RPC+1);
-                cout << flush;
 
                 fOCDBDataContainer->cd();
 
                 TString Name = fOCDBDataTree[side][plane][RPC]->GetName();
                 TString Title = fOCDBDataTree[side][plane][RPC]->GetTitle();
 
-                cout << "Name and Title" << endl << flush;
-
                 OCDBDataTreeBuffer = new AliRPCValueDCS();
 
-//                fOCDBDataContainer->cd();
                 OCDBDataTree = new TSmartTree(Name,Title);
-                cout << "Created new tree" << endl << flush;
                 OCDBDataTreeBranch = OCDBDataTree->Branch(Name, &OCDBDataTreeBuffer,32000,0);
-                cout << "Branch" << endl << flush;
                 OCDBDataTreeBranch->SetAddress(&OCDBDataTreeBuffer);
-
-                cout << "Let's go" << endl << flush;
 
                 //contenitore per il run number del run dal quale deriva la misura di dark current
                 UInt_t calibRunNumber=0;
@@ -1405,39 +1397,30 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
 
                 cout << fOCDBDataTree[side][plane][RPC]->GetEntries() << endl << flush;
 
-                //loop sulle entries della lisa di dati
-//                TIter valueDCSIterator(sortedList);
-//                for(Int_t iList=0; iList<sortedList->GetEntries(); iList++){
                 fOCDBDataContainer->cd();
                 fOCDBDataTree[side][plane][RPC]->Sort("fRunNumber","fTimeStamp");
                 fOCDBDataTreeBranch[side][plane][RPC]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC]);
 
+                //loop on entries of the retrieved tree
                 AliRPCValueDCS *input = fOCDBDataTreeBufferW[side][plane][RPC];
-
                 for (int iOCDBData = 0; iOCDBData < fOCDBDataTree[side][plane][RPC]->GetEntries() ; ++iOCDBData) {
-                    //cout<<iList<<"/"<<sortedList->GetEntries()<<endl;
-                    //L'elemento può essere una tensione o una corrente
 
+                    //L'elemento può essere una tensione o una corrente
                     fOCDBDataTreeBranch[side][plane][RPC]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC]);
 
                     if (fOCDBDataTree[side][plane][RPC]->GetSortedEntry(iOCDBData) == 0) continue;
-//                    cout<<iOCDBData<<endl;
 
-//                    cout << valueDCS->GetRunNumber() << endl;
                     //se è una tensione
                     if (input->IsVoltage()) {
                         //cast a tensione
-//                        cout<<"Cast a tensione"<<endl;
                         AliRPCValueVoltage* valueVoltage = reinterpret_cast<AliRPCValueVoltage*>(input);
                         //settaggio del flag
                         voltageOkFlag=(Bool_t)(valueVoltage->GetVSupp()>=8500.);
-//                        cout<<valueVoltage->GetVSupp()<<endl;
                         OCDBDataTreeBranch->SetAddress(&valueVoltage);
                         OCDBDataTree->Fill();
                         valueVoltage=0x0;
                         //se è una corrente
                     } else if (input->IsCurrent()) {
-//                        cout<<"Cast a corrente"<<endl;
                         //cast a corrente
                         AliRPCValueCurrent* valueCurrent = reinterpret_cast<AliRPCValueCurrent*>(input);
                         //se è un run di calibrazione fatto a tensione di lavoro
@@ -1451,15 +1434,13 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
                         } else {
                             valueCurrent->SetIDark(iDarkCalib);
                             valueCurrent->SetCalibRunNumber(calibRunNumber);
-//                            cout<<valueCurrent<<"\t"<<calibRunNumber<<endl;
                         }
                         OCDBDataTreeBranch->SetAddress(&valueCurrent);
                         OCDBDataTree->Fill();
                         valueCurrent=0x0;
                     } else {
-                        cout<<"Neither current or voltage"<<endl;
+                        cout<<"ERROR: Neither current or voltage"<<endl;
                     }
-//                    cout<<valueDCS->IsCalib()<<endl;
                 }
 
                 fOCDBDataContainer->cd();

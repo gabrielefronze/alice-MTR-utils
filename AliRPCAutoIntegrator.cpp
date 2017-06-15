@@ -1849,69 +1849,63 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 Bool_t OCDBIsCalibBuffer;
                 UInt_t OCDBRunYearBuffer;
 
-                AliRPCValueDCS *bufferAMANDA;
+//                PrintWhichRPC(iRPC,iSide,iPlane);
+                cout<<fOCDBDataTree[iSide][iPlane][iRPC]->GetEntries()<<"   "<<AMANDADataTree->GetEntries()<<endl;
 
-                PrintWhichRPC(iRPC,iSide,iPlane);
-                cout<<listBufferOCDB->GetEntries()<<"   "<<listBufferAMANDA->GetEntries()<<endl;
+                if ( !fOCDBDataTree[iSide][iPlane][iRPC]->GetIsSorted() ) fOCDBDataTree[iSide][iPlane][iRPC]->Sort("fRunNumber","fTimeStamp");
+                fOCDBDataTreeBranch[iSide][iPlane][iRPC]->SetAddress(fOCDBDataTreeBufferW[iSide][iPlane][iRPC]);
+
+                if ( !fAMANDADataTree[iSide][iPlane][iRPC]->GetIsSorted() ) fAMANDADataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
+                fAMANDADataTreeBranch[iSide][iPlane][iRPC]->SetAddress(fAMANDADataTreeBufferW[iSide][iPlane][iRPC]);
+
+                AliRPCValueDCS *OCDBDataPtr = fOCDBDataTreeBufferW[iSide][iPlane][iRPC];
+                AliRPCValueDCS *AMANDADataPtr = fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
 
                 //iter on OCDB until runnumber changes
-                while(iterValueOCDB()){
+                for (int iOCDB = 0; iOCDB < fOCDBDataTree[iSide][iPlane][iRPC]->GetEntries(); iOCDB++) {
 
                     nCallOCDB++;
 
-                    UInt_t localOCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
-                    ULong64_t localOCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
+                    fOCDBDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iOCDB);
 
-//                    cout<<"OCDB ts: "<<localOCDBTimeStampBuffer<<endl;
+                    UInt_t localOCDBRunNumberBuffer= OCDBDataPtr->GetRunNumber();
+                    ULong64_t localOCDBTimeStampBuffer= OCDBDataPtr->GetTimeStamp();
 
                     if (localOCDBRunNumberBuffer > runNumberBuffer){
 
-                        while( (bufferAMANDA = (AliRPCValueDCS *)iterValueAMANDA()) ) {
+                        for (int iAMANDA = 0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); iAMANDA++) {
 
                             nCallAMANDA++;
 
-                            ULong64_t AMANDATimeStamp = bufferAMANDA->GetTimeStamp();
-//                            cout<<nCallAMANDA++<<endl;
-//                            cout<<"AMANDA ts: "<<AMANDATimeStamp<<endl;
+                            fAMANDADataTree[iSide][iPlane][iRPC]->GetSortedEntry(iAMANDA);
+
+                            ULong64_t AMANDATimeStamp = AMANDADataPtr->GetTimeStamp();
 //
                             if ( AMANDATimeStamp < runBeginBuffer ) {
-//                                cout<<"Value is sooner"<<endl;
                                 continue;
                             } //AMANDA value has been registered sooner than OCDB fAMANDAData skip AMANDA value
                             else if ( AMANDATimeStamp >= runBeginBuffer ){ //if AMANDA value is after run begin
                                 if ( AMANDATimeStamp <= runEndBuffer ){ //if AMANDA value is sooner than run end
                                     cout<<"Value is between"<<endl;
 
-                                    bufferAMANDA->SetRunNumber(runNumberBuffer);
-                                    bufferAMANDA->SetBeamType(OCDBRunTypeBuffer);
-                                    bufferAMANDA->SetBeamEnergy(OCDBBeamEnergyBuffer);
-                                    bufferAMANDA->SetLHCStatus(OCDBLHCStatusBuffer);
-                                    bufferAMANDA->SetIsCalib(OCDBIsCalibBuffer);
-                                    bufferAMANDA->SetRunYear(OCDBRunYearBuffer);
-
-                                    DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-                                    DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+                                    AMANDADataTreeBuffer->SetRunNumber(runNumberBuffer);
+                                    AMANDADataTreeBuffer->SetBeamType(OCDBRunTypeBuffer);
+                                    AMANDADataTreeBuffer->SetBeamEnergy(OCDBBeamEnergyBuffer);
+                                    AMANDADataTreeBuffer->SetLHCStatus(OCDBLHCStatusBuffer);
+                                    AMANDADataTreeBuffer->SetIsCalib(OCDBIsCalibBuffer);
+                                    AMANDADataTreeBuffer->SetRunYear(OCDBRunYearBuffer);
 
                                 } else { //if AMANDA value is later than run end
-
                                     if( AMANDATimeStamp < localOCDBTimeStampBuffer ){ //if AMANDA fAMANDAData refers to a moment without ongoing runs
-//                                        cout<<"Value is with no run"<<endl;
-//                                        bufferAMANDA->SetRunNumber(1);
-//                                        bufferAMANDA->SetBeamType(knone);
-//                                        bufferAMANDA->SetBeamEnergy(0.);
-//                                        bufferAMANDA->SetLHCStatus(kNONE);
-//                                        bufferAMANDA->SetIsCalib(kFALSE);
-//                                        bufferAMANDA->SetRunYear(OCDBRunYearBuffer);
-//
-//                                        DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-//                                        DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
+                                        AMANDADataTreeBuffer = AMANDADataPtr;
                                     } else {
-//                                        cout<<"Value is next"<<endl;
                                         break;
                                     }
                                 }
                             }
 
+                            // FIlling the TTree copy with updated (or not!) data
+                            AMANDADataTree->Fill();
                         }
 
                         runBeginBuffer = localOCDBTimeStampBuffer;
@@ -1919,80 +1913,16 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                     } else {
                         runEndBuffer = localOCDBTimeStampBuffer;
                     }
-
-//                    UInt_t localOCDBRunNumberBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetRunNumber();
-//                    ULong64_t localOCDBTimeStampBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetTimeStamp();
-//
-//                    //check if OCDBTimestamp is updated
-//                    if(localOCDBRunNumberBuffer>runNumberBuffer){
-//
-//                        //((AliRPCValueDCS *) *iterValueOCDB)->PrintBeamStatus();
-//                        //printf("run: %d, start %llu, stop %llu \n",OCDBRunNumberBuffer,runBeginBuffer,runEndBuffer);
-//
-//
-//                        //iter over amanda to update the run from start to stop then look for next run
-//                        while(iterValueAMANDA()) {
-//
-//                            ULong64_t AMANDATimeStamp = ((AliRPCValueDCS *) *iterValueAMANDA)->GetTimeStamp();
-//                            cout<<nCallAMANDA++<<endl;
-//
-//                            if ((AMANDATimeStamp >= runBeginBuffer) && (AMANDATimeStamp <= runEndBuffer)) {
-//
-//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunNumber(runNumberBuffer);
-//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamType(OCDBRunTypeBuffer);
-//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetBeamEnergy(OCDBBeamEnergyBuffer);
-//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetLHCStatus(OCDBLHCStatusBuffer);
-//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetIsCalib(OCDBIsCalibBuffer);
-//                                ((AliRPCValueDCS *) *iterValueAMANDA)->SetRunYear(OCDBRunYearBuffer);
-//
-//                                //printf("###AMANDA###");
-//                                //((AliRPCValueDCS *) *iterValueAMANDA)->PrintBeamStatus();
-//
-//                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-//                                DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
-//                            } else {
-//                                //now I add fAMANDAData with runnumber =0 (values get between two different runs)
-//                                DataWithRunNumber[iSide][iPlane][iRPC]->Add(*iterValueAMANDA);
-//                                DataWithRunNumber[iSide][iPlane][iRPC]->SetOwner(kTRUE);
-//                            }
-//
-//                            //when the run is passed exit the cycle
-//                            if(iterValueAMANDANext()){
-//                                if(((AliRPCValueDCS *) *iterValueAMANDANext)->GetTimeStamp()>localOCDBTimeStampBuffer) break;
-//                            } else break;
-//                        }
-//
-//                        //printf("end of run:%u, begin of run %u\n",runNumberBuffer,OCDBRunNumberBuffer);
-//
-//                        runBeginBuffer=localOCDBTimeStampBuffer;
-//                        runNumberBuffer=localOCDBRunNumberBuffer;
-//
-//                    }else{
-//                        runEndBuffer=localOCDBTimeStampBuffer;
-//                    }
-//
-////                    OCDBRunNumberBuffer= localOCDBRunNumberBuffer;
-//
-//                    OCDBRunTypeBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamType();
-//                    OCDBBeamEnergyBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetBeamEnergy();
-//                    OCDBLHCStatusBuffer= ((AliRPCValueDCS *) *iterValueOCDB)->GetLHCStatus();
-//                    OCDBIsCalibBuffer=((AliRPCValueDCS *) *iterValueOCDB)->IsCalib();
-//                    OCDBRunYearBuffer=((AliRPCValueDCS *) *iterValueOCDB)->GetYear();
-
                 }
 
-                DataWithRunNumber[iSide][iPlane][iRPC]->Sort();
+                AMANDADataTree->Sort("fTimeStamp");
 
-                //Update File
+                //Update TTree by replacing the old TTree with the updated one
                 fAMANDADataContainer->cd();
-                DataWithRunNumber[iSide][iPlane][iRPC]->Write(Form("AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
+                AMANDADataTree->Write(NameAMANDA, TObject::kOverwrite);
 
                 PrintWhichRPC(iRPC, iSide, iPlane);
                 cout<<nCallOCDB<< "   " <<nCallAMANDA<<endl;
-
-                listBufferAMANDA = 0x0;
-                listBufferOCDB = 0x0;
-
             }
         }
     }

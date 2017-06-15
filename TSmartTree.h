@@ -29,6 +29,8 @@ public:
 
     void Sort(const char* majorname, const char* minorname = "0"){
 
+        if (this->GetEntries() == 0) return;
+
         if (fIsSorted) return;
 
         this->BuildIndex(majorname,minorname);

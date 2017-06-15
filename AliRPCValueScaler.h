@@ -23,12 +23,7 @@ public:
     inline Bool_t GetHasOverflow() const { return fOverflow; };
     inline Float_t GetDeltaT() const { return fDeltaT; };
 
-private:
-    Long64_t fScalerCounts;
-    Bool_t fOverflow;
-    Float_t fDeltaT;
-
-    ClassDef(AliRPCValueScaler,3);
+    ClassDef(AliRPCValueScaler,4);
 };
 
 #endif /* AliRPCValueScaler_h */

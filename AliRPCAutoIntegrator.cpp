@@ -1456,8 +1456,6 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
 
-                fGlobalDataTree[side][plane][RPC-1];
-
                 if(!(fGlobalDataTree[side][plane][RPC-1]->GetIsSorted())) fGlobalDataTree[side][plane][RPC-1]->Sort("fTimeStamp");
                 fGlobalDataTreeBranch[side][plane][RPC-1]->SetAddress(fGlobalDataTreeBufferW[side][plane][RPC-1]);
 

@@ -14,18 +14,18 @@ class TSmartTree : public TTree{
 private:
     Bool_t fIsSorted;
     Long64_t *fTreeIndex;
-    Long64_t fPosition;
+    Long64_t fLastCall;
 public:
 
     TSmartTree() : TTree(){
         fIsSorted = kFALSE;
-        fPosition = 0;
+        fLastCall = 0;
         fTreeIndex = nullptr;
     }
 
     TSmartTree(const char* name, const char* title, Int_t splitlevel = 99) : TTree(name,title,splitlevel){
         fIsSorted = kFALSE;
-        fPosition = 0;
+        fLastCall = 0;
         fTreeIndex = nullptr;
     }
 
@@ -48,6 +48,7 @@ public:
     }
 
     int GetSortedEntry(Long64_t i){
+        fLastCall = i;
         if(fIsSorted && fTreeIndex) return this->GetEntry(fTreeIndex[i]);
         else return this->GetEntry(i);
     }
@@ -56,11 +57,16 @@ public:
         this->GetSortedEntry(i);
     }
 
-    void Next(){
-        this->GetSortedEntry(fPosition++);
+    Bool_t Next(){
+        this->GetSortedEntry(fLastCall++);
+        return fLastCall < this->GetEntries();
     }
 
     inline Bool_t GetIsSorted(){ return fIsSorted; };
+
+    Long64_t GetLastCall(){
+        return fLastCall+1;
+    }
 
     ClassDef(TSmartTree,1);
 };

@@ -136,6 +136,11 @@ fUpdateAMANDA(updateAMANDA){
         fGlobalDataContainer = new TFile(Form("%s",OutputFileName.Data()),"UPDATE");;
     }
 
+    // Purge all files
+    fOCDBDataContainer->Purge();
+    fAMANDADataContainer->Purge();
+    fGlobalDataContainer->Purge();
+
     TString ObjectName;
     for (Int_t plane=0; plane<kNPlanes; plane++) {
 

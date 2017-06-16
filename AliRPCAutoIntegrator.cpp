@@ -87,20 +87,6 @@ void AliRPCAutoIntegrator::InitDataMembers(){
             //cout<<iLB+1<<" "<<LBAreas[iLB][iPlane]<<endl;
         }
     }
-    
-    TObjArray *check=0x0;
-    if(fOCDBDataContainer) fOCDBDataContainer->GetObject("DownloadedRuns",check);
-    if(check){
-        fOCDBRunListDownloaded=check;
-        cout<<"Loaded downloaded run list"<<endl<<flush;
-
-    }else{
-        fOCDBRunListDownloaded=new TObjArray();
-        fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kSingleKey);
-        cout<<"Created new downloaded run list"<<endl<<flush;
-    }
-    
-    fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","RECREATE");
 }
 
 // Default constructor
@@ -319,6 +305,22 @@ fUpdateAMANDA(updateAMANDA){
         cout<<endl<<endl;
     }
 
+    TObjArray *check=0x0;
+    fOCDBDataContainer->cd();
+    if(fOCDBDataContainer) fOCDBDataContainer->GetObject("DownloadedRuns",check);
+    if(check){
+        fOCDBDataContainer->cd();
+        fOCDBRunListDownloaded=check;
+        cout<<"Loaded downloaded run list with "<<fOCDBRunListDownloaded->GetEntries()<<" entries"<<endl<<flush;
+
+    }else{
+        fOCDBDataContainer->cd();
+        fOCDBRunListDownloaded=new TObjArray();
+        fOCDBRunListDownloaded->Write("DownloadedRuns",kSingleKey);
+        cout<<"Created new downloaded run list"<<endl<<flush;
+    }
+
+    fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","RECREATE");
 
     //check if AliRPCData already exists
     AliRPCData *AliRPCDataBuffer;
@@ -1009,7 +1011,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
     for (std::vector<AliOCDBRun>::iterator runIterator = beginOfBlock; runIterator != endOfBlock; ++runIterator) {
         TObject *downloadedRunToAdd=new AliOCDBRun(runIterator->fRunNumber,runIterator->fYear);
 
-        
+        if (fOCDBRunListDownloaded->FindObject(downloadedRunToAdd)){
+            printf("Run %d(%d) has already been downloaded. Skipping...",runIterator->fRunNumber,runIterator->fYear);
+            continue;
+        }
+
         AliCDBManager *managerYearCheck = managerPrototype;
 
         for (Int_t year = 2017; year>2009; year--){
@@ -1329,6 +1335,8 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
 
     fOCDBDataContainer->cd();
     fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kOverwrite | TObject::kSingleKey);
+
+    printf("Downloaded list saved with %d entries\n",fOCDBRunListDownloaded->GetEntries());
 
     return allBlocksDone;
 }

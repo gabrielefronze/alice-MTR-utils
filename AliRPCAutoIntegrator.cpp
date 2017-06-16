@@ -89,7 +89,7 @@ void AliRPCAutoIntegrator::InitDataMembers(){
     }
     
     TObjArray *check=0x0;
-    if(fGlobalDataContainer) fGlobalDataContainer->GetObject("DownloadedRuns",check);
+    if(fOCDBDataContainer) fOCDBDataContainer->GetObject("DownloadedRuns",check);
     if(check){
         fOCDBRunListDownloaded=check;
         cout<<"Loaded downloaded run list"<<endl<<flush;
@@ -337,7 +337,7 @@ fUpdateAMANDA(updateAMANDA){
     InitDataMembers();
 
     
-    // Calling this method to preload the runs of which the OCDB fAMANDAData has to be
+    // Calling this method to preload the runs of which the OCDB has to be
     // downloaded
     OCDBRunListReader();
 }
@@ -1327,7 +1327,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
         }
     }
 
-    fGlobalDataContainer->cd();
+    fOCDBDataContainer->cd();
     fOCDBRunListDownloaded->Write("DownloadedRuns",TObject::kOverwrite | TObject::kSingleKey);
 
     return allBlocksDone;

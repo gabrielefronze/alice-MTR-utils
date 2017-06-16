@@ -1522,44 +1522,6 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
     cout<<"Init done"<<endl;
 
-    for (Int_t side=0; side<kNSides; side++) {
-        //cout<<fSides[side].Data()<<endl;
-        for (Int_t plane=0; plane<kNPlanes; plane++) {
-            //cout<<"\t"<<fPlanes[plane]<<endl;
-            for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
-
-                fGlobalDataTree[side][plane][RPC-1]->Sort("fTimeStamp");
-                fGlobalDataTreeBranch[side][plane][RPC-1]->SetAddress(fGlobalDataTreeBufferW[side][plane][RPC-1]);
-
-                for(Int_t cathode=0;cathode<kNCathodes;cathode++){
-
-                    fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Sort("fRunNumber","fTimeStamp");
-                    fOCDBRPCScalersTreeBranch[cathode][side][plane][RPC-1] = fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->GetBranch(fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->GetName());
-                    fOCDBRPCScalersTreeBranch[cathode][side][plane][RPC-1]->SetAddress(fOCDBRPCScalersTreeBufferW[cathode][side][plane][RPC-1]);
-
-                }
-                PrintWhichRPC(RPC-1,side,plane);
-            }
-        }
-    }
-
-    
-    for(Int_t cathode=0;cathode<kNCathodes;cathode++){
-        //cout<<fCathodes[cathode].Data()<<endl;
-        for(Int_t plane=0;plane<kNPlanes;plane++){
-            //cout<<"\t"<<fPlanes[plane]<<endl;
-            for(Int_t local=0;local<kNLocalBoards;local++){
-
-                fOCDBLBScalersTree[cathode][plane][local]->Sort("fRunNumber","fTimeStamp");
-                fOCDBLBScalersTreeBranch[cathode][plane][local] = fOCDBLBScalersTree[cathode][plane][local]->GetBranch(fOCDBLBScalersTree[cathode][plane][local]->GetName());
-                fOCDBLBScalersTreeBranch[cathode][plane][local]->SetAddress(fOCDBLBScalersTreeBufferW[cathode][plane][local]);
-
-            }
-        }
-    }
-
-    cout<<"Data reading done"<<endl;
-
     for (Int_t iSide=0; iSide<kNSides; iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 1; iRPC <= kNRPC; iRPC++) {
@@ -1587,10 +1549,15 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 UInt_t AMANDANTotalCurrent = 0;
 
                 //printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
-                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
-                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
+//                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
+//                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
                 AliRPCValueDCS *valueDCS = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
+
+                auto NEntries = fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries();
+
                 for (int iGlobal = 0; iGlobal < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); ++iGlobal) {
+
+                    cout << (Double_t)iGlobal/(Double_t)NEntries << "\r";
 
                     //generica entry della sorted list
                     //AliRPCValueDCS *valueDCS = ((AliRPCValueDCS*)sortedListData[iSide][iPlane][iRPC-1]->At(iDataList));
@@ -1611,11 +1578,11 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                    
                     Int_t dummyIndex = 0;
                     if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC-1,actualRunNumber,dummyIndex)) {
-                        //printf("Run %d already there for ",actualRunNumber);
+//                        printf("Run %d already there for ",actualRunNumber);
                         //PrintWhichRPC(iRPC-1,iSide,iPlane);
                             continue;
                     } else {
-                        //printf("Adding run %d for ",actualRunNumber);
+//                        printf("Adding run %d for ",actualRunNumber);
                         //PrintWhichRPC(iRPC-1,iSide,iPlane);
                     }
                     
@@ -1634,19 +1601,19 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         ULong64_t AMANDAdeltaT= AMANDATimeStampStop - AMANDATimeStampStart;
                         
                         if(AMANDAdeltaT<=AMANDAFakeRunTime){
-                            cout<<"new AMANDA value"<<endl;
+//                            cout<<"new AMANDA value"<<endl;
                             AliRPCValueCurrent *currentBuffer= reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
                             AMANDAMeanTotalCurrent+=currentBuffer->GetITot();
                             AMANDANTotalCurrent++;
                         }else{
                             if(AMANDANTotalCurrent!=0) AMANDAMeanTotalCurrent/=AMANDANTotalCurrent;
                             else AMANDAMeanTotalCurrent=0.;
-                            cout<<"new AMANDA Run"<<endl<<endl;
-                            cout<<"start: "<<AMANDATimeStampStart<<endl;
-                            cout<<"stop "<<AMANDATimeStampStop<<endl;
-                            cout<<"current "<<AMANDAMeanTotalCurrent;
-                            cout<<"RunNumber"<<AMANDAActualRunNumber;
-                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
+//                            cout<<"new AMANDA Run"<<endl<<endl;
+//                            cout<<"start: "<<AMANDATimeStampStart<<endl;
+//                            cout<<"stop "<<AMANDATimeStampStop<<endl;
+//                            cout<<"current "<<AMANDAMeanTotalCurrent;
+//                            cout<<"RunNumber"<<AMANDAActualRunNumber;
+//                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
                             AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kFALSE, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
                             fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
                             
@@ -1701,10 +1668,12 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                     //cout<<"\t"<<localBoard<<endl;
                                     //cout<<previousScalers[cathode][iPlane][localBoard-1]<<endl;
 //                                    TIter iterValueScaler(scalersLocalBoardList[cathode][iPlane][localBoard - 1]);
-                                    AliRPCValueScaler *valueScaler = fOCDBLBScalersTreeBufferW[cathode][iPlane][localBoard - 1];
-                                    for (int iScaler = 0; iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
+                                    if (!fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetIsSorted()) fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Sort("fRunNumber","fTimeStamp");
 
-                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetSortedEntry(iScaler) == 0 ) continue;
+                                    AliRPCValueScaler *valueScaler = fOCDBLBScalersTreeBufferW[cathode][iPlane][localBoard - 1];
+                                    for (Long64_t iScaler = fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall(); iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
+
+                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) continue;
 
                                         if (valueScaler->GetScalerCounts() <= 0.) continue;
                                         //for(Int_t iScaler=previousScalers[cathode][iPlane][localBoard-1];iScaler<fOCDBLBScalers[cathode][iPlane][localBoard-1]->GetEntries();iScaler++){
@@ -1726,7 +1695,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                                 //cout<<"################ "<<localBoard<<" has overflow"<<endl;
                                                 continue;
                                             } else {
-                                                //cout<<"pippo"<<endl;
+//                                                cout<<"pippo"<<endl;
                                                 acceptedCount++;
                                                 isAccepted = kTRUE;
                                                 LBScalers += valueScaler->GetScalerCounts();
@@ -1761,7 +1730,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         if(nDarkCurrent!=0)meanDarkCurrent=meanDarkCurrent/(Double_t)nDarkCurrent;
                         if(nTotalCurrent!=0)meanTotalCurrent=meanTotalCurrent/(Double_t)nTotalCurrent;
                         if(nHV!=0)meanHV=meanHV/(Double_t)nHV;
-                        cout<<"setting "<<previousRunNumber<<" complete"<<endl;
+//                        cout<<"setting "<<previousRunNumber<<" complete"<<endl;
                         //cout<<totalScalerCounts[0]<<"\t"<<totalScalerCounts[1]<<endl;
                         //cout<<(isDark?"Dark":"NODARK")<<endl;
                         
@@ -1773,7 +1742,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
 
-                        statsBuffer->PrintHumanReadable();
+//                        statsBuffer->PrintHumanReadable();
                         
                         actualRunNumber=0;
                         timeStampStart=0;

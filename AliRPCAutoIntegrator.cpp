@@ -568,9 +568,24 @@ void AliRPCAutoIntegrator::Subtractor(){
 //    TObjArray *buffer;
     TGraph *AMANDAPlotsINet[kNSides][kNPlanes][kNRPC];
 
+    TSmartTree *GlobalDataTree;
+    TBranch *GlobalDataTreeBranch;
+    AliRPCValueDCS *GlobalDataTreeBuffer;
+
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
+
+                TString NameGlobal = fGlobalDataTree[iSide][iPlane][iRPC]->GetName();
+                TString TitleGlobal = fGlobalDataTree[iSide][iPlane][iRPC]->GetTitle();
+
+
+                fGlobalDataContainer->cd();
+                GlobalDataTreeBuffer = new AliRPCValueDCS();
+                GlobalDataTree = new TSmartTree(NameGlobal,TitleGlobal);
+                //if ( !GlobalDataTree->GetIsSorted() ) GlobalDataTree->Sort("fTimeStamp");
+                GlobalDataTreeBranch = GlobalDataTree->Branch(NameGlobal, &GlobalDataTreeBuffer,32000,0);
+                GlobalDataTreeBranch->SetAddress(&GlobalDataTreeBuffer);
 
                 AMANDAPlotsINet[iSide][iPlane][iRPC]=new TGraph();
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -590,9 +605,9 @@ void AliRPCAutoIntegrator::Subtractor(){
                 fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
                 fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
 
-                AliRPCValueDCS *bufferValue = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
-
                 for (Long64_t iGlobalData=0; iGlobalData < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); fGlobalDataTree[iSide][iPlane][iRPC]->GetEntry(iGlobalData++)) {
+
+                    AliRPCValueDCS *bufferValue = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
 
                     fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
 
@@ -670,10 +685,30 @@ void AliRPCAutoIntegrator::Subtractor(){
                                                                            ((AliRPCValueCurrent *) bufferValue)->GetINet() /
                                                                            fRPCAreas[iRPC][iPlane]);
                     }
+
+
+                    GlobalDataTreeBuffer = bufferValue;
+                    GlobalDataTree->Fill();
+
+                    bufferValue = 0x0;
                 }
 
                 fGlobalDataContainer->cd("iNet_Graphs");
                 AMANDAPlotsINet[iSide][iPlane][iRPC]->Write(Form("iNet_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1));
+
+                //Update TTree by replacing the old TTree with the updated one
+                fGlobalDataContainer->cd();
+                // Data members have to be updated after the update of the tree
+                fGlobalDataTreeBranch[iSide][iPlane][iRPC] = nullptr;
+                //delete fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
+
+                cout << "Entries " << fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries() << "    " << GlobalDataTree->GetEntries() << endl << flush;
+
+                fGlobalDataTree[iSide][iPlane][iRPC]->Delete();
+                fGlobalDataTree[iSide][iPlane][iRPC] = GlobalDataTree;
+                fGlobalDataTreeBufferW[iSide][iPlane][iRPC] = new AliRPCValueDCS();
+                fGlobalDataTreeBranch[iSide][iPlane][iRPC] = fGlobalDataTree[iSide][iPlane][iRPC]->Branch(NameGlobal,&fGlobalDataTreeBufferW[iSide][iPlane][iRPC],32000,0);
+                fGlobalDataTree[iSide][iPlane][iRPC]->Write(NameGlobal, TObject::kOverwrite);
 
                 PrintWhichRPC(iRPC, iSide, iPlane);
             }

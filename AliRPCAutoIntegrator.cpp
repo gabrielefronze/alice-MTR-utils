@@ -947,6 +947,19 @@ void AliRPCAutoIntegrator::AMANDATextToCParser(){
 }
 
 void AliRPCAutoIntegrator::OCDBDataToCParser(bool blockMode, UInt_t blockSize){
+
+    if (!checkAlienToken()){
+        TString userName;
+        cerr << "Alien token is not valid" << endl;
+        cout << "Please enter your Alien username " << endl;
+        cin >> userName;
+        initAlienToken(userName);
+        if(!checkAlienToken()){
+            cerr << "Alien token not valid even after reset. Proceed manually!" << endl;
+            return;
+        }
+    }
+
     if (!blockMode) OCDBDataToCParserBlocks(-1);
     else{
         Int_t blockNumber = 0;

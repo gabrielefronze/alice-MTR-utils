@@ -36,6 +36,7 @@
 #include <vector>
 #include <stdio.h>
 
+#include "TROOT.h"
 #include "TSmartTree.h"
 #include "TObjArray.h"
 #include "TClonesArray.h"
@@ -99,8 +100,7 @@ private:
     static const Int_t *fStyles;//[kNPlanes]={20,24,21,25};
     
     TString checkTokenBashCommand = "if [[ \"`alien-token-info | grep \"still valid\" `\" != \"\" ]]; then echo \"1\"; else echo \"0\"; fi";
-    Bool_t checkAlienToken()
-    {
+    Bool_t checkAlienToken() {
         Bool_t returnValue = kFALSE;
         FILE * f = popen(checkTokenBashCommand.Data(), "r");
         char buf[1];
@@ -108,6 +108,9 @@ private:
         returnValue = (buf[0] == '1');
         pclose(f);
         return returnValue;
+    }
+    void initAlienToken(TString userName){
+        gROOT->ProcessLine(Form(".!alien-token-init %s",userName.Data()));
     }
 
 public:

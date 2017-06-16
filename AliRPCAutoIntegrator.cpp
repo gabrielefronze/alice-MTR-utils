@@ -128,7 +128,7 @@ fUpdateAMANDA(updateAMANDA){
         cout<<"File doesn't exist"<<endl;
         fGlobalDataContainer= new TFile(Form("%s",OutputFileName.Data()),"RECREATE");
         fGlobalDataContainer->cd();
-        fGlobalDataContainer->mkdir("TObjArrays");
+//        fGlobalDataContainer->mkdir("TObjArrays");
         fGlobalDataContainer->mkdir("iNet_Graphs");
         fGlobalDataContainer->mkdir("integrated_charge_Graphs");
     } else {
@@ -462,13 +462,15 @@ void AliRPCAutoIntegrator::Aggregator(){
 
                 fGlobalDataContainer->cd();
 
+                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fAMANDADataTreeBufferW[iSide][iPlane][iRPC]);
+
                 for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
-                    fGlobalDataTreeBufferW[iSide][iPlane][iRPC] = fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
                     fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
                 }
 
-                for (Long64_t iAMANDA=0; iAMANDA < fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries(); fAMANDADataTree[iSide][iPlane][iRPC]->GetEntry(iAMANDA++)) {
-                    fGlobalDataTreeBufferW[iSide][iPlane][iRPC] = fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
+                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fOCDBDataTreeBufferW[iSide][iPlane][iRPC]);
+
+                for (Long64_t iOCDB=0; iOCDB < fOCDBDataTree[iSide][iPlane][iRPC]->GetEntries(); fOCDBDataTree[iSide][iPlane][iRPC]->GetEntry(iOCDB++)) {
                     fGlobalDataTree[iSide][iPlane][iRPC]->Fill();
                 }
 
@@ -585,19 +587,17 @@ void AliRPCAutoIntegrator::Subtractor(){
                 Double_t iDarkt1 = 0.;
                 Double_t t1 = 0.;
 
-                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimestamp");
-                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
+                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
+                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
 
-                AliRPCValueDCS *bufferValue = 0x0;
+                AliRPCValueDCS *bufferValue = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
 
                 for (Long64_t iGlobalData=0; iGlobalData < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); fGlobalDataTree[iSide][iPlane][iRPC]->GetEntry(iGlobalData++)) {
 
                     fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
 
-                    bufferValue = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
-
                     //skip if is not current
-                    if ( !((AliRPCValueDCS*)bufferValue)->IsCurrent() ) continue;
+                    if ( !bufferValue->IsCurrent() ) continue;
 
                     // if the read value is an AMANDA or OCDB with run reading, then the dark
                     // current subtraction must take place. To do that via
@@ -607,7 +607,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                     // If the current value is flagged as a dark current we want to get the following dark current
                     // and load the current values and timestamps. These values will be used later.
-                    if ( ((AliRPCValueDCS*)bufferValue)->IsOkForIDark() ) {
+                    if ( bufferValue->IsOkForIDark() ) {
 
                         iDarkt0 = 0.;
                         t0 = 0.;
@@ -1429,6 +1429,7 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
                 fOCDBDataTreeBranch[side][plane][RPC] = nullptr;
                 delete fOCDBDataTreeBufferW[side][plane][RPC];
 
+                fOCDBDataTree[side][plane][RPC]->Delete();
                 fOCDBDataTree[side][plane][RPC] = OCDBDataTree;
                 fOCDBDataTreeBufferW[side][plane][RPC] = new AliRPCValueDCS();
                 fOCDBDataTreeBranch[side][plane][RPC] = fOCDBDataTree[side][plane][RPC]->Branch(Name,&fOCDBDataTreeBufferW[side][plane][RPC],32000,0);
@@ -1487,12 +1488,13 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
 
-                if(!(fGlobalDataTree[side][plane][RPC-1]->GetIsSorted())) fGlobalDataTree[side][plane][RPC-1]->Sort("fTimeStamp");
+                fGlobalDataTree[side][plane][RPC-1]->Sort("fTimeStamp");
                 fGlobalDataTreeBranch[side][plane][RPC-1]->SetAddress(fGlobalDataTreeBufferW[side][plane][RPC-1]);
 
                 for(Int_t cathode=0;cathode<kNCathodes;cathode++){
 
-                    if(!(fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->GetIsSorted())) fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Sort("fRunNumber","fTimeStamp");
+                    fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->Sort("fRunNumber","fTimeStamp");
+                    fOCDBRPCScalersTreeBranch[cathode][side][plane][RPC-1] = fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->GetBranch(fOCDBRPCScalersTree[cathode][side][plane][RPC-1]->GetName());
                     fOCDBRPCScalersTreeBranch[cathode][side][plane][RPC-1]->SetAddress(fOCDBRPCScalersTreeBufferW[cathode][side][plane][RPC-1]);
 
                 }
@@ -1508,7 +1510,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
             //cout<<"\t"<<fPlanes[plane]<<endl;
             for(Int_t local=0;local<kNLocalBoards;local++){
 
-                if(!(fOCDBLBScalersTree[cathode][plane][local]->GetIsSorted())) fOCDBLBScalersTree[cathode][plane][local]->Sort("fRunNumber","fTimeStamp");
+                fOCDBLBScalersTree[cathode][plane][local]->Sort("fRunNumber","fTimeStamp");
+                fOCDBLBScalersTreeBranch[cathode][plane][local] = fOCDBLBScalersTree[cathode][plane][local]->GetBranch(fOCDBLBScalersTree[cathode][plane][local]->GetName());
                 fOCDBLBScalersTreeBranch[cathode][plane][local]->SetAddress(fOCDBLBScalersTreeBufferW[cathode][plane][local]);
 
             }
@@ -1545,7 +1548,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                 //printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
                 fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
-                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
+                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
                 AliRPCValueDCS *valueDCS = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
                 for (int iGlobal = 0; iGlobal < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); ++iGlobal) {
 
@@ -1837,6 +1840,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 for (Long64_t iOCDB = 0; iOCDB < fOCDBDataTree[iSide][iPlane][iRPC]->GetEntries(); iOCDB++) {
 
                     nCallOCDB++;
+                    //cout << nCallOCDB << endl;
 
 //                    cout << "Getting data 1" << endl << flush;
                     if ( fOCDBDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iOCDB) == 0 ) continue;
@@ -1861,11 +1865,13 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                             ULong64_t AMANDATimeStamp = AMANDADataPtr->GetTimeStamp();
 //
                             if ( AMANDATimeStamp < runBeginBuffer ) {
+//                                AMANDADataTreeBuffer = AMANDADataPtr;
+//                                AMANDADataTree->Fill();
                                 continue;
                             } //AMANDA value has been registered sooner than OCDB fAMANDAData skip AMANDA value
                             else if ( AMANDATimeStamp >= runBeginBuffer ){ //if AMANDA value is after run begin
                                 if ( AMANDATimeStamp <= runEndBuffer ){ //if AMANDA value is sooner than run end
-                                    cout<<"Value is between"<<endl;
+//                                    cout<<"Value is between"<<endl;
 
                                     AMANDADataTreeBuffer->SetRunNumber(runNumberBuffer);
                                     AMANDADataTreeBuffer->SetBeamType(OCDBRunTypeBuffer);
@@ -1873,16 +1879,18 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                                     AMANDADataTreeBuffer->SetLHCStatus(OCDBLHCStatusBuffer);
                                     AMANDADataTreeBuffer->SetIsCalib(OCDBIsCalibBuffer);
                                     AMANDADataTreeBuffer->SetRunYear(OCDBRunYearBuffer);
+                                    AMANDADataTree->Fill();
 
                                 } else { //if AMANDA value is later than run end
                                     if( AMANDATimeStamp < localOCDBTimeStampBuffer ){ //if AMANDA fAMANDAData refers to a moment without ongoing runs
                                         AMANDADataTreeBuffer = AMANDADataPtr;
+                                        AMANDADataTree->Fill();
                                     }
                                 }
                             }
 
                             // FIlling the TTree copy with updated (or not!) data
-                            AMANDADataTree->Fill();
+                            //cout<<nCallAMANDA<<endl;
                         }
 
                         runBeginBuffer = localOCDBTimeStampBuffer;
@@ -1907,15 +1915,20 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 fAMANDADataContainer->cd();
                 // Data members have to be updated after the update of the tree
                 fAMANDADataTreeBranch[iSide][iPlane][iRPC] = nullptr;
-                delete fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
+                //delete fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
 
+                cout << "Entries " << fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries() << "    " << AMANDADataTree->GetEntries() << endl << flush;
+
+                fAMANDADataTree[iSide][iPlane][iRPC]->Delete();
                 fAMANDADataTree[iSide][iPlane][iRPC] = AMANDADataTree;
                 fAMANDADataTreeBufferW[iSide][iPlane][iRPC] = new AliRPCValueDCS();
                 fOCDBDataTreeBranch[iSide][iPlane][iRPC] = fAMANDADataTree[iSide][iPlane][iRPC]->Branch(NameAMANDA,&fAMANDADataTreeBufferW[iSide][iPlane][iRPC],32000,0);
                 fAMANDADataTree[iSide][iPlane][iRPC]->Write(NameAMANDA, TObject::kOverwrite);
 
-                PrintWhichRPC(iRPC, iSide, iPlane);
-                cout<<nCallOCDB<< "   " <<nCallAMANDA<<endl;
+//                PrintWhichRPC(iRPC, iSide, iPlane);
+                //cout<<"Ncalls "<<nCallOCDB<< "   " <<nCallAMANDA<<endl;
+                nCallAMANDA = 0;
+                nCallOCDB = 0;
 
                 delete AMANDADataTreeBuffer;
                 delete AMANDADataTree;

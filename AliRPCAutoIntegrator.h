@@ -185,9 +185,9 @@ public:
 
     void GeneratePlots();
     void GeneratePlotFromFile(TString filename = "plots.txt");
-    void VoltagePlotter(TGraph *Graph, TObjArray* list, UInt_t RunNumber);
-    void VoltagePlotter(TGraph *Graph, TObjArray* list, std::vector<UInt_t> RunNumberList);
-    void VoltagePlotter(TGraph *Graph, TObjArray* list);
+    void VoltagePlotter(TGraph *Graph, TString ObjectName, UInt_t RunNumber);
+    void VoltagePlotter(TGraph *Graph, TString ObjectName, std::vector<UInt_t> RunNumberList);
+    void VoltagePlotter(TGraph *Graph, TString ObjectName);
 
 
 private:
@@ -195,17 +195,17 @@ private:
         ifstream f(fileName.Data());
         return f.good();
     }
-    void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue);
-    void CreateDistributionSomething(TH1 *Graph, TString label, TObjArray *list, vector <AliOCDBRun*> RunNumberList);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TObjArray *list, UInt_t RunNumber, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TObjArray *list, std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TObjArray *list, Int_t whichValue=0);
+    void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, vector<AliOCDBRun*> RunNumberList, Int_t whichValue);
+    void CreateDistributionSomething(TH1 *Graph, TString label, TString ObjectName, vector <AliOCDBRun*> RunNumberList);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TString ObjectName, UInt_t RunNumber, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TString ObjectName, std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue=0);
+    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TString ObjectName, Int_t whichValue=0);
 
     void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea=kFALSE,Bool_t onlyDarkPoints=kFALSE);
     void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const, Bool_t normalizedToArea=kTRUE);
     
-    void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  Bool_t toFit=kFALSE, TObjArray *list=nullptr);
+    void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  Bool_t toFit=kFALSE, TString ObjectName="");
     
 
     static void PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);

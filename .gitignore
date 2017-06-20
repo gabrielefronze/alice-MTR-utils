@@ -48,3 +48,7 @@ Makefile
 \.ycm_extra_conf\.py
 
 \.AliRPCOverflowStatistics\.cpp\.swp
+
+alice_MTR_utils\.build/Release/ALL_BUILD\.build/
+
+alice_MTR_utils\.build/Release/ZERO_CHECK\.build/

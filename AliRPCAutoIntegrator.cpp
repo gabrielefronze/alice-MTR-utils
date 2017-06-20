@@ -493,7 +493,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsITot[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
-    TObjArray *listBuffer;
+    TString ObjectName;
     
     TObject *IsDirThere;
     fGlobalDataContainer->GetObject("iTot_Graphs",IsDirThere);
@@ -508,12 +508,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
-                fGlobalDataContainer->GetObject(Form("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1), listBuffer);
-
-                if (!listBuffer) {
-                    printf("TObjArrays/OCDB_AMANDA_Data_MTR_%s_MT%d_RPC%d NOT FOUND\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
-                    continue;
-                }
+                ObjectName=Form("Global_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
 
                 PlotsITot[iSide][iPlane][iRPC] = new TGraph();
                 PlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
@@ -521,7 +516,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotsITot[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsITot[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
-                PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForITot, listBuffer, AliRPCValueCurrent::kITot);
+                PlotSomethingVersusTime(PlotsITot[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForITot, ObjectName, AliRPCValueCurrent::kITot);
 
                 fGlobalDataContainer->cd("iTot_Graphs");
                 PlotsITot[iSide][iPlane][iRPC]->Write(Form("iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
@@ -532,7 +527,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
-                PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, listBuffer, AliRPCValueCurrent::kITot);
+                PlotSomethingVersusTime(PlotsIDark[iSide][iPlane][iRPC],&AliRPCValueDCS::IsOkForIDark, ObjectName, AliRPCValueCurrent::kITot);
 
                 fGlobalDataContainer->cd("iDark_Graphs");
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol1","Q");
@@ -544,14 +539,13 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotsVoltage[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsVoltage[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
 
-                PlotSomethingVersusTime(PlotsVoltage[iSide][iPlane][iRPC],&AliRPCValueDCS::IsVoltage,listBuffer);
+                PlotSomethingVersusTime(PlotsVoltage[iSide][iPlane][iRPC],&AliRPCValueDCS::IsVoltage,ObjectName);
 
                 fGlobalDataContainer->cd("Voltage_Graphs");
                 PlotsVoltage[iSide][iPlane][iRPC]->Write(Form("Voltage_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
                 PrintWhichRPC(iRPC, iSide, iPlane);
 
-                listBuffer=0x0;
             }
         }
     }
@@ -1833,14 +1827,14 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 //                PrintWhichRPC(iRPC,iSide,iPlane);
                 cout<<fOCDBDataTree[iSide][iPlane][iRPC]->GetEntries()<<"   "<< fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries() <<endl;
 
-                cout << fOCDBDataTree[iSide][iPlane][iRPC]->Sort("fRunNumber","fTimeStamp") << endl;
+               // cout << fOCDBDataTree[iSide][iPlane][iRPC]->Sort("fRunNumber","fTimeStamp") << endl;
                 fOCDBDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fOCDBDataTree[iSide][iPlane][iRPC]->GetName(),&fOCDBDataTreeBufferW[iSide][iPlane][iRPC]);
 
                 AliRPCValueDCS *OCDBDataPtr = fOCDBDataTreeBufferW[iSide][iPlane][iRPC];
 
 
                 fAMANDADataContainer->cd();
-                cout << fAMANDADataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp") << endl;
+                //cout << fAMANDADataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp") << endl;
                 fAMANDADataTree[iSide][iPlane][iRPC]->SetBranchAddress(fAMANDADataTree[iSide][iPlane][iRPC]->GetName(),&fAMANDADataTreeBufferW[iSide][iPlane][iRPC]);
 
                 AliRPCValueDCS *AMANDADataPtr = fAMANDADataTreeBufferW[iSide][iPlane][iRPC];
@@ -1949,46 +1943,62 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
     Int_t counter=0;
-    TIter iterValue(list);
-    counter=0;
-    while (iterValue()) {
-        if(IsRunInList(RunNumberList,((AliRPCValueDCS *) *iterValue)->GetRunNumber())) {
-            if ((((AliRPCValueDCS *) *iterValue)->*funky)() &&
-                ((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000) {
-                Graph->SetPoint(counter++, ((AliRPCValueDCS *) *iterValue)->GetTimeStamp(),(((AliRPCValueDCS *) *iterValue)->GetValue(whichValue)));
+    
+    TSmartTree *tree;
+    TBranch *branch;
+    AliRPCValueDCS *iterValue=new AliRPCValueDCS();
+    
+    fOCDBDataContainer->GetObject(ObjectName,tree);
+    branch = tree->GetBranch(ObjectName);
+    tree->SetBranchAddress(ObjectName,&iterValue);
+    
+    for(Int_t i=0; i<tree->GetEntries();i++) {
+        tree->GetSortedEntry(i);
+        if(IsRunInList(RunNumberList,iterValue->GetRunNumber())){
+            if (((iterValue->*funky)()) &&
+                (iterValue->GetTimeStamp() > 8000)) {
+                Graph->SetPoint(counter++, iterValue->GetTimeStamp(),iterValue->GetValue(whichValue));
             }
         }
     }
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list, UInt_t RunNumber, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, UInt_t RunNumber, Int_t whichValue){
     std::vector<AliOCDBRun*> RunDummyList;
     RunDummyList.push_back(new AliOCDBRun(RunNumber,0));
-    PlotSomethingVersusTime(Graph, funky, list, RunDummyList, whichValue);
+    PlotSomethingVersusTime(Graph, funky, ObjectName, RunDummyList, whichValue);
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *list,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
     for(AliOCDBRun* iter :RunNumberList){
         UInt_t temp=((UInt_t)iter->GetRunNumber());
         RunDummyList.push_back(temp);
     }
-    PlotSomethingVersusTime(Graph, funky, list, RunDummyList, whichValue);
+    PlotSomethingVersusTime(Graph, funky, ObjectName, RunDummyList, whichValue);
     return;
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const,TObjArray *list, Int_t whichValue){
+void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, Int_t whichValue){
     Int_t counter=0;
-    TIter iterValue(list);
-    counter=0;
-    while (iterValue()) {
-        if ((((AliRPCValueDCS *) *iterValue)->*funky)() &&
-            ((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000) {
-            Graph->SetPoint(counter++, ((AliRPCValueDCS *) *iterValue)->GetTimeStamp(),(((AliRPCValueDCS *) *iterValue)->GetValue(whichValue)));
+   
+    TSmartTree *tree;
+    TBranch *branch;
+    AliRPCValueDCS *iterValue=new AliRPCValueDCS();
+    
+    fOCDBDataContainer->GetObject(ObjectName,tree);
+    branch = tree->GetBranch(ObjectName);
+    tree->SetBranchAddress(ObjectName,&iterValue);
+    
+    for (Int_t i=0; i<tree->GetEntries(); i++) {
+        tree->GetSortedEntry(i);
+        if (((iterValue->*funky)()) &&
+            (iterValue->GetTimeStamp() > 8000)) {
+            Graph->SetPoint(counter++, iterValue->GetTimeStamp(),iterValue->GetValue(whichValue));
         }
     }
     return;
@@ -2035,16 +2045,18 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
     }
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, Bool_t toFit, TObjArray *list){
+void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, Bool_t toFit, TString ObjectName){
     if(x.Contains("time")){
-        if(!list) {
-            cout<<"List not found\n";
+        TSmartTree *check=0x0;
+        fGlobalDataContainer->GetObject(ObjectName,check);
+        if(!check) {
+            cout<<"Branch with data not found\n";
             return;
         }
-        if(y.Contains("voltage")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
+        if(y.Contains("voltage")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,ObjectName);
         else if(y.Contains("current")){
-            if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kIDark);
-            else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,list,AliRPCValueCurrent::kITot);
+            if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kIDark);
+            else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kITot);
         }
         else if(y.Contains("integrated")&&y.Contains("charge")){
             IntegratorPerRun();
@@ -2095,19 +2107,30 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
     }
 };
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TObjArray *DataList, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
-  TIter iterValue(DataList);
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
+    
+    TSmartTree *tree;
+    TBranch *branch;
+    AliRPCValueDCS *iterValue=new AliRPCValueDCS();
+    
+    fOCDBDataContainer->GetObject(ObjectName,tree);
+    branch = tree->GetBranch(ObjectName);
+    tree->SetBranchAddress(ObjectName,&iterValue);
+    
+    
+    
   vector<UInt_t> RunNumberInTObjArray;
   for(auto iter=RunNumberList.begin();iter!=RunNumberList.end();iter++){
       //cout<<(*iter)->GetRunNumber()<<endl<<flush;
       RunNumberInTObjArray.push_back((*iter)->GetRunNumber());
   }
 
-  while (iterValue()) {
-    UInt_t run=((AliRPCValueDCS *) *iterValue)->GetRunNumber();
+  for (Int_t i=0; i<tree->GetEntries(); i++) {
+    tree->GetSortedEntry(i);
+    UInt_t run=iterValue->GetRunNumber();
     if(!IsRunInList(RunNumberInTObjArray,run)) continue;
-      if (((AliRPCValueDCS *) *iterValue)->GetTimeStamp() > 8000 && (((AliRPCValueDCS *) *iterValue)->*funky)()) {
-          ((TH1F*)Graph)->Fill((((AliRPCValueCurrent *) *iterValue)->GetValue(whichValue)));
+      if (iterValue->GetTimeStamp() > 8000 && (iterValue->*funky)()) {
+          ((TH1F*)Graph)->Fill(iterValue->GetValue(whichValue));
       }
     }
 
@@ -2123,31 +2146,31 @@ if (strcmp(Graph->ClassName(),"TH1F")==0)
 
 }
 
-void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TObjArray *list, vector <AliOCDBRun*> RunNumberList){
+void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TString ObjectName, vector <AliOCDBRun*> RunNumberList){
         if(label.Contains("current")) {
             ((TH1F*)Graph)->GetXaxis()->SetRangeUser(0,50);
-            if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kITot);
-            if(label.Contains("dark")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kIDark);
-            if(label.Contains("net")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,list, RunNumberList, AliRPCValueCurrent::kINet);
+            if(label.Contains("total")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,ObjectName, RunNumberList, AliRPCValueCurrent::kITot);
+            if(label.Contains("dark")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,ObjectName, RunNumberList, AliRPCValueCurrent::kIDark);
+            if(label.Contains("net")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsCurrent,ObjectName, RunNumberList, AliRPCValueCurrent::kINet);
         }else if(label.Contains("voltage")){
-            CreateDistributionSomething(Graph,&AliRPCValueDCS::IsVoltage,list, RunNumberList, 0);
+            CreateDistributionSomething(Graph,&AliRPCValueDCS::IsVoltage, ObjectName, RunNumberList, 0);
         }else if(label.Contains("rate")){
-            if(label.Contains("not")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsScaler,list, RunNumberList, 0);
+            if(label.Contains("not")) CreateDistributionSomething(Graph,&AliRPCValueDCS::IsScaler,ObjectName, RunNumberList, 0);
         }
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list, UInt_t RunNumber){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, list, RunNumber, 0);
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TString ObjectName, UInt_t RunNumber){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, ObjectName, RunNumber, 0);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list, std::vector<UInt_t> RunNumberList){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list,RunNumberList,0);
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TString ObjectName, std::vector<UInt_t> RunNumberList){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,ObjectName,RunNumberList,0);
     return;
 }
 
-void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TObjArray* list){
-    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,list);
+void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TString ObjectName){
+    AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsVoltage,ObjectName);
     return;
 }
 
@@ -2187,9 +2210,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<options.Data()<<endl;
         
         //Get List useful on vs time plots
-        TObjArray *listPtr=0x0;
-        options.Prepend("TObjArrays/OCDB_AMANDA_");
-        fGlobalDataContainer->GetObject(Form("%s",options.Data()),listPtr);
+        options.Prepend("GLOBAL_DATA_");
         
         Bool_t isDarkGraph=kFALSE;
         Bool_t isNormalizedGraph=kFALSE;
@@ -2202,11 +2223,11 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         //call correct function plot or distribution
         if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
-            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,isDarkGraph,isNormalizedGraph,isFittedGraph,listPtr);
+            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,isDarkGraph,isNormalizedGraph,isFittedGraph,options);
         }else if(plotType.Contains("distribution")){
             graphBuffer=new TH1F();
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);
-            CreateDistributionSomething((TH1*)graphBuffer,yaxsis,listPtr, RunList);
+            CreateDistributionSomething((TH1*)graphBuffer,yaxsis, options, RunList);
         }
         
         fPlotContainer->cd();

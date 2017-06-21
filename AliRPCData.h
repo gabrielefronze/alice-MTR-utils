@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 #include <vector>
+#include <algorithm>
+#include <limits>
 #include "TObject.h"
 #include "TString.h"
 #include "TSortedList.h"

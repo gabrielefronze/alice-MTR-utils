@@ -34,6 +34,8 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <limits>
 #include <stdio.h>
 
 #include "TROOT.h"

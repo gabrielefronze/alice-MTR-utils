@@ -1665,39 +1665,39 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                     if (!fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetIsSorted()) fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Sort("fRunNumber","fTimeStamp");
 
                                     AliRPCValueScaler *valueScaler = fOCDBLBScalersTreeBufferW[cathode][iPlane][localBoard - 1];
-                                    for (Long64_t iScaler = fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall(); iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
-
-                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) continue;
-
-                                        if (valueScaler->GetScalerCounts() <= 0.) continue;
-                                        //for(Int_t iScaler=previousScalers[cathode][iPlane][localBoard-1];iScaler<fOCDBLBScalers[cathode][iPlane][localBoard-1]->GetEntries();iScaler++){
-                                        //AliRPCValueScaler *valueScaler=((AliRPCValueScaler*)fOCDBLBScalers[cathode][iPlane][localBoard-1]->At(iScaler));
-                                        readingCount++;
-                                        if (valueScaler->GetRunNumber() < previousRunNumber) {
-                                            //cout<<"continue"<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
-                                            //cout<<"continue "<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
-                                            continue;
-                                        } else if (valueScaler->GetRunNumber() > previousRunNumber) {
-                                            //cout<<"breaking"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
-                                            previousScalers[cathode][iPlane][localBoard - 1] = 0;//iScaler;
-                                            break;
-                                        } else {
-                                            //cout<<"filling"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
-                                            if (valueScaler->GetScalerCounts() == 0) continue;
-                                            //(!valueScaler->GetHasOverflow())? printf("\t\t%d\t%d\t\t%s\n",readingCount,valueScaler->GetScalerCounts(),(valueScaler->GetHasOverflow())?"TRUE":"false") : printf("\t>>>\t%d\t%d\t\t%s\n",readingCount,valueScaler->GetScalerCounts(),(valueScaler->GetHasOverflow())?"TRUE":"false");
-                                            if (valueScaler->GetHasOverflow() == kTRUE) {
-                                                //cout<<"################ "<<localBoard<<" has overflow"<<endl;
-                                                continue;
-                                            } else {
-//                                                cout<<"pippo"<<endl;
-                                                acceptedCount++;
-                                                isAccepted = kTRUE;
-                                                LBScalers += valueScaler->GetScalerCounts();
-                                                elapsedTime += valueScaler->GetDeltaT();
-                                            }
-                                        }
-                                        //fOCDBLBScalers[cathode][iPlane][localBoard-1]->RemoveAt(iScaler);
-                                    }
+//                                    for (Long64_t iScaler = fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall(); iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
+//
+//                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) continue;
+//
+//                                        if (valueScaler->GetScalerCounts() <= 0.) continue;
+//                                        //for(Int_t iScaler=previousScalers[cathode][iPlane][localBoard-1];iScaler<fOCDBLBScalers[cathode][iPlane][localBoard-1]->GetEntries();iScaler++){
+//                                        //AliRPCValueScaler *valueScaler=((AliRPCValueScaler*)fOCDBLBScalers[cathode][iPlane][localBoard-1]->At(iScaler));
+//                                        readingCount++;
+//                                        if (valueScaler->GetRunNumber() < previousRunNumber) {
+//                                            //cout<<"continue"<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
+//                                            //cout<<"continue "<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
+//                                            continue;
+//                                        } else if (valueScaler->GetRunNumber() > previousRunNumber) {
+//                                            //cout<<"breaking"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
+//                                            previousScalers[cathode][iPlane][localBoard - 1] = 0;//iScaler;
+//                                            break;
+//                                        } else {
+//                                            //cout<<"filling"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
+//                                            if (valueScaler->GetScalerCounts() == 0) continue;
+//                                            //(!valueScaler->GetHasOverflow())? printf("\t\t%d\t%d\t\t%s\n",readingCount,valueScaler->GetScalerCounts(),(valueScaler->GetHasOverflow())?"TRUE":"false") : printf("\t>>>\t%d\t%d\t\t%s\n",readingCount,valueScaler->GetScalerCounts(),(valueScaler->GetHasOverflow())?"TRUE":"false");
+//                                            if (valueScaler->GetHasOverflow() == kTRUE) {
+//                                                //cout<<"################ "<<localBoard<<" has overflow"<<endl;
+//                                                continue;
+//                                            } else {
+////                                                cout<<"pippo"<<endl;
+//                                                acceptedCount++;
+//                                                isAccepted = kTRUE;
+//                                                LBScalers += valueScaler->GetScalerCounts();
+//                                                elapsedTime += valueScaler->GetDeltaT();
+//                                            }
+//                                        }
+//                                        //fOCDBLBScalers[cathode][iPlane][localBoard-1]->RemoveAt(iScaler);
+//                                    }
 
                                     if (isAccepted == kTRUE) {
                                         //cout<<localBoard<<" accepted"<<endl;

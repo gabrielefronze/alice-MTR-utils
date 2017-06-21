@@ -68,7 +68,7 @@ public:
         return fLastCall+1;
     }
 
-    ClassDef(TSmartTree,1);
+    ClassDef(TSmartTree,2);
 };
 
 

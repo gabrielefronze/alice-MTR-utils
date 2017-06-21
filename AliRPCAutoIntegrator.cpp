@@ -1545,17 +1545,17 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 //printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
 //                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
 //                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
-                AliRPCValueDCS *valueDCS = fGlobalDataTreeBufferW[iSide][iPlane][iRPC];
+                AliRPCValueDCS *valueDCS = fGlobalDataTreeBufferW[iSide][iPlane][iRPC-1];
 
-                auto NEntries = fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries();
+                auto NEntries = fGlobalDataTree[iSide][iPlane][iRPC-1]->GetEntries();
 
-                for (int iGlobal = 0; iGlobal < fGlobalDataTree[iSide][iPlane][iRPC]->GetEntries(); ++iGlobal) {
+                for (int iGlobal = 0; iGlobal < fGlobalDataTree[iSide][iPlane][iRPC-1]->GetEntries(); ++iGlobal) {
 
                     cout << (Double_t)iGlobal/(Double_t)NEntries << "\r";
 
                     //generica entry della sorted list
                     //AliRPCValueDCS *valueDCS = ((AliRPCValueDCS*)sortedListData[iSide][iPlane][iRPC-1]->At(iDataList));
-                    if ( fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobal) == 0 ) continue;
+                    if ( fGlobalDataTree[iSide][iPlane][iRPC-1]->GetSortedEntry(iGlobal) == 0 ) continue;
 
                     if(valueDCS){
                         if (previousRunNumber == 0) {

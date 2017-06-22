@@ -1075,6 +1075,11 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
             continue; //if year is not found skip run number
         }
 
+        if ( (*runIterator).fYear==0 ) {
+            printf("\n\n\tWARNING: Run %d can't be found in any storage. Will be skipped.\n\n",(*runIterator).fRunNumber);
+            continue;
+        }
+
         Int_t RunYear=(*runIterator).fYear;
         
         if(fOCDBRunListDownloaded->FindObject(downloadedRunToAdd)){

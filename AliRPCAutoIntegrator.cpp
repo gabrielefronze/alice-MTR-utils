@@ -338,7 +338,7 @@ fUpdateAMANDA(updateAMANDA){
         fOCDBDataContainer->cd();
         fOCDBRunListDownloaded=new TObjArray();
         fOCDBRunListDownloaded->Write("DownloadedRuns",kSingleKey);
-        cout<<"Created new downloaded run list"<<endl<<flush;
+        cout<<"Creating new downloaded run list"<<endl<<flush;
     }
 
     fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","RECREATE");
@@ -1982,12 +1982,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     TBranch *branch;
     AliRPCValueDCS *iterValue=new AliRPCValueDCS();
     
-    fOCDBDataContainer->GetObject(ObjectName,tree);
+    fGlobalDataContainer->GetObject(ObjectName,tree);
+    
+    if(!tree) return;
+    
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
-    for(Int_t i=0; i<tree->GetEntries();i++) {
-        tree->GetSortedEntry(i);
+    for(int i=0; i<tree->GetEntries(); tree->GetSortedEntry(i++)) {
         if(IsRunInList(RunNumberList,iterValue->GetRunNumber())){
             if (((iterValue->*funky)()) &&
                 (iterValue->GetTimeStamp() > 8000)) {
@@ -2017,17 +2019,21 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, Int_t whichValue){
     Int_t counter=0;
-   
+    
     TSmartTree *tree;
     TBranch *branch;
     AliRPCValueDCS *iterValue=new AliRPCValueDCS();
     
-    fOCDBDataContainer->GetObject(ObjectName,tree);
+    fGlobalDataContainer->GetObject(ObjectName,tree);
+    
+    if(!tree) return;
+    tree->Print();
+    
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
+    tree->Print();
     
-    for (Int_t i=0; i<tree->GetEntries(); i++) {
-        tree->GetSortedEntry(i);
+    for (int i=0; i<tree->GetEntries(); tree->GetSortedEntry(i++)) {
         if (((iterValue->*funky)()) &&
             (iterValue->GetTimeStamp() > 8000)) {
             Graph->SetPoint(counter++, iterValue->GetTimeStamp(),iterValue->GetValue(whichValue));
@@ -2151,7 +2157,10 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRP
     TBranch *branch;
     AliRPCValueDCS *iterValue=new AliRPCValueDCS();
     
-    fOCDBDataContainer->GetObject(ObjectName,tree);
+    fGlobalDataContainer->GetObject(ObjectName,tree);
+    
+    if(!tree) return;
+    
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
@@ -2248,7 +2257,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<options.Data()<<endl;
         
         //Get List useful on vs time plots
-        options.Prepend("GLOBAL_DATA_");
+        options.Prepend("Global_Data_");
         
         Bool_t isDarkGraph=kFALSE;
         Bool_t isNormalizedGraph=kFALSE;

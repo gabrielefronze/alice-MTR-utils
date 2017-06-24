@@ -881,7 +881,9 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
-                
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->GetXaxis()->SetTitle("timestamp [s]");
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
+                PlotsIntegratedCharge[iSide][iPlane][iRPC]->GetYaxis()->SetTitleOffset(1);
                 
                 Double_t timestamp0=0.;
                 Double_t timestamp1=timestamp0;
@@ -937,7 +939,9 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     
     //calculate mean integratedcharge
     for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end()-1;iter++){
-        MeanIntegratedCharge+=((AliRPCData*)(fAliRPCDataObject))->GetMeanIntegratedCharge((*iter)->GetRunNumber(),kTRUE);
+        Double_t value=((AliRPCData*)(fAliRPCDataObject))->GetMeanIntegratedCharge((*iter)->GetRunNumber(),kTRUE);
+        if((*iter)->GetElapsedTime()>3*24*60*60) continue;
+        MeanIntegratedCharge+=value;
         MeanGraph->SetPoint(meanCounter++,(*iter)->GetTimeStampStart(),MeanIntegratedCharge);
     }
     
@@ -946,6 +950,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     
     printf("%s",MostString.Data());
     printf("%s",LessString.Data());
+    printf("Mean:%f \n",MeanIntegratedCharge);
     
     MeanGraph->SetLineColor(kCyan-3);
     MeanGraph->SetMarkerSize(0.15);

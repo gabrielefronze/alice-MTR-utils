@@ -2090,14 +2090,15 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
             if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kIDark);
             else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kITot);
         }
-        else if(y.Contains("integrated")&&y.Contains("charge")){
-            IntegratorPerRun();
-        }
-        }else if(x.Contains("run")){
-            if(y.Contains("current")) {
-                if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent,normalizedToArea,onlyDarkPoints);
-                if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent,normalizedToArea,onlyDarkPoints);
-                if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent,normalizedToArea,onlyDarkPoints);
+    }
+    else if(y.Contains("integrated")&&y.Contains("charge")){
+        Graph=0x0;
+        IntegratorPerRun();
+    }else if(x.Contains("run")){
+        if(y.Contains("current")) {
+            if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent,normalizedToArea,onlyDarkPoints);
+            if(y.Contains("dark")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanDarkCurrent,normalizedToArea,onlyDarkPoints);
+            if(y.Contains("net")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanNetCurrent,normalizedToArea,onlyDarkPoints);
         }else if(y.Contains("voltage")){
             PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanHV);
         }else if(y.Contains("rate")&&y.Contains("bending")){
@@ -2129,13 +2130,16 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         }else return;
         PlotSomethingVersusRPC(Graph,Xptr,Yptr,normalizedToArea);
     }
-    Graph->GetXaxis()->SetTitle(x);
-    Graph->GetYaxis()->SetTitle(y);
     
-    if(toFit) {
-        cout<<"Fit of "<<x.Data()<<" vs "<<y.Data()<<":";
-        Graph->Fit("pol1","M0");
-        //cout<<"\n\n##########\n\n";
+    if(Graph){
+        Graph->GetXaxis()->SetTitle(x);
+        Graph->GetYaxis()->SetTitle(y);
+        
+        if(toFit) {
+            cout<<"Fit of "<<x.Data()<<" vs "<<y.Data()<<":";
+            Graph->Fit("pol1","M0");
+            //cout<<"\n\n##########\n\n";
+        }
     }
 };
 
@@ -2229,7 +2233,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         if(line.empty()) continue;
         //convert string to TString
         TString Tline(line);
-        cout<<"read new line"<<endl;
+        cout<<"Reading new line"<<endl;
         //separate string when find ,
         TObjArray *commands;
         commands=Tline.Tokenize(", ");
@@ -2255,7 +2259,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         //call correct function plot or distribution
         if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
-            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis,isDarkGraph,isNormalizedGraph,isFittedGraph,options);
+            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis, isDarkGraph, isNormalizedGraph, isFittedGraph, options);
         }else if(plotType.Contains("distribution")){
             graphBuffer=new TH1F();
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);
@@ -2263,7 +2267,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         }
         
         fPlotContainer->cd();
-        graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
+        if(graphBuffer&&!yaxsis.Contains("charge")) graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
         graphBuffer=0x0;
         commands=0x0;
     }

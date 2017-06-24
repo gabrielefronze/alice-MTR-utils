@@ -2050,7 +2050,8 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
                 for(auto iter=bufferList.begin(); iter!=bufferList.end(); iter++){
                     auto run=(*iter)->GetRunNumber();
                     if(run==267165) continue;
-                    if(onlyDarkPoints&&(*iter)->GetIsDark()) continue;
+                    //skip if onlyDrak is true and iter is not dark
+                    if(onlyDarkPoints&&!(*iter)->GetIsDark()) continue;
                     if(!IsRunInList(OCDBRunListComplete, run)) OCDBRunListComplete.push_back(run);
                 }
             }
@@ -2072,7 +2073,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
                 Double_t x=(fAliRPCDataObject->*funkyX)(iSide,iPlane,iRPC,normalizedToArea);
-                if(x>0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC,normalizedToArea));
+                if(x>=0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC,normalizedToArea));
             }
         }
     }
@@ -2137,7 +2138,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         Graph->GetYaxis()->SetTitle(y);
         
         if(toFit) {
-            cout<<"Fit of "<<x.Data()<<" vs "<<y.Data()<<":";
+            cout<<"Fit of "<<y.Data()<<" vs "<<x.Data()<<":";
             Graph->Fit("pol1","M0");
             //cout<<"\n\n##########\n\n";
         }

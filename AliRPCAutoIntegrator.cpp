@@ -117,24 +117,31 @@ fAMANDAInputFileName(AMANDAInputFileName),
 fOutputFileName(OutputFileName),
 fUpdateOCDB(updateOCDB),
 fUpdateAMANDA(updateAMANDA){
-
+    
+    
     // The update fAMANDAData variable allows the user to decide wether the fAMANDAData has to
     // be reloaded in the *DataContainer.root files or not (fAMANDAData already there)
     if(fUpdateOCDB){
         fOCDBDataContainer= new TFile("OCDBDataContainer.root","UPDATE");
         //fAMANDADataContainer= new TFile("AMANDADataContainer.root","RECREATE");
     } else {
-        fOCDBDataContainer= new TFile("OCDBDataContainer.root","READ");
-        //fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
+        if(checkFileExistance("OCDBDataContainer.root")){
+            fOCDBDataContainer= new TFile("OCDBDataContainer.root","READ");
+        }else{
+            //user ask to read a file that doesn't exists
+            fOCDBDataContainer= new TFile("OCDBDataContainer.root","CREATE");
+        }
     }
 
     if(fUpdateAMANDA){
-        //fOCDBDataContainer= new TFile("OCDBDataContainer.root","RECREATE");
         fAMANDADataContainer= new TFile("AMANDADataContainer.root","UPDATE");
     } else {
-        //fOCDBDataContainer= new TFile("OCDBDataContainer.root","READ");
-        //fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
-        fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
+        if(checkFileExistance("AMANDADataContainer.root")){
+            fAMANDADataContainer= new TFile("AMANDADataContainer.root","READ");
+        }else{
+            //user ask to read a file that doesn't exists
+            fAMANDADataContainer= new TFile("AMANDADataContainer.root","CREATE");
+        }
     }
 
     fExistsRPCDataObject = checkFileExistance(OutputFileName);

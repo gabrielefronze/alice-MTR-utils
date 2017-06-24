@@ -883,9 +883,9 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
                 
                 
-                Double_t timestamp0=0;
+                Double_t timestamp0=0.;
                 Double_t timestamp1=timestamp0;
-                Double_t iNet0=0;
+                Double_t iNet0=0.;
                 Double_t iNet1=iNet0;
                 
                 for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end();iter++){
@@ -1996,7 +1996,8 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
-    for(int i=0; i<tree->GetEntries(); tree->GetSortedEntry(i++)) {
+    for(Int_t i=0; i<tree->GetEntries(); i++) {
+        tree->GetSortedEntry(i);
         if(IsRunInList(RunNumberList,iterValue->GetRunNumber())){
             if (((iterValue->*funky)()) &&
                 (iterValue->GetTimeStamp() > 8000)) {
@@ -2038,7 +2039,8 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
-    for (int i=0; i<tree->GetEntries(); tree->GetSortedEntry(i++)) {
+    for (Int_t i=0; i<tree->GetEntries(); i++) {
+        tree->GetSortedEntry(i);
         if (((iterValue->*funky)()) &&
             (iterValue->GetTimeStamp() > 8000)) {
             Graph->SetPoint(counter++, iterValue->GetTimeStamp(),iterValue->GetValue(whichValue));

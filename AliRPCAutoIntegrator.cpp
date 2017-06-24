@@ -834,7 +834,13 @@ void AliRPCAutoIntegrator::Integrator(){
 void AliRPCAutoIntegrator::IntegratorPerRun(){
     cout<<"\nGenerating integrated charge graphs"<<endl;
     TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
-    fGlobalDataContainer->cd("integrated_charge_Graphs");
+    TString dirName("integrated_charge_Graphs");
+    
+    TObject *check=0x0;
+    fPlotContainer->GetObject(dirName,check);
+    if(!check){
+        fPlotContainer->mkdir(dirName);
+    }
     
     //arrays contains {iSide, IPlane, IRPC, integratedCharge}
     RPC LessExposedRPC;
@@ -845,7 +851,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     //Plot the best and the worst chamber
     TMultiGraph *MostAndLessExposedRPCMultiGraph=new TMultiGraph("MostAndLessExposedRPCMultiGraph","MostAndLessExposedRPCMultiGraph");
     TGraph *MeanGraph=new TGraph();
-    TGraph *Best, *Worst;
+    TGraph *MostGraph, *LessGraph;
     Int_t counter=0;
     Int_t meanCounter=0;
     Double_t IntegratedCharge=0.;
@@ -870,18 +876,15 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetMarkerSize(0.15);
                 
                 
-                auto it=list.begin();
-                Double_t timestamp0=(*it)->GetTimeStampStart();
+                Double_t timestamp0=0;
                 Double_t timestamp1=timestamp0;
-                Double_t iNet0=(*it)->GetMeanNetCurrent();
+                Double_t iNet0=0;
                 Double_t iNet1=iNet0;
                 
-                for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin()+1;iter!=list.end();iter++){
+                for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end();iter++){
                     Double_t IntChargeBuffer=(iNet0+iNet1)*(timestamp1-timestamp0)/2;
                     if(!(IntChargeBuffer>0)) IntChargeBuffer=0;
                     
-                    //if Inet ==0 (aka dark run) skip integration
-                    if (iNet1==0) continue;
                     
                     //if timestamps differe for more than 3 days (eg shutdown)
                     //integrated charge should not be incremented
@@ -899,7 +902,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                     timestamp0=timestamp1;
                     iNet0=iNet1;
                     timestamp1=(*iter)->GetTimeStampStart();
-                    iNet1=(*iter)->GetMeanNetCurrent();
+                    iNet1=(*iter)->GetMeanNetCurrent()/fRPCAreas[iPlane][iRPC];
                 }
                 
                 //estimate max and min RPC
@@ -908,18 +911,17 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                     LessExposedRPC.Side=iSide;
                     LessExposedRPC.RPC=iRPC+1;
                     MinCharge=IntegratedCharge;
-                    Best=PlotsIntegratedCharge[iSide][iPlane][iRPC];
+                    LessGraph=PlotsIntegratedCharge[iSide][iPlane][iRPC];
                 }else if(IntegratedCharge>=MaxCharge){
                     MostExposedRPC.Plane=iPlane;
                     MostExposedRPC.Side=iSide;
                     MostExposedRPC.RPC=iRPC+1;
                     MaxCharge=IntegratedCharge;
-                    Worst=PlotsIntegratedCharge[iSide][iPlane][iRPC];
+                    MostGraph=PlotsIntegratedCharge[iSide][iPlane][iRPC];
                 }
                 
                 printf("RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,IntegratedCharge);
-                MostAndLessExposedRPCMultiGraph->Add(PlotsIntegratedCharge[iSide][iPlane][iRPC]);
-                fGlobalDataContainer->cd("integrated_charge_Graphs");
+                fPlotContainer->cd(dirName);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite||TObject::kSingleKey);
                 
             }
@@ -928,21 +930,30 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     
     //calculate mean integratedcharge
     for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end()-1;iter++){
-        MeanIntegratedCharge+=((AliRPCData*)(fAliRPCDataObject))->GetMeanIntegratedCharge((*iter)->GetRunNumber());
+        MeanIntegratedCharge+=((AliRPCData*)(fAliRPCDataObject))->GetMeanIntegratedCharge((*iter)->GetRunNumber(),kTRUE);
         MeanGraph->SetPoint(meanCounter++,(*iter)->GetTimeStampStart(),MeanIntegratedCharge);
     }
     
+    TString LessString(Form("Less exposed RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,MinCharge));
+    TString MostString(Form("Most exposed RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,MaxCharge));
     
-    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,MinCharge);
-    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,MaxCharge);
+    printf("%s",MostString.Data());
+    printf("%s",LessString.Data());
+    
     MeanGraph->SetLineColor(kCyan-3);
     MeanGraph->SetMarkerSize(0.15);
     MeanGraph->SetMarkerColor(kCyan-3);
     MeanGraph->SetMarkerStyle(24);
     MostAndLessExposedRPCMultiGraph->Add(MeanGraph);
+    MostAndLessExposedRPCMultiGraph->Add(MostGraph);
+    MostAndLessExposedRPCMultiGraph->Add(LessGraph);
     
-    fGlobalDataContainer->Flush();
+    fPlotContainer->cd(dirName);
+    MostAndLessExposedRPCMultiGraph->Write("integrated_charge_Graph",TObject::kOverwrite|TObject::kSingleKey);
+    
+    fPlotContainer->Flush();
 }
+
 
 void AliRPCAutoIntegrator::AMANDATextToCParser(){
 

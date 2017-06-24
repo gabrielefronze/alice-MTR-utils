@@ -2049,6 +2049,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
                 vector<AliRPCRunStatistics*> bufferList=fAliRPCDataObject->GetRunStatistics(iPlane,iSide,iRPC);
                 for(auto iter=bufferList.begin(); iter!=bufferList.end(); iter++){
                     auto run=(*iter)->GetRunNumber();
+                    if(run==267165) continue;
                     if(onlyDarkPoints&&(*iter)->GetIsDark()) continue;
                     if(!IsRunInList(OCDBRunListComplete, run)) OCDBRunListComplete.push_back(run);
                 }

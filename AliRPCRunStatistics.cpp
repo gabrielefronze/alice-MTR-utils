@@ -65,6 +65,6 @@ Int_t AliRPCRunStatistics::Compare(const TObject *obj) const {
 
 
 void AliRPCRunStatistics::PrintHumanReadable(){
-    printf("#############Run: %u\n start: %llu\n stop %llu\n year%u\n calib:%u\n dark:%u\n darkcurrent %f\n totalcurrent:%f\n HV:%f\n scalerB:%llu\n scalerNB:%llu\n rate:%f\n#############",fRunNumber,fTimeStampStart,fTimeStampStop,fYear,(fIsCalib?1:0),(fIsDark?1:0),fMeanDarkCurrent,fMeanTotalCurrent,fMeanHV,fTotalScalerCountsBending,fTotalScalerCountsNotBending,GetMeanRateBending());
+    printf("#############\nRun: %u\n start: %llu\n stop: %llu\n year: %u\n calib: %u\n dark: %u\n darkcurrent: %f\n totalcurrent:%f\n HV: %f\n scalerB: %llu\n scalerNB: %llu\n rate:%f\n#############",fRunNumber,fTimeStampStart,fTimeStampStop,fYear,(fIsCalib?1:0),(fIsDark?1:0),fMeanDarkCurrent,fMeanTotalCurrent,fMeanHV,fTotalScalerCountsBending,fTotalScalerCountsNotBending,GetMeanRateBending());
     return;
 };

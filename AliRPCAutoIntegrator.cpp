@@ -961,8 +961,12 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     MostAndLessExposedRPCMultiGraph->Add(LessGraph);
     
     fPlotContainer->cd(dirName);
-    MostAndLessExposedRPCMultiGraph->Write("integrated_charge_Graph",TObject::kOverwrite|TObject::kSingleKey);
-    
+//    MostAndLessExposedRPCMultiGraph->Draw("AP");
+//    MostAndLessExposedRPCMultiGraph->GetXaxis()->SetTitle("timestamp [s]");
+//    MostAndLessExposedRPCMultiGraph->GetXaxis()->SetRangeUser(1460000000, 1480000000);
+//    MostAndLessExposedRPCMultiGraph->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
+//    MostAndLessExposedRPCMultiGraph->GetYaxis()->SetTitleOffset(1.5);
+    MostAndLessExposedRPCMultiGraph->Write("MostAndLessExposedRPCMultiGraph",TObject::kOverwrite||TObject::kSingleKey);
     fPlotContainer->Flush();
 }
 

@@ -2034,11 +2034,9 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     fGlobalDataContainer->GetObject(ObjectName,tree);
     
     if(!tree) return;
-    tree->Print();
     
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
-    tree->Print();
     
     for (int i=0; i<tree->GetEntries(); tree->GetSortedEntry(i++)) {
         if (((iterValue->*funky)()) &&

@@ -903,7 +903,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                         continue;
                     }
                     
-                    //sum integrated charge for new run
+                                        //sum integrated charge for new run
                     IntegratedCharge+=IntChargeBuffer;
                     
                     PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++,(timestamp0+timestamp1)/2,IntegratedCharge);
@@ -968,6 +968,91 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
 //    MostAndLessExposedRPCMultiGraph->GetYaxis()->SetTitleOffset(1.5);
     MostAndLessExposedRPCMultiGraph->Write("MostAndLessExposedRPCMultiGraph",TObject::kOverwrite||TObject::kSingleKey);
     fPlotContainer->Flush();
+}
+
+
+void AliRPCAutoIntegrator::PlotRPCPerMT(){
+    TString sourceDirName("integrated_charge_Graphs");
+    TMultiGraph *PlotsIntegratedCharge[kNSides][kNRPC];
+    TGraph *graphBuffer=0x0;
+    
+    TString outputDirName("integrated_charge_Grouped");
+    
+    TObject *check=0x0;
+    fPlotContainer->GetObject(sourceDirName,check);
+    if(!check){
+        IntegratorPerRun();
+    }
+    
+    check=0x0;
+    fPlotContainer->GetObject(outputDirName,check);
+    
+    if(!check){
+        fPlotContainer->mkdir(outputDirName);
+    }
+    
+    for(Int_t iSide=0;iSide<kNSides;iSide++){
+        for(Int_t iRPC=1;iRPC<=kNRPC;iRPC++){
+            PlotsIntegratedCharge[iSide][iRPC-1]=new TMultiGraph();
+            //PlotsIntegratedCharge[iSide][iRPC-1]->SetTitle(Form("MTR_%s_RPC%d",(fSides[iSide]).Data(),iRPC-1));
+            
+            for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+                fPlotContainer->cd(sourceDirName);
+                fPlotContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC),graphBuffer);
+                
+                if(!graphBuffer){
+                    continue;
+                }
+
+                
+                graphBuffer->SetFillColor(0);
+                graphBuffer->SetMarkerStyle(fStyles[iPlane]);
+                graphBuffer->SetMarkerSize(0.3);
+                graphBuffer->GetXaxis()->SetRangeUser(1460000000,1470000000);
+                PlotsIntegratedCharge[iSide][iRPC-1]->Add(graphBuffer);
+            }
+            
+            fPlotContainer->cd(outputDirName);
+            PlotsIntegratedCharge[iSide][iRPC-1]->Write(Form("MTR_%s_RPC%d",(fSides[iSide]).Data(),iRPC-1));
+        }
+    }
+    
+    
+    TCanvas *planeCanvas=new TCanvas("planeCanvas","planeCanvas",0,0,1280,960);
+    planeCanvas->Divide(2,9);
+    
+    
+    Int_t iRPCInside=kNRPC;
+    Int_t iRPCOutside=kNRPC;
+    
+    for(Int_t iPad=1;iPad<=kNRPC*kNSides;iPad++){
+        //INSIDE
+        if(iPad%2!=0){
+            
+            planeCanvas->cd(iPad);
+            PlotsIntegratedCharge[0][iRPCInside-1]->Draw("APL");
+            PlotsIntegratedCharge[0][iRPCInside-1]->GetXaxis()->SetTitle("timestamp [s]");
+            PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
+            PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetTitleOffset(1);
+            PlotsIntegratedCharge[0][iRPCInside-1]->GetXaxis()->SetLimits(1460000000,1470000000);
+            iRPCInside--;
+        }
+        else{
+            //OUTSIDE
+            planeCanvas->cd(iPad);
+            PlotsIntegratedCharge[1][iRPCOutside-1]->Draw("APL");
+            PlotsIntegratedCharge[1][iRPCOutside-1]->GetXaxis()->SetTitle("timestamp [s]");
+            PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
+            PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetTitleOffset(1);
+            PlotsIntegratedCharge[1][iRPCOutside-1]->GetXaxis()->SetLimits(1460000000,1470000000);
+            iRPCOutside--;
+        }
+    }
+    
+    fPlotContainer->cd(outputDirName);
+    planeCanvas->Write("planeCanvas",TObject::kOverwrite|TObject::kSingleKey);
+    planeCanvas->Draw();
+    
 }
 
 
@@ -2073,8 +2158,9 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
                 for(auto iter=bufferList.begin(); iter!=bufferList.end(); iter++){
                     auto run=(*iter)->GetRunNumber();
                     if(run==267165) continue;
+                    if(run ==262492) continue;
                     //skip if onlyDrak is true and iter is not dark
-                    if(onlyDarkPoints&&!(*iter)->GetIsDark()) continue;
+                    if(onlyDarkPoints&&!(*iter)->GetIsCalib()) continue;
                     if(!IsRunInList(OCDBRunListComplete, run)) OCDBRunListComplete.push_back(run);
                 }
             }

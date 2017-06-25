@@ -1,10 +1,13 @@
-//
-//  AliRPCOverflowStatistics.h
-//  Aliroot project
-//
-//  Created by Gabriele Gaetano Fronzé on 21/12/15.
-//  Copyright © 2015 Gabriele Gaetano Fronzé. All rights reserved.
-//
+/* Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//-------------------------------------------------------------------------
+//     Offline MTR/MID detector performance analysis class
+//     Authors: Gabriele Gaetano Fronze' (INFN),
+//              Filippo Valle (UniTo)
+//-------------------------------------------------------------------------
 
 #ifndef AliRPCOverflowStatistics_h
 #define AliRPCOverflowStatistics_h

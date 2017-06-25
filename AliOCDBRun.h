@@ -1,6 +1,13 @@
-//
-// Created by Gabriele Gaetano Fronzé on 30/03/2017.
-//
+/* Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//-------------------------------------------------------------------------
+//     Offline MTR/MID detector performance analysis class
+//     Authors: Gabriele Gaetano Fronze' (INFN),
+//              Filippo Valle (UniTo)
+//-------------------------------------------------------------------------
 
 #ifndef OCDBRUN_H
 #define OCDBRUN_H

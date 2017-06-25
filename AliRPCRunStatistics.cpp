@@ -1,9 +1,25 @@
-//
-// AliRPCRunStatistics.cpp
-// 
-//   Created by Gabriele Gaetano Fronzé
-//   Copyright © 2016 Gabriele Gaetano Fronzé. All rights reserved.
-//
+/**************************************************************************
+ * Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//-------------------------------------------------------------------------
+//     Offline MTR/MID detector performance analysis class
+//     Authors: Gabriele Gaetano Fronze' (INFN),
+//              Filippo Valle (UniTo)
+//-------------------------------------------------------------------------
 
 #include "AliRPCRunStatistics.h"
 #include "TClass.h"
@@ -49,6 +65,6 @@ Int_t AliRPCRunStatistics::Compare(const TObject *obj) const {
 
 
 void AliRPCRunStatistics::PrintHumanReadable(){
-    printf("#############Run: %u\n start: %llu\n stop %llu\n year%u\n calib:%u\n dark:%u\n darkcurrent %f\n totalcurrent:%f\n HV:%f\n scalerB:%llu\n scalerNB:%llu\n rate:%f\n#############",fRunNumber,fTimeStampStart,fTimeStampStop,fYear,(fIsCalib?1:0),(fIsDark?1:0),fMeanDarkCurrent,fMeanTotalCurrent,fMeanHV,fTotalScalerCountsBending,fTotalScalerCountsNotBending,GetMeanRateBending());
+    printf("#############\nRun: %u\n start: %llu\n stop: %llu\n year: %u\n calib: %u\n dark: %u\n darkcurrent: %f\n totalcurrent:%f\n HV: %f\n scalerB: %llu\n scalerNB: %llu\n rate:%f\n#############",fRunNumber,fTimeStampStart,fTimeStampStop,fYear,(fIsCalib?1:0),(fIsDark?1:0),fMeanDarkCurrent,fMeanTotalCurrent,fMeanHV,fTotalScalerCountsBending,fTotalScalerCountsNotBending,GetMeanRateBending());
     return;
 };

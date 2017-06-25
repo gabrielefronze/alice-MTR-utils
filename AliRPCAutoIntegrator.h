@@ -34,6 +34,7 @@
 #include "AliRPCOverflowStatistics.h"
 #include "TGraph.h"
 #include "TMultiGraph.h"
+#include "TCanvas.h"
 
 // #include "TClass.h"
 #include <fstream>
@@ -188,6 +189,7 @@ public:
     void Subtractor();
     void Integrator();
     void IntegratorPerRun();
+    void PlotRPCPerMT();
     void AMANDASetDataMembers();
 
     void GeneratePlots();
@@ -195,7 +197,7 @@ public:
     void VoltagePlotter(TGraph *Graph, TString ObjectName, UInt_t RunNumber);
     void VoltagePlotter(TGraph *Graph, TString ObjectName, std::vector<UInt_t> RunNumberList);
     void VoltagePlotter(TGraph *Graph, TString ObjectName);
-
+    
 
 private:
     inline Bool_t checkFileExistance(TString fileName) {

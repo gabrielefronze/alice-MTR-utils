@@ -682,6 +682,8 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                         //printf("IDark %f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
 
+                        if ( t1-t0 <= 0. ) continue;
+
                         // current timestamp is neede for the linear interpolation of the dark current
                         Double_t tnow = ((AliRPCValueCurrent*)bufferValue)->GetTimeStamp();
                         Double_t darkCurrent = tnow * (iDarkt1 - iDarkt0) / (t1 - t0) + iDarkt0;

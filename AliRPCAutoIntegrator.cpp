@@ -825,10 +825,10 @@ void AliRPCAutoIntegrator::Integrator(){
     //Plot the best and the worst chamber
     TMultiGraph *MostAndLessExposedRPCMultiGraph=new TMultiGraph("MostAndLessExposedRPCMultiGraph","MostAndLessExposedRPCMultiGraph");
     //GetBest
-    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC+1),buffer);
+    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC),buffer);
     MostAndLessExposedRPCMultiGraph->Add(buffer);
     //GetWorst
-    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC+1),buffer);
+    fGlobalDataContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC),buffer);
     MostAndLessExposedRPCMultiGraph->Add(buffer);
     fGlobalDataContainer->cd("integrated_charge_Graphs");
     MostAndLessExposedRPCMultiGraph->Write(Form("integrated_charge_Graph"),TObject::kOverwrite|TObject::kSingleKey);

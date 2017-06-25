@@ -678,11 +678,9 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                     // If the current value is relative to a NON dark run we want to set the dark current for that
                     // current object to the interpolated value of the dark currents taken from the dark runs.
-                    else {
+                    else  if ( t1-t0 > 0. ){
 
                         //printf("IDark %f %f %f %f \n", iDarkt0, t0, iDarkt1, t1);
-
-                        if ( t1-t0 <= 0. ) continue;
 
                         // current timestamp is neede for the linear interpolation of the dark current
                         Double_t tnow = ((AliRPCValueCurrent*)bufferValue)->GetTimeStamp();

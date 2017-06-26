@@ -32,9 +32,7 @@
 #include "AliRPCValueVoltage.h"
 #include "AliRPCValueScaler.h"
 #include "AliRPCOverflowStatistics.h"
-#include "TGraph.h"
-#include "TMultiGraph.h"
-#include "TCanvas.h"
+
 
 // #include "TClass.h"
 #include <fstream>
@@ -50,6 +48,10 @@
 #include "TClonesArray.h"
 #include "TObjString.h"
 #include "TH1F.h"
+#include "TGraph.h"
+#include "TMultiGraph.h"
+#include "TCanvas.h"
+#include "TText.h"
 
 typedef struct {
     Int_t Side;

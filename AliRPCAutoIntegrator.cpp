@@ -994,6 +994,9 @@ TGraph* AliRPCAutoIntegrator::GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, I
 
 
 void AliRPCAutoIntegrator::PlotRPCPerMT(){
+    //{min X, max X}{min Y, max Y}
+    Long64_t limits[][2]={{1460000000,1470000000},{0,10000}};
+    
     TMultiGraph *PlotsIntegratedCharge[kNSides][kNRPC];
     TGraph *graphBuffer=0x0;
     
@@ -1020,7 +1023,9 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(){
                 
                 graphBuffer->SetFillColor(0);
                 graphBuffer->SetMarkerStyle(fStyles[iPlane]);
+                graphBuffer->SetMarkerColor(fColors[iPlane]);
                 graphBuffer->SetMarkerSize(0.3);
+                graphBuffer->SetTitle(Form("MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC));
                 PlotsIntegratedCharge[iSide][iRPC-1]->Add(graphBuffer);
             }
             
@@ -1031,44 +1036,54 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(){
     
     
     TCanvas *planeCanvas=new TCanvas("planeCanvas","planeCanvas",0,0,1280,960);
-    planeCanvas->Divide(2,9,0,0);
+    planeCanvas->Divide(kNSides,kNRPC+1,0,0);
+    
+    planeCanvas->cd(1);
+    auto *outsideLabel = new TText(0.5,0.5,"OUTSIDE");
+    outsideLabel->SetTextAlign(22);
+    outsideLabel->SetTextSize(0.9);
+    outsideLabel->Draw();
+    
+    planeCanvas->cd(2);
+    auto *insideLabel = new TText(0.5,0.5,"INSIDE");
+    insideLabel->SetTextAlign(22);
+    insideLabel->SetTextSize(0.9);
+    insideLabel->Draw();
     
     
     Int_t iRPCInside=kNRPC;
     Int_t iRPCOutside=kNRPC;
+
     
-    for(Int_t iPad=1;iPad<=kNRPC*kNSides;iPad++){
-        //INSIDE
-        if(iPad%2!=0){
-            
-            planeCanvas->cd(iPad);
-            PlotsIntegratedCharge[0][iRPCInside-1]->Draw("APL");
-            PlotsIntegratedCharge[0][iRPCInside-1]->GetXaxis()->SetTitle("timestamp [s]");
-            PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
-            PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetTitleOffset(1);
-            PlotsIntegratedCharge[0][iRPCInside-1]->GetXaxis()->SetLimits(1460000000,1470000000);
-            PlotsIntegratedCharge[0][iRPCInside-1]->SetMinimum(0);
-            //PlotsIntegratedCharge[0][iRPCInside-1]->SetMaximum(22000);
-            iRPCInside--;
-        }
-        else{
-            //OUTSIDE
-            planeCanvas->cd(iPad);
-            PlotsIntegratedCharge[1][iRPCOutside-1]->Draw("APL");
-            PlotsIntegratedCharge[1][iRPCOutside-1]->GetXaxis()->SetTitle("timestamp [s]");
-            PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
-            PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetTitleOffset(1);
-            PlotsIntegratedCharge[1][iRPCOutside-1]->GetXaxis()->SetLimits(1460000000,1470000000);
-            PlotsIntegratedCharge[1][iRPCOutside-1]->SetMinimum(0);
-            //PlotsIntegratedCharge[1][iRPCOutside-1]->SetMaximum(22000);
-            iRPCOutside--;
+    for(Int_t iPad=3;iPad<=kNRPC*kNSides+2;iPad++){
+        
+        if(iPad%2==0){
+                //INSIDE
+                planeCanvas->cd(iPad);
+                PlotsIntegratedCharge[0][iRPCInside-1]->Draw("AL");
+                PlotsIntegratedCharge[0][iRPCInside-1]->GetXaxis()->SetLimits(limits[0][0],limits[0][1]);
+                PlotsIntegratedCharge[0][iRPCInside-1]->SetMinimum(0);
+                PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetLabelSize(0.13);
+                PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetNdivisions(5);
+                PlotsIntegratedCharge[0][iRPCInside-1]->SetMaximum(limits[1][1]);
+                iRPCInside--;
+        }else{
+                //OUTSIDE
+                planeCanvas->cd(iPad);
+                PlotsIntegratedCharge[1][iRPCOutside-1]->Draw("AL");
+                PlotsIntegratedCharge[1][iRPCOutside-1]->GetXaxis()->SetLimits(limits[0][0],limits[0][1]);
+                PlotsIntegratedCharge[1][iRPCOutside-1]->SetMinimum(limits[1][0]);
+                PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetLabelSize(0.13);
+                PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetNdivisions(5);
+                PlotsIntegratedCharge[1][iRPCOutside-1]->SetMaximum(limits[1][1]);
+                iRPCOutside--;
         }
     }
     
+        
     fPlotContainer->cd(outputDirName);
     planeCanvas->Write("planeCanvas",TObject::kOverwrite|TObject::kSingleKey);
     planeCanvas->Draw();
-    
 }
 
 
@@ -2221,6 +2236,9 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
     else if(y.Contains("integrated")&&y.Contains("charge")){
         Graph=0x0;
         IntegratorPerRun();
+        if(x.Contains("plane")){
+            PlotRPCPerMT();
+        }
     }else if(x.Contains("run")){
         if(y.Contains("current")) {
             if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent,normalizedToArea,onlyDarkPoints);

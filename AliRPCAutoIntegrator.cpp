@@ -1780,7 +1780,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         Double_t LBRateSum[2] = {0., 0.};
                         Double_t notOverflowLBTotalArea[2] = {0., 0.};
 
-                        //printf("\n######################\nRun=%d MT=%d iRPC=%d SIDE=%s\n", previousRunNumber, fPlanes[iPlane], iRPC, fSides[iSide].Data());
+                        printf("\n######################\nRun=%d MT=%d iRPC=%d SIDE=%s\n", previousRunNumber, fPlanes[iPlane], iRPC, fSides[iSide].Data());
                         for (Int_t cathode = 0; cathode < kNCathodes; cathode++) {
                             for (Int_t localBoard = 1; localBoard <= kNLocalBoards; localBoard++) {
                                 Int_t acceptedCount = 0;

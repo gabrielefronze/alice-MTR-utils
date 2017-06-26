@@ -1802,6 +1802,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                                     AliRPCValueScaler *valueScaler = fOCDBLBScalersTreeBufferW[cathode][iPlane][localBoard - 1];
 
+                                    cout << previousRunNumber << " " << cathode << " " << iPlane << " " << localBoard << " " << fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall() << endl;
+
                                     for (Long64_t iScaler = fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall(); iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
 
                                         if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) break;

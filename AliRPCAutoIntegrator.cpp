@@ -1716,7 +1716,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                                     for (Long64_t iScaler = fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall(); iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
 
-                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) continue;
+                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) break;
 
                                         if (valueScaler->GetScalerCounts() <= 0.) continue;
                                         //for(Int_t iScaler=previousScalers[cathode][iPlane][localBoard-1];iScaler<fOCDBLBScalers[cathode][iPlane][localBoard-1]->GetEntries();iScaler++){

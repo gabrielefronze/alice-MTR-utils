@@ -971,20 +971,35 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
 }
 
 
+TGraph* AliRPCAutoIntegrator::GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane){
+    TString sourceDir("integrated_charge_Graphs");
+    TObject *check=0x0;
+    fPlotContainer->GetObject(sourceDir,check);
+    
+    if(!check){
+        IntegratorPerRun();
+    }
+    
+    TString source(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC));
+    
+    TGraph *graphBuffer=0x0;
+    
+    fPlotContainer->GetObject(source,graphBuffer);
+    if(!graphBuffer){
+        return nullptr;
+    }
+    
+    return graphBuffer;
+}
+
+
 void AliRPCAutoIntegrator::PlotRPCPerMT(){
-    TString sourceDirName("integrated_charge_Graphs");
     TMultiGraph *PlotsIntegratedCharge[kNSides][kNRPC];
     TGraph *graphBuffer=0x0;
     
     TString outputDirName("integrated_charge_Grouped");
     
     TObject *check=0x0;
-    fPlotContainer->GetObject(sourceDirName,check);
-    if(!check){
-        IntegratorPerRun();
-    }
-    
-    check=0x0;
     fPlotContainer->GetObject(outputDirName,check);
     
     if(!check){
@@ -997,9 +1012,7 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(){
             //PlotsIntegratedCharge[iSide][iRPC-1]->SetTitle(Form("MTR_%s_RPC%d",(fSides[iSide]).Data(),iRPC-1));
             
             for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
-                fPlotContainer->cd(sourceDirName);
-                fPlotContainer->GetObject(Form("integrated_charge_Graphs/integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC),graphBuffer);
-                
+                graphBuffer=GetIntegratedChargePlot(iRPC,iSide,iPlane);
                 if(!graphBuffer){
                     continue;
                 }

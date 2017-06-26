@@ -189,6 +189,7 @@ public:
     void Subtractor();
     void Integrator();
     void IntegratorPerRun();
+    TGraph* GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane);
     void PlotRPCPerMT();
     void AMANDASetDataMembers();
 
@@ -216,7 +217,6 @@ private:
     
     void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  Bool_t toFit=kFALSE, TString ObjectName="");
     
-
     static void PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 

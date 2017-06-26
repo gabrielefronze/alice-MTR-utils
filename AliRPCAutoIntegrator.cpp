@@ -1641,11 +1641,13 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 //    TObjArray *scalersLocalBoardList[kNCathodes][kNPlanes][kNLocalBoards];
 
     Int_t previousScalers[kNCathodes][kNPlanes][kNLocalBoards];
+    Long64_t lastIndex[kNCathodes][kNPlanes][kNLocalBoards];
 
     for (Int_t plane=0; plane<kNPlanes; plane++) {
         for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
             for (Int_t localBoard=1; localBoard<=kNLocalBoards; localBoard++) {
                 previousScalers[cathode][plane][localBoard-1]=0;
+                lastIndex[cathode][plane][localBoard-1]=0;
             }
         }
     }
@@ -1780,7 +1782,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         Double_t LBRateSum[2] = {0., 0.};
                         Double_t notOverflowLBTotalArea[2] = {0., 0.};
 
-                        printf("\n######################\nRun=%d MT=%d iRPC=%d SIDE=%s\n", previousRunNumber, fPlanes[iPlane], iRPC, fSides[iSide].Data());
+//                        printf("\n######################\nRun=%d MT=%d iRPC=%d SIDE=%s\n", previousRunNumber, fPlanes[iPlane], iRPC, fSides[iSide].Data());
                         for (Int_t cathode = 0; cathode < kNCathodes; cathode++) {
                             for (Int_t localBoard = 1; localBoard <= kNLocalBoards; localBoard++) {
                                 Int_t acceptedCount = 0;
@@ -1802,11 +1804,14 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                                     AliRPCValueScaler *valueScaler = fOCDBLBScalersTreeBufferW[cathode][iPlane][localBoard - 1];
 
-                                    cout << previousRunNumber << " " << cathode << " " << iPlane << " " << localBoard << " " << fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall() << endl;
+//                                    cout << previousRunNumber << " " << cathode << " " << iPlane << " " << localBoard << " " << fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall() << endl;
 
-                                    for (Long64_t iScaler = fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall(); iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
+                                    for (Long64_t iScaler = lastIndex[cathode][iPlane][localBoard-1]; iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
 
-                                        if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) break;
+                                        //if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) break;
+
+                                        lastIndex[cathode][iPlane][localBoard-1] = iScaler;
+                                        fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetSortedEntry(iScaler);
 
                                         if (valueScaler->GetScalerCounts() <= 0. || valueScaler->GetHasOverflow()) continue;
 

@@ -1813,18 +1813,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                                         auto RunNumber = valueScaler->GetRunNumber();
 
-                                        if (RunNumber < previousRunNumber) {
-                                            //cout<<"continue"<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
-                                            //cout<<"continue "<<iScaler<<" "<<valueScaler->GetRunNumber()<<"<"<<previousRunNumber<<endl;
-                                            continue;
-                                        } else if (RunNumber > previousRunNumber) {
-                                            //cout<<"breaking"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
-                                            previousScalers[cathode][iPlane][localBoard - 1] = 0;//iScaler;
-                                            break;
-                                        } else {
-                                            //cout<<"filling"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
-                                            if (RunNumber == 0) continue;
-                                            //(!valueScaler->GetHasOverflow())? printf("\t\t%d\t%d\t\t%s\n",readingCount,valueScaler->GetScalerCounts(),(valueScaler->GetHasOverflow())?"TRUE":"false") : printf("\t>>>\t%d\t%d\t\t%s\n",readingCount,valueScaler->GetScalerCounts(),(valueScaler->GetHasOverflow())?"TRUE":"false");
+                                        if (RunNumber == previousRunNumber) {
                                             if (valueScaler->GetHasOverflow() == kTRUE) {
                                                 //cout<<"################ "<<localBoard<<" has overflow"<<endl;
                                                 continue;
@@ -1835,8 +1824,11 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                                 LBScalers += valueScaler->GetScalerCounts();
                                                 elapsedTime += valueScaler->GetDeltaT();
                                             }
+                                        } else if (RunNumber > previousRunNumber) {
+                                            //cout<<"breaking"<<iScaler<<" "<<valueScaler->GetRunNumber()<<">"<<previousRunNumber<<endl;
+                                            previousScalers[cathode][iPlane][localBoard - 1] = 0;//iScaler;
+                                            break;
                                         }
-                                        //fOCDBLBScalers[cathode][iPlane][localBoard-1]->RemoveAt(iScaler);
                                     }
 
                                     if (isAccepted == kTRUE) {

@@ -1860,7 +1860,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                                         }
                                     }
 
-                                    if (isAccepted == kTRUE) {
+                                    if (isAccepted == kTRUE && elapsedTime!=0. ) {
                                         //cout<<localBoard<<" accepted"<<endl;
                                         LBRate = (Double_t) LBScalers / elapsedTime;
                                         LBRateSum[cathode] += LBRate;

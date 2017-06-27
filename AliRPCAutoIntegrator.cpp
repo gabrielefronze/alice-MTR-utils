@@ -1675,7 +1675,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
         for (Int_t cathode=0; cathode<kNCathodes; cathode++) {
             for (Int_t localBoard=1; localBoard<=kNLocalBoards; localBoard++) {
                 previousScalers[cathode][plane][localBoard-1]=0;
-                lastIndex[cathode][plane][localBoard-1]=0;
+                lastIndex[cathode][plane][localBoard-1]=1;
             }
         }
     }
@@ -1834,7 +1834,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                                     cout << previousRunNumber << " " << cathode << " " << iPlane << " " << localBoard << " " << fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall() << endl;
 
-                                    for (Long64_t iScaler = lastIndex[cathode][iPlane][localBoard-1]; iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
+                                    for (Long64_t iScaler = lastIndex[cathode][iPlane][localBoard-1]-1; iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
 
                                         //if ( fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->Next() == 0 ) break;
 

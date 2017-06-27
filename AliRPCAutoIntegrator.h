@@ -32,9 +32,7 @@
 #include "AliRPCValueVoltage.h"
 #include "AliRPCValueScaler.h"
 #include "AliRPCOverflowStatistics.h"
-#include "TGraph.h"
-#include "TMultiGraph.h"
-#include "TCanvas.h"
+
 
 // #include "TClass.h"
 #include <fstream>
@@ -50,6 +48,10 @@
 #include "TClonesArray.h"
 #include "TObjString.h"
 #include "TH1F.h"
+#include "TGraph.h"
+#include "TMultiGraph.h"
+#include "TCanvas.h"
+#include "TText.h"
 
 typedef struct {
     Int_t Side;
@@ -189,6 +191,7 @@ public:
     void Subtractor();
     void Integrator();
     void IntegratorPerRun();
+    TGraph* GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane);
     void PlotRPCPerMT();
     void AMANDASetDataMembers();
 
@@ -216,7 +219,6 @@ private:
     
     void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  Bool_t toFit=kFALSE, TString ObjectName="");
     
-
     static void PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 

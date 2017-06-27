@@ -15,6 +15,7 @@
 #include "TTree.h"
 #include "TBranch.h"
 #include "TTreeIndex.h"
+#include <iostream>
 
 class TSmartTree : public TTree{
 
@@ -73,6 +74,13 @@ public:
 
     Long64_t GetLastCall(){
         return fLastCall+1;
+    }
+    
+    inline void PrintStatusBar(){
+        for(Int_t i=0; i<20;i++)
+        std::cout<<(i/20.<(Double_t)fLastCall/this->GetEntries()?"*":" ");
+        printf("\t %f.2 %s",(Double_t)fLastCall/this->GetEntries()*100,"%");
+        std::cout<<"\r";
     }
 
     ClassDef(TSmartTree,2);

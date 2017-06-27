@@ -1832,7 +1832,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                                     AliRPCValueScaler *valueScaler = fOCDBLBScalersTreeBufferW[cathode][iPlane][localBoard - 1];
 
-                                    cout << previousRunNumber << " " << cathode << " " << iPlane << " " << localBoard << " " << fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall() << endl;
+//                                    cout << previousRunNumber << " " << cathode << " " << iPlane << " " << localBoard << " " << fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetLastCall() << endl;
 
                                     for (Long64_t iScaler = lastIndex[cathode][iPlane][localBoard-1]; iScaler < fOCDBLBScalersTree[cathode][iPlane][localBoard - 1]->GetEntries(); ++iScaler) {
 
@@ -1885,7 +1885,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         if(nDarkCurrent!=0)meanDarkCurrent=meanDarkCurrent/(Double_t)nDarkCurrent;
                         if(nTotalCurrent!=0)meanTotalCurrent=meanTotalCurrent/(Double_t)nTotalCurrent;
                         if(nHV!=0)meanHV=meanHV/(Double_t)nHV;
-                        cout<<"setting "<<previousRunNumber<<" complete"<<endl;
+//                        cout<<"setting "<<previousRunNumber<<" complete"<<endl;
                         //cout<<totalScalerCounts[0]<<"\t"<<totalScalerCounts[1]<<endl;
                         //cout<<(isDark?"Dark":"NODARK")<<endl;
                         

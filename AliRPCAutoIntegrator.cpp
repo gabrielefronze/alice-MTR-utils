@@ -2232,8 +2232,11 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
-                Double_t x=(fAliRPCDataObject->*funkyX)(iSide,iPlane,iRPC,normalizedToArea);
-                if(x>=0) Graph->SetPoint(counter++,x,(fAliRPCDataObject->*funkyY)(iSide,iPlane,iRPC,normalizedToArea));
+                Double_t x=(fAliRPCDataObject->*funkyX)(iPlane,iSide,iRPC,normalizedToArea);
+                Double_t y=(fAliRPCDataObject->*funkyY)(iPlane,iSide,iRPC,normalizedToArea);
+                //                printf("I read x: %f, y: %f\n",x,y);
+                //                printf("totalcurrent: %f",((fAliRPCDataObject->GetAverageTotalCurrent(iPlane, iSide, iRPC))));
+                if(x>0&&y>0) Graph->SetPoint(counter++,x,y);
             }
         }
     }

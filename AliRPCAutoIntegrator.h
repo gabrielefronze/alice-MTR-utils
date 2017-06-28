@@ -203,6 +203,8 @@ public:
     void VoltagePlotter(TGraph *Graph, TString ObjectName);
     
 
+    void PlotVariation();
+    
 private:
     inline Bool_t checkFileExistance(TString fileName) {
         ifstream f(fileName.Data());

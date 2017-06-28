@@ -2242,6 +2242,51 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
     }
 }
 
+
+void AliRPCAutoIntegrator::PlotVariation(){
+    TGraph *Graph=new TGraph();
+    Int_t counter=0;
+    Graph->SetLineColor(0);
+    Graph->SetMarkerSize(1.5);
+    Graph->SetMarkerStyle(24);
+    for(Int_t iSide=0;iSide<kNSides;iSide++) {
+        for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
+            for (Int_t iRPC = 1; iRPC <= kNRPC; iRPC++) {
+                std::vector<AliRPCRunStatistics*> list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC-1);
+                Double_t xFCumulus=0.;
+                Double_t xLCumulus=0.;
+                Double_t yCumulus=0.;
+                Int_t NData=10;
+                for(auto iter=list.begin();iter!=list.end();iter++){
+                    Double_t xValue=(*iter)->GetMeanDarkCurrent();
+                    Double_t yValue=(*iter)->GetIntegratedCharge();
+                    if(xValue!=0&&iter<list.begin()+NData) {
+                        xFCumulus+=xValue;
+                    }
+                    
+                    if(xValue!=0&&iter>=list.end()-NData) {
+                        xLCumulus+=xValue;
+                    }
+                    
+                    //if(yValue!=0&&iter<list.begin()+NData) {
+                        yCumulus+=yValue;
+                    //}
+                }
+                
+                Double_t firstX=xFCumulus/NData;
+                Double_t lastX=xLCumulus/NData;
+                Double_t x=TMath::Abs(firstX-lastX)/firstX;
+                Double_t y=yCumulus/NData/fRPCAreas[iRPC][iPlane];
+                if(x>0&&y>0) Graph->SetPoint(counter++,y,x);
+                PrintWhichRPC(iRPC, iSide, iPlane);
+            }
+        }
+    }
+    Graph->Draw("APL");
+    
+}
+
+
 void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, Bool_t toFit, TString ObjectName){
     if(x.Contains("time")){
         TSmartTree *check=0x0;

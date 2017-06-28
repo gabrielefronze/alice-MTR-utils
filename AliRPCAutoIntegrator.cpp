@@ -2252,13 +2252,6 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
             if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kIDark);
             else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kITot);
         }
-    }
-    else if(y.Contains("integrated")&&y.Contains("charge")){
-        Graph=0x0;
-        IntegratorPerRun();
-        if(x.Contains("plane")){
-            PlotRPCPerMT();
-        }
     }else if(x.Contains("run")){
         if(y.Contains("current")) {
             if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent,normalizedToArea,onlyDarkPoints);
@@ -2283,7 +2276,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         }else if(y.Contains("rate")&&y.Contains("bending")){
             if(y.Contains("not")) Yptr =&AliRPCData::GetAverageRateNotBending;
             else Yptr =&AliRPCData::GetAverageRateBending;
-        }else return;
+        }else if(y.Contains("integrated")&&y.Contains("charge")){
+            if(x.Contains("plane")){
+                Graph=0x0;
+                IntegratorPerRun();
+                PlotRPCPerMT();
+            }
+        }
+        else return;
         if(x.Contains("current")) {
             if(x.Contains("total")) Xptr =&AliRPCData::GetAverageTotalCurrent;
             if(x.Contains("net")) Xptr =&AliRPCData::GetAverageNetCurrent;

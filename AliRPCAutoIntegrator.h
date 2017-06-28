@@ -187,6 +187,7 @@ public:
     void OCDBDarkCurrentSetter();
     void AMANDATextToCParser();
     void FillAliRPCData();
+    void FillAliRPCData(UInt_t year);
     void Aggregator();
     void Subtractor();
     void Integrator();

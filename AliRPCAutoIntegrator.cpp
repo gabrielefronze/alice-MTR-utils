@@ -1939,6 +1939,29 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
 };
 
+void AliRPCAutoIntegrator::FillAliRPCData(UInt_t year){
+    TFile *yearContainer=new TFile(Form("AllData.%i.root",year),"UPDATE");
+    AliRPCData *AliObjSpecificYear=new AliRPCData();
+    
+    for(Int_t iSide=0;iSide<kNSides;iSide++){
+        for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+            for(Int_t iRPC=1;iRPC<=kNRPC;iRPC++){
+                auto list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC);
+                for(auto iter:list){
+                    if(iter->GetYear()==year){
+                        AliObjSpecificYear->AddRunStatistics(iPlane, iSide, iRPC, iter);
+                    }
+                }
+                PrintWhichRPC(iRPC, iSide, iPlane);
+            }
+        }
+    }
+    
+    yearContainer->cd();
+    AliObjSpecificYear->Write("AliRPCDataObj",TObject::kOverwrite|TObject::kSingleKey);
+    yearContainer->Close();
+}
+
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
     TSmartTree *AMANDADataTree;

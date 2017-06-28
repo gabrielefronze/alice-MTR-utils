@@ -567,7 +567,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 fGlobalDataContainer->cd("Voltage_Graphs");
                 PlotsVoltage[iSide][iPlane][iRPC]->Write(Form("Voltage_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
-                PrintWhichRPC(iRPC, iSide, iPlane);
+                PrintWhichRPC(iRPC+1, iSide, iPlane);
 
             }
         }
@@ -732,7 +732,7 @@ void AliRPCAutoIntegrator::Subtractor(){
                 fGlobalDataTreeBranch[iSide][iPlane][iRPC] = fGlobalDataTree[iSide][iPlane][iRPC]->Branch(NameGlobal,&fGlobalDataTreeBufferW[iSide][iPlane][iRPC],32000,0);
                 fGlobalDataTree[iSide][iPlane][iRPC]->Write(NameGlobal, TObject::kOverwrite);
 
-                PrintWhichRPC(iRPC, iSide, iPlane);
+                PrintWhichRPC(iRPC+1, iSide, iPlane);
             }
         }
     }
@@ -816,7 +816,7 @@ void AliRPCAutoIntegrator::Integrator(){
                 fGlobalDataContainer->cd("integrated_charge_Graphs");
                 AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->Write(Form("integrated_charge_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kOverwrite|TObject::kSingleKey);
 
-                PrintWhichRPC(iRPC, iSide, iPlane);
+                PrintWhichRPC(iRPC+1, iSide, iPlane);
 
             }
         }
@@ -1349,7 +1349,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                     Int_t dummyIndex = 0;
                     if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
                         printf("Run %d already there for ", runIterator->fRunNumber);
-                        PrintWhichRPC(RPC - 1, side, plane);
+                        PrintWhichRPC(RPC, side, plane);
                         continue;
                     }
 
@@ -1739,11 +1739,11 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     Int_t dummyIndex = 0;
                     if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC-1,actualRunNumber,dummyIndex)) {
 //                        printf("Run %d already there for ",actualRunNumber);
-                        //PrintWhichRPC(iRPC-1,iSide,iPlane);
+                        //PrintWhichRPC(iRPC,iSide,iPlane);
                             continue;
                     } else {
 //                        printf("Adding run %d for ",actualRunNumber);
-                        //PrintWhichRPC(iRPC-1,iSide,iPlane);
+                        //PrintWhichRPC(iRPC,iSide,iPlane);
                     }
                     
                     //store AMANDA as negative run numbers;
@@ -1927,7 +1927,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 }
                 //cout<<"DONE"<<endl;
                 
-                PrintWhichRPC(iRPC-1,iSide,iPlane);
+                PrintWhichRPC(iRPC,iSide,iPlane);
             }
         }
     }
@@ -1985,7 +1985,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 OCDBRunYearBuffer = 0;
 
                 fOCDBDataContainer->cd();
-//                PrintWhichRPC(iRPC,iSide,iPlane);
+//                PrintWhichRPC(iRPC+1,iSide,iPlane);
                 cout<<fOCDBDataTree[iSide][iPlane][iRPC]->GetEntries()<<"   "<< fAMANDADataTree[iSide][iPlane][iRPC]->GetEntries() <<endl;
 
                // cout << fOCDBDataTree[iSide][iPlane][iRPC]->Sort("fRunNumber","fTimeStamp") << endl;
@@ -2089,7 +2089,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                 fOCDBDataTreeBranch[iSide][iPlane][iRPC] = fAMANDADataTree[iSide][iPlane][iRPC]->Branch(NameAMANDA,&fAMANDADataTreeBufferW[iSide][iPlane][iRPC],32000,0);
                 fAMANDADataTree[iSide][iPlane][iRPC]->Write(NameAMANDA, TObject::kOverwrite);
 
-//                PrintWhichRPC(iRPC, iSide, iPlane);
+//                PrintWhichRPC(iRPC+1, iSide, iPlane);
                 //cout<<"Ncalls "<<nCallOCDB<< "   " <<nCallAMANDA<<endl;
                 nCallAMANDA = 0;
                 nCallOCDB = 0;
@@ -2426,7 +2426,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
  */
 void AliRPCAutoIntegrator::PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   Int_t NTot=kNRPC*kNPlanes*kNSides;
-    printf("RPC: MTR_%s_MT%d_RPC%d %3d out of %3d\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC+1,NTot);
+    printf("RPC: MTR_%s_MT%d_RPC%d %3d out of %3d\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC,kNRPC*kNPlanes*iSide+kNRPC*iPlane+iRPC,NTot);
   return;
 }
 

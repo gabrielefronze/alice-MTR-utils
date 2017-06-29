@@ -2453,11 +2453,23 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         //separate string when find ,
         TObjArray *commands;
         commands=Tline.Tokenize(", ");
-        TString plotType=((TObjString*)(commands->At(0)))->GetString();
-        TString yaxsis=((TObjString*)(commands->At(1)))->GetString();
-        TString xaxsis=((TObjString*)(commands->At(2)))->GetString();
-        TString options=((TObjString*)(commands->At(3)))->GetString();
-        
+        Int_t commandsSize=commands->GetEntries();
+        TString plotType, yaxsis, xaxsis, options;
+        if(commandsSize<3) {
+            printf("Too few argouments");
+        }else if(commandsSize<=4){
+            plotType=((TObjString*)(commands->At(0)))->GetString();
+            yaxsis=((TObjString*)(commands->At(1)))->GetString();
+            xaxsis=((TObjString*)(commands->At(2)))->GetString();
+            if(commandsSize==4){
+                options=((TObjString*)(commands->At(3)))->GetString();
+            }else {
+                options= TString("");
+            }
+        }else{
+            printf("Too many argouments");
+            continue;
+        }
         cout<<"Plot type:\t"<<plotType.Data()<<endl;
         cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<options.Data()<<endl;
         

@@ -348,7 +348,7 @@ fUpdateAMANDA(updateAMANDA){
         cout<<"Creating new downloaded run list"<<endl<<flush;
     }
 
-    fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","RECREATE");
+    fPlotContainer=new TFile("AutoIntegratorPlotContainer.root","UPDATE");
 
     //check if AliRPCData already exists
     AliRPCData *AliRPCDataBuffer;

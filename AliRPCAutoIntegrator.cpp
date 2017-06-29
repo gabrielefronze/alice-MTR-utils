@@ -893,8 +893,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                 for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end();iter++){
                     Double_t IntChargeBuffer=(iNet0+iNet1)*(timestamp1-timestamp0)/2;
                     if(!(IntChargeBuffer>0)) IntChargeBuffer=0;
-                    
-                    
+
                     //if timestamps differe for more than 3 days (eg shutdown)
                     //integrated charge should not be incremented
                     if((timestamp1-timestamp0)>3*24*60*60) {
@@ -1946,10 +1945,10 @@ void AliRPCAutoIntegrator::FillAliRPCData(UInt_t year){
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=1;iRPC<=kNRPC;iRPC++){
-                auto list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC);
+                auto list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC-1);
                 for(auto iter:list){
                     if(iter->GetYear()==year){
-                        AliObjSpecificYear->AddRunStatistics(iPlane, iSide, iRPC, iter);
+                        AliObjSpecificYear->AddRunStatistics(iPlane, iSide, iRPC-1, iter);
                     }
                 }
                 PrintWhichRPC(iRPC, iSide, iPlane);

@@ -2243,7 +2243,6 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
 
 
 void AliRPCAutoIntegrator::PlotVariationVsIntegratedCharge(TGraph *Graph, Double_t (AliRPCRunStatistics::*funky)()const){
-    cout<<"im in function########\n\n"<<endl<<flush;
     TGraph *graphBuffer;
     Int_t counter=0;
     Graph->SetLineColor(0);
@@ -2290,8 +2289,6 @@ void AliRPCAutoIntegrator::PlotVariationVsIntegratedCharge(TGraph *Graph, Double
 
 
 void AliRPCAutoIntegrator::PlotVariationSomething(TGraph *Graph, TString x, TString y){
-    cout<<"I was called \n\n"<<endl<<flush;
-
     Double_t (AliRPCRunStatistics::*fPtr)()const;
     
     if(y.Contains("current")) {
@@ -2307,9 +2304,6 @@ void AliRPCAutoIntegrator::PlotVariationSomething(TGraph *Graph, TString x, TStr
                 fPtr=&AliRPCRunStatistics::GetMeanRateBending;
             }
     }else return;
-    
-    cout<<"I got pointer\n\n"<<endl<<flush;
-
     
     if(x.Contains("charge")||x.Contains("integrated")){
         PlotVariationVsIntegratedCharge(Graph, fPtr);

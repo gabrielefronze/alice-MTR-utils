@@ -903,7 +903,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
                         continue;
                     }
                     
-                                        //sum integrated charge for new run
+                    //sum integrated charge for new run
                     IntegratedCharge+=IntChargeBuffer;
                     
                     PlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++,(timestamp0+timestamp1)/2,IntegratedCharge);
@@ -2243,8 +2243,9 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRP
 }
 
 
-void AliRPCAutoIntegrator::PlotVariation(){
-    TGraph *Graph=new TGraph();
+void AliRPCAutoIntegrator::PlotVariationVsIntegratedCharge(TGraph *Graph, Double_t (AliRPCRunStatistics::*funky)()const){
+    cout<<"im in function########\n\n"<<endl<<flush;
+    TGraph *graphBuffer;
     Int_t counter=0;
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
@@ -2253,12 +2254,15 @@ void AliRPCAutoIntegrator::PlotVariation(){
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 1; iRPC <= kNRPC; iRPC++) {
                 std::vector<AliRPCRunStatistics*> list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC-1);
+                graphBuffer=GetIntegratedChargePlot(iRPC, iSide, iPlane);
+                
+                if(!graphBuffer) continue;
+                
                 Double_t xFCumulus=0.;
                 Double_t xLCumulus=0.;
-                Double_t yCumulus=0.;
                 Int_t NData=10;
                 for(auto iter=list.begin();iter!=list.end();iter++){
-                    Double_t xValue=(*iter)->GetMeanDarkCurrent();
+                    Double_t xValue=((*iter)->*funky)();
                     Double_t yValue=(*iter)->GetIntegratedCharge();
                     if(xValue!=0&&iter<list.begin()+NData) {
                         xFCumulus+=xValue;
@@ -2268,22 +2272,49 @@ void AliRPCAutoIntegrator::PlotVariation(){
                         xLCumulus+=xValue;
                     }
                     
-                    //if(yValue!=0&&iter<list.begin()+NData) {
-                        yCumulus+=yValue;
-                    //}
                 }
                 
                 Double_t firstX=xFCumulus/NData;
                 Double_t lastX=xLCumulus/NData;
                 Double_t x=TMath::Abs(firstX-lastX)/firstX;
-                Double_t y=yCumulus/NData/fRPCAreas[iRPC][iPlane];
+                Double_t y, dummyX;
+                graphBuffer->GetPoint(graphBuffer->GetN()-1, dummyX, y);
                 if(x>0&&y>0) Graph->SetPoint(counter++,y,x);
                 PrintWhichRPC(iRPC, iSide, iPlane);
             }
         }
     }
-    Graph->Draw("APL");
     
+    Graph->GetXaxis()->SetTitle("integrated charge [#mu C/cm^{2}]");
+    Graph->GetYaxis()->SetTitle("#frac{#Delta i Dark}{iDark} [%]");
+}
+
+
+void AliRPCAutoIntegrator::PlotVariationSomething(TGraph *Graph, TString x, TString y){
+    cout<<"I was called \n\n"<<endl<<flush;
+
+    Double_t (AliRPCRunStatistics::*fPtr)()const;
+    
+    if(y.Contains("current")) {
+        if(y.Contains("total")) fPtr=&AliRPCRunStatistics::GetMeanTotalCurrent;
+        if(y.Contains("dark")) fPtr=&AliRPCRunStatistics::GetMeanDarkCurrent;
+        if(y.Contains("net")) fPtr=&AliRPCRunStatistics::GetMeanNetCurrent;
+    }else if(y.Contains("voltage")){
+        fPtr=&AliRPCRunStatistics::GetMeanHV;
+    }else if(y.Contains("rate")&&y.Contains("bending")){
+        if(y.Contains("not")){
+            fPtr=&AliRPCRunStatistics::GetMeanRateNotBending;
+            } else {
+                fPtr=&AliRPCRunStatistics::GetMeanRateBending;
+            }
+    }else return;
+    
+    cout<<"I got pointer\n\n"<<endl<<flush;
+
+    
+    if(x.Contains("charge")||x.Contains("integrated")){
+        PlotVariationVsIntegratedCharge(Graph, fPtr);
+    }else return;
 }
 
 
@@ -2492,10 +2523,14 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
             graphBuffer=new TH1F();
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);
             CreateDistributionSomething((TH1*)graphBuffer,yaxsis, options, RunList);
+        }else if(plotType.Contains("delta")){
+            graphBuffer=new TGraph();
+            cout<<"ok"<<endl;
+            PlotVariationSomething((TGraph*)graphBuffer,xaxsis,yaxsis);
         }
         
         fPlotContainer->cd();
-        if(graphBuffer&&!yaxsis.Contains("charge")) graphBuffer->Write(Form("%svs%s",yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
+        if(graphBuffer&&!yaxsis.Contains("charge")) graphBuffer->Write(Form("%sof%svs%s",plotType.Data(),yaxsis.Data(),xaxsis.Data()),TObject::kSingleKey|TObject::kOverwrite);
         graphBuffer=0x0;
         commands=0x0;
     }

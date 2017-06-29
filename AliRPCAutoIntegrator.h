@@ -202,8 +202,6 @@ public:
     void VoltagePlotter(TGraph *Graph, TString ObjectName, std::vector<UInt_t> RunNumberList);
     void VoltagePlotter(TGraph *Graph, TString ObjectName);
     
-
-    void PlotVariation();
     
 private:
     inline Bool_t checkFileExistance(TString fileName) {
@@ -219,7 +217,10 @@ private:
 
     void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea=kFALSE,Bool_t onlyDarkPoints=kFALSE);
     void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const, Bool_t normalizedToArea=kTRUE);
+    void PlotVariationVsIntegratedCharge(TGraph *Graph, Double_t (AliRPCRunStatistics::*funky)()const);
     
+    
+    void PlotVariationSomething(TGraph *Graph, TString, TString);
     void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  Bool_t toFit=kFALSE, TString ObjectName="");
     
     static void PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);

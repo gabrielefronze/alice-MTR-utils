@@ -45,8 +45,8 @@ AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampSt
     fYear=year;
     fIsCalib=isCalib;
     fIsDark=isDark;
-    fMeanDarkCurrent=(meanDarkCurrent>0?meanDarkCurrent:0);
-    fMeanTotalCurrent=(meanTotalCurrent>0?meanTotalCurrent:0);
+    fMeanDarkCurrent=(meanDarkCurrent>0.?meanDarkCurrent:0.);
+    fMeanTotalCurrent=(meanTotalCurrent>0.?meanTotalCurrent:0.);
     if(fMeanTotalCurrent<fMeanDarkCurrent) fMeanTotalCurrent=fMeanDarkCurrent;
     fMeanHV=meanHV;
     fTotalScalerCountsBending=totalScalerCountsBending;

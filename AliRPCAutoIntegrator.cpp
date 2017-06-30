@@ -2311,7 +2311,7 @@ void AliRPCAutoIntegrator::PlotVariationSomething(TGraph *Graph, TString x, TStr
 }
 
 
-void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, Bool_t toFit, TString ObjectName){
+void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, TF1 *fitFunc, TString ObjectName){
     if(x.Contains("time")){
         TSmartTree *check=0x0;
         fGlobalDataContainer->GetObject(ObjectName,check);
@@ -2372,9 +2372,9 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         Graph->GetXaxis()->SetTitle(x);
         Graph->GetYaxis()->SetTitle(y);
         
-        if(toFit) {
+        if(fitFunc) {
             cout<<"Fit of "<<y.Data()<<" vs "<<x.Data()<<":";
-            Graph->Fit("pol1","M0");
+            Graph->Fit(fitFunc,"M+");
             //cout<<"\n\n##########\n\n";
         }
     }
@@ -2468,7 +2468,8 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
 
     string line;
     TObject *graphBuffer=0x0;
-    
+    TF1 *fitFunction=0x0;
+
     while(getline(file,line)){
         if(line.empty()) continue;
         //convert string to TString
@@ -2502,16 +2503,16 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         
         Bool_t isDarkGraph=kFALSE;
         Bool_t isNormalizedGraph=kFALSE;
-        Bool_t isFittedGraph=kFALSE;
         
         if(options.Contains("dark")) isDarkGraph=kTRUE;
         if(options.Contains("normalized")) isNormalizedGraph=kTRUE;
-        if(options.Contains("fit")) isFittedGraph=kTRUE;
+        if(options.Contains("fit"))  fitFunction=new TF1("linear fit","[0]+[1]*x");
+
         
         //call correct function plot or distribution
         if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
-            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis, isDarkGraph, isNormalizedGraph, isFittedGraph, options);
+            PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis, isDarkGraph, isNormalizedGraph, fitFunction, options);
         }else if(plotType.Contains("distribution")){
             graphBuffer=new TH1F();
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);

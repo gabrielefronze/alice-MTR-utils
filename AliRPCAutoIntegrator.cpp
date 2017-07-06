@@ -748,8 +748,8 @@ void AliRPCAutoIntegrator::Integrator(){
    //arrays contains {iSide, IPlane, IRPC, integratedCharge}
     RPC LessExposedRPC;
     RPC MostExposedRPC;
-    Double_t MaxCharge=0.;
-    Double_t MinCharge=std::numeric_limits<Double_t>::max();
+    Double_t maxcharge=0.;
+    Double_t minCharge=std::numeric_limits<Double_t>::max();
 
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
@@ -790,16 +790,16 @@ void AliRPCAutoIntegrator::Integrator(){
                     AMANDAPlotsIntegratedCharge[iSide][iPlane][iRPC]->SetPoint(counter++, (timestamp0+timestamp1)/2., integratedCharge);
                 }
 
-                if(integratedCharge<MinCharge){
+                if(integratedCharge<minCharge){
                     LessExposedRPC.Plane=iPlane;
                     LessExposedRPC.Side=iSide;
                     LessExposedRPC.RPC=iRPC+1;
-                    MinCharge=integratedCharge;
-                }else if(integratedCharge>=MaxCharge){
+                    minCharge=integratedCharge;
+                }else if(integratedCharge>=maxcharge){
                     MostExposedRPC.Plane=iPlane;
                     MostExposedRPC.Side=iSide;
                     MostExposedRPC.RPC=iRPC+1;
-                    MaxCharge=integratedCharge;
+                    maxcharge=integratedCharge;
                 }
 
                 printf("MTR_%s_MT%d_RPC%d %f\n",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1,integratedCharge);
@@ -832,8 +832,8 @@ void AliRPCAutoIntegrator::Integrator(){
     MostAndLessExposedRPCMultiGraph->Add(buffer);
     fGlobalDataContainer->cd("integrated_charge_Graphs");
     MostAndLessExposedRPCMultiGraph->Write(Form("integrated_charge_Graph"),TObject::kOverwrite|TObject::kSingleKey);
-    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,MinCharge);
-    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,MaxCharge);
+    printf("Best RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,minCharge);
+    printf("Worst RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,maxcharge);
 
     fGlobalDataContainer->Flush();
 }

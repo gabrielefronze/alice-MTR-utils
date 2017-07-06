@@ -1939,7 +1939,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 };
 
 void AliRPCAutoIntegrator::FillAliRPCData(UInt_t year){
-    TFile *yearContainer=new TFile(Form("AllData.%i.root",year),"UPDATE");
+    TFile *yearContainer=new TFile(Form("AllData_%i.root",year),"UPDATE");
     AliRPCData *AliObjSpecificYear=new AliRPCData();
     
     for(Int_t iSide=0;iSide<kNSides;iSide++){

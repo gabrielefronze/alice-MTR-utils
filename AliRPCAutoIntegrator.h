@@ -192,9 +192,9 @@ public:
     void Aggregator();
     void Subtractor();
     void Integrator();
-    void IntegratorPerRun();
+    void IntegratorPerRun(Bool_t showFeeric=kFALSE);
     TGraph* GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane);
-    void PlotRPCPerMT();
+    void PlotRPCPerMT(Bool_t showFeeric=kFALSE);
     void AMANDASetDataMembers();
 
     void GeneratePlots();

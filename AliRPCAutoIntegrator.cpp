@@ -838,7 +838,7 @@ void AliRPCAutoIntegrator::Integrator(){
     fGlobalDataContainer->Flush();
 }
 
-void AliRPCAutoIntegrator::IntegratorPerRun(){
+void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
     cout<<"\nGenerating integrated charge graphs"<<endl;
     TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
     TString dirName("integrated_charge_Graphs");
@@ -869,6 +869,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(){
     for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
         for(Int_t iSide=0;iSide<kNSides;iSide++){
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
+                if(IsFEERIC(iRPC, iSide, iPlane)&&!showFeeric) continue;
                 counter=0;
                 IntegratedCharge=0.;
                 //get and sort list of run for this RPC
@@ -992,14 +993,14 @@ TGraph* AliRPCAutoIntegrator::GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, I
 }
 
 
-void AliRPCAutoIntegrator::PlotRPCPerMT(){
+void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
     //{min X, max X}{min Y, max Y}
     Long64_t limits[][2]={{1460000000,1470000000},{0,10000}};
     
     TMultiGraph *PlotsIntegratedCharge[kNSides][kNRPC];
     TGraph *graphBuffer=0x0;
     
-    TString outputDirName("integrated_charge_Grouped");
+    TString outputDirName("integrated_charge_SamePosition");
     
     TObject *check=0x0;
     fPlotContainer->GetObject(outputDirName,check);
@@ -1014,6 +1015,8 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(){
             //PlotsIntegratedCharge[iSide][iRPC-1]->SetTitle(Form("MTR_%s_RPC%d",(fSides[iSide]).Data(),iRPC-1));
             
             for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+                if(IsFEERIC(iRPC, iSide, iPlane)&&!showFeeric) continue;
+                
                 graphBuffer=GetIntegratedChargePlot(iRPC,iSide,iPlane);
                 if(!graphBuffer){
                     continue;

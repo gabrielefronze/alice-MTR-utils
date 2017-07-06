@@ -108,6 +108,7 @@ private:
     Double_t fBigArea[kNPlanes];
     static const Int_t *fColors;//[kNRPC] = {kBlack,kRed,kGreen,kBlue,kYellow,kMagenta,kCyan,kGray,kOrange};
     static const Int_t *fStyles;//[kNPlanes]={20,24,21,25};
+    
 
     TString checkTokenBashCommand = "if [[ \"`alien-token-info | grep \"still valid\" `\" != \"\" ]]; then echo \"1\"; else echo \"0\"; fi";
     Bool_t checkAlienToken() {
@@ -208,6 +209,7 @@ private:
         ifstream f(fileName.Data());
         return f.good();
     }
+    
     void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, vector<AliOCDBRun*> RunNumberList, Int_t whichValue);
     void CreateDistributionSomething(TH1 *Graph, TString label, TString ObjectName, vector <AliOCDBRun*> RunNumberList);
     void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
@@ -219,10 +221,14 @@ private:
     void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const, Bool_t normalizedToArea=kTRUE);
     void PlotVariationVsIntegratedCharge(TGraph *Graph, Double_t (AliRPCRunStatistics::*funky)()const);
     
-    
     void PlotVariationSomething(TGraph *Graph, TString, TString);
     void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  TF1 *fitFunc=nullptr, TString ObjectName="");
     
+    
+    Bool_t IsFEERIC(Int_t iRPC, Int_t iSide, Int_t iPlane){
+        if(iPlane==3&&iSide==0&&iRPC==3) return kTRUE;
+        else return kFALSE;
+    }
     static void PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 

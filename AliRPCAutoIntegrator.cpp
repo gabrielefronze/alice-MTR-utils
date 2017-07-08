@@ -970,11 +970,11 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
         MostAndLessExposedRPCMultiGraph[iPlane]->Add(MostGraph[iPlane]);
         MostAndLessExposedRPCMultiGraph[iPlane]->Add(LessGraph[iPlane]);
         
-        MostAndLessExposedRPCMultiGraph[iPlane]->Draw("AP");
-        MostAndLessExposedRPCMultiGraph[iPlane]->GetXaxis()->SetTitle("timestamp [s]");
-        MostAndLessExposedRPCMultiGraph[iPlane]->GetXaxis()->SetRangeUser(1460000000, 1480000000);
-        MostAndLessExposedRPCMultiGraph[iPlane]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
-        MostAndLessExposedRPCMultiGraph[iPlane]->GetYaxis()->SetTitleOffset(1.5);
+//        MostAndLessExposedRPCMultiGraph[iPlane]->Draw("AP");
+//        MostAndLessExposedRPCMultiGraph[iPlane]->GetXaxis()->SetTitle("timestamp [s]");
+//        MostAndLessExposedRPCMultiGraph[iPlane]->GetXaxis()->SetRangeUser(1460000000, 1480000000);
+//        MostAndLessExposedRPCMultiGraph[iPlane]->GetYaxis()->SetTitle("integrated charge [#muC/cm^{2}]");
+//        MostAndLessExposedRPCMultiGraph[iPlane]->GetYaxis()->SetTitleOffset(1.5);
         
         
         fPlotContainer->cd(dirName);

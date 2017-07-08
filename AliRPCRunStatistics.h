@@ -15,12 +15,13 @@
 #include <stdio.h>
 #include "TObject.h"
 #include "TString.h"
+#include "AliRPCValueDCS.h"
 
 class AliRPCRunStatistics : public TObject{
 public:
     AliRPCRunStatistics();
     AliRPCRunStatistics(const AliRPCRunStatistics &obj)  : TObject(obj){}; 
-    AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, Bool_t isDark, Double_t meanDarkCurrent, Double_t meanTotalCurrent, Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending);
+    AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, TLHCStatus LHCStatus, TBeamType beamType, Double_t meanDarkCurrent, Double_t meanTotalCurrent, Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending);
     ~AliRPCRunStatistics(){};
     inline UInt_t GetRunNumber() const { return fRunNumber; };
     inline Double_t GetTimeStampStart() const { return (Double_t)fTimeStampStart; };
@@ -28,7 +29,8 @@ public:
     inline UInt_t GetYear() const { return fYear; };
     inline Double_t GetElapsedTime() const { if(fTimeStampStop==0 || fTimeStampStart==0) return 0; else return (Double_t)(fTimeStampStop-fTimeStampStart); };
     inline Bool_t GetIsCalib() const { return fIsCalib; };
-    inline Bool_t GetIsDark() const { return fIsDark; };
+    inline TLHCStatus GetLHCStatus() const {return fLHCStatus;};
+    inline TBeamType GetBeamType() const { return fBeamType; };
     inline Double_t GetMeanDarkCurrent() const { return fMeanDarkCurrent; };
     inline Double_t GetMeanTotalCurrent() const { return fMeanTotalCurrent; };
     inline Double_t GetMeanNetCurrent() const { return fMeanTotalCurrent-fMeanDarkCurrent; };
@@ -58,14 +60,15 @@ private:
     ULong64_t fTimeStampStop;
     UInt_t fYear;
     Bool_t fIsCalib;
-    Bool_t fIsDark;
+    TLHCStatus fLHCStatus;
+    TBeamType fBeamType;
     Double_t fMeanDarkCurrent;
     Double_t fMeanTotalCurrent;
     Double_t fMeanHV;
     ULong64_t fTotalScalerCountsBending;
     ULong64_t fTotalScalerCountsNotBending;
     
-    ClassDef(AliRPCRunStatistics,4);
+    ClassDef(AliRPCRunStatistics,5);
 };
 
 #endif /* AliRPCRunStatistics_h */

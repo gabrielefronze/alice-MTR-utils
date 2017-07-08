@@ -30,7 +30,8 @@ AliRPCRunStatistics::AliRPCRunStatistics() : TObject(){
     fTimeStampStop=0;
     fYear=0;
     fIsCalib=kFALSE;
-    fIsDark=kFALSE;
+    fLHCStatus=kNONE;
+    fBeamType=knone;
     fMeanDarkCurrent=0.;
     fMeanTotalCurrent=0.;
     fMeanHV=0.;
@@ -38,13 +39,14 @@ AliRPCRunStatistics::AliRPCRunStatistics() : TObject(){
     fTotalScalerCountsNotBending=0.;
 };
 
-AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, Bool_t isDark, Double_t meanDarkCurrent, Double_t meanTotalCurrent,Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending): TObject(){
+AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, TLHCStatus LHCStatus, TBeamType beamType, Double_t meanDarkCurrent, Double_t meanTotalCurrent, Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending): TObject(){
     fRunNumber=runNumber;
     fTimeStampStart=timeStampStart;
     fTimeStampStop=timeStampStop;
     fYear=year;
     fIsCalib=isCalib;
-    fIsDark=isDark;
+    fLHCStatus=LHCStatus;
+    fBeamType=beamType;
     fMeanDarkCurrent=(meanDarkCurrent>0.?meanDarkCurrent:0.);
     fMeanTotalCurrent=(meanTotalCurrent>0.?meanTotalCurrent:0.);
     if(fMeanTotalCurrent<fMeanDarkCurrent) fMeanTotalCurrent=fMeanDarkCurrent;
@@ -65,6 +67,6 @@ Int_t AliRPCRunStatistics::Compare(const TObject *obj) const {
 
 
 void AliRPCRunStatistics::PrintHumanReadable(){
-    printf("#############\nRun: %u\n start: %llu\n stop: %llu\n year: %u\n calib: %u\n dark: %u\n darkcurrent: %f\n totalcurrent:%f\n HV: %f\n scalerB: %llu\n scalerNB: %llu\n rate:%f\n#############",fRunNumber,fTimeStampStart,fTimeStampStop,fYear,(fIsCalib?1:0),(fIsDark?1:0),fMeanDarkCurrent,fMeanTotalCurrent,fMeanHV,fTotalScalerCountsBending,fTotalScalerCountsNotBending,GetMeanRateBending());
+    printf("#############\nRun: %u\n start: %llu\n stop: %llu\n year: %u\n calib: %u\n lhcstatus: %u\n beamtype: %u\n darkcurrent: %f\n totalcurrent:%f\n HV: %f\n scalerB: %llu\n scalerNB: %llu\n rate:%f\n#############",fRunNumber,fTimeStampStart,fTimeStampStop,fYear,fIsCalib,fLHCStatus,fBeamType,fMeanDarkCurrent,fMeanTotalCurrent,fMeanHV,fTotalScalerCountsBending,fTotalScalerCountsNotBending,GetMeanRateBending());
     return;
 };

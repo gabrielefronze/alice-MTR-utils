@@ -1707,7 +1707,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 ULong64_t timeStampStart = 0;
                 ULong64_t timeStampStop = 0;
                 Bool_t isCalib = kFALSE;
-                Bool_t isDark=kFALSE;
+                TLHCStatus LHCStatus=kNONE;
+                TBeamType beamType=knone;
                 Double_t meanDarkCurrent = 0.;
                 UInt_t nDarkCurrent = 0;
                 Double_t meanTotalCurrent = 0.;
@@ -1744,7 +1745,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             previousRunNumber = valueDCS->GetRunNumber();
                             timeStampStart = valueDCS->GetTimeStamp();
                             isCalib = valueDCS->IsCalib();
-                            isDark = valueDCS->GetLHCStatus()>kNONE;
+                            beamType = valueDCS->GetBeamType();
+                            LHCStatus = valueDCS->GetLHCStatus();
                         }
                         
                         actualRunNumber = valueDCS->GetRunNumber();
@@ -1790,7 +1792,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 //                            cout<<"current "<<AMANDAMeanTotalCurrent;
 //                            cout<<"RunNumber"<<AMANDAActualRunNumber;
 //                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
-                            AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kFALSE, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
+                            AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kNONE, knone, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
                             fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
                             
                             AMANDAActualRunNumber-=1;
@@ -1910,7 +1912,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         if(RPCTotalRatePerArea[0]<0) totalScalerCounts[0]=0;
                         if(RPCTotalRatePerArea[1]<0) totalScalerCounts[1]=0;
                         
-                        AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, isDark, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
+                        AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, LHCStatus, beamType, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
 
 //                        statsBuffer->PrintHumanReadable();
@@ -1919,7 +1921,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         timeStampStart=0;
                         timeStampStop=0;
                         isCalib=kFALSE;
-                        isDark=kFALSE;
+                        LHCStatus=kNONE;
+                        beamType=knone;
                         meanDarkCurrent=0.;
                         nDarkCurrent=0;
                         meanTotalCurrent=0.;
@@ -1935,7 +1938,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             previousRunNumber=valueDCS->GetRunNumber();
                             timeStampStart=valueDCS->GetTimeStamp();
                             isCalib=valueDCS->IsCalib();
-                            isDark = valueDCS->GetLHCStatus()>kNONE;
+                            beamType = valueDCS->GetBeamType();
+                            LHCStatus = valueDCS->GetLHCStatus();
                         }
                         ratesTimesLBArea[0]=0;
                         ratesTimesLBArea[1]=0;

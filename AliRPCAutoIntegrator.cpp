@@ -1393,7 +1393,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         } else {
                             //cout<<"\t"<<value->GetFloat()<<endl;
                             fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueVoltage((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState);
-                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            fOCDBDataTree[side][plane][RPC-1]->SetBranchAddress(fOCDBDataTree[side][plane][RPC-1]->GetTitle(),&fOCDBDataTreeBufferW[side][plane][RPC-1]);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
 //                                    cout<<"Filled tree! "<<fOCDBDataTree[side][plane][RPC-1]->GetEntries()<<endl;
                         }
@@ -1423,13 +1423,13 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                         //se il run è di calibrazione corrente e corrente di buio coincidono
                         if (isCalib) {
                             fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),value->GetFloat(),isCalib,*beamType,beamEnergy,*LHCState ,0);
-                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            fOCDBDataTree[side][plane][RPC-1]->SetBranchAddress(fOCDBDataTree[side][plane][RPC-1]->GetTitle(),&fOCDBDataTreeBufferW[side][plane][RPC-1]);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                             //altrimenti imposto la corrente di buio a 0 (la cambio dopo)
                         } else {
                             fOCDBDataTreeBufferW[side][plane][RPC-1] = new AliRPCValueCurrent((*runIterator).fRunNumber,value->GetTimeStamp(),RunYear,value->GetFloat(),0.,isCalib,*beamType,beamEnergy,*LHCState,0);
-                            fOCDBDataTreeBranch[side][plane][RPC-1]->SetAddress(&fOCDBDataTreeBufferW[side][plane][RPC-1]);
+                            fOCDBDataTree[side][plane][RPC-1]->SetBranchAddress(fOCDBDataTree[side][plane][RPC-1]->GetTitle(),&fOCDBDataTreeBufferW[side][plane][RPC-1]);
                             fOCDBDataTree[side][plane][RPC-1]->Fill();
                             //((AliRPCValueDCS*)fOCDBData[side][plane][RPC-1]->Last())->PrintBeamStatus();
                         }
@@ -1497,8 +1497,8 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                             fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1] = new AliRPCValueScaler((*runIterator).fRunNumber, EOR, RunYear,scalersData->GetLocScalStrip(cathode, plane, localBoard), isCalib,*beamType,beamEnergy,*LHCState, scalersData->GetDeltaT(), isOverflow);
                         }
 
-                        fOCDBRPCScalersTreeBranch[cathode][iSide][plane][iRPC09-1]->SetAddress(&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
-                        fOCDBLBScalersTreeBranch[cathode][plane][localBoard]->SetAddress(&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
+                        fOCDBRPCScalersTree[cathode][iSide][plane][iRPC09-1]->SetBranchAddress(fOCDBRPCScalersTree[cathode][iSide][plane][iRPC09-1]->GetTitle(),&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
+                        fOCDBLBScalersTree[cathode][plane][localBoard]->SetBranchAddress(fOCDBLBScalersTree[cathode][plane][localBoard]->GetTitle(),&fOCDBRPCScalersTreeBufferW[cathode][iSide][plane][iRPC09-1]);
 
                         fOCDBRPCScalersTree[cathode][iSide][plane][iRPC09-1]->Fill();
                         fOCDBLBScalersTree[cathode][plane][localBoard]->Fill();

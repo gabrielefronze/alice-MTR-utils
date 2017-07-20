@@ -886,7 +886,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]=new TGraph();
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetFillColor(0);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetLineColor(fColors[iRPC-1]);
-                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerColor(fColors[iRPC]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerColor(fColors[iRPC-1]);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerSize(0.15);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->GetXaxis()->SetTitle("timestamp [s]");
@@ -2215,6 +2215,78 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 }
 
 
+void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDarkGraph, Bool_t iSNormalizedGraph, Bool_t showFeeric){
+    cout<<"\nGenerating "<<observableName<<" plots"<<endl;
+    
+    Double_t (AliRPCRunStatistics::*Yptr)() const;
+    if(observableName.Contains("current")) {
+        if(observableName.Contains("total")) Yptr =&AliRPCRunStatistics::GetMeanTotalCurrent;
+        if(observableName.Contains("net")) Yptr =&AliRPCRunStatistics::GetMeanNetCurrent;
+        if(observableName.Contains("dark")) Yptr =&AliRPCRunStatistics::GetMeanDarkCurrent;
+    }else if(observableName.Contains("voltage")){
+        Yptr =&AliRPCRunStatistics::GetMeanHV;
+    }else if(observableName.Contains("rate")&&observableName.Contains("bending")){
+        if(observableName.Contains("not")) Yptr =&AliRPCRunStatistics::GetMeanRateNotBending;
+        else Yptr =&AliRPCRunStatistics::GetMeanRateBending;
+    }
+    
+    TString dirName(observableName);
+    
+    TObject *check=0x0;
+    fPlotContainer->GetObject(dirName,check);
+    if(!check){
+        fPlotContainer->mkdir(dirName);
+    }
+    
+    TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
+    TMultiGraph *planeGraphs[4];
+    Int_t counter=0;
+    vector<AliRPCRunStatistics*> list;
+    
+    
+    
+    for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+        
+        planeGraphs[iPlane]=new TMultiGraph();
+        planeGraphs[iPlane]->SetTitle(Form("MT%d",fPlanes[iPlane]));
+        
+        for(Int_t iSide=0;iSide<kNSides;iSide++){
+            for(Int_t iRPC=1;iRPC<=kNRPC;iRPC++){
+                if(IsFEERIC(iRPC, iSide, iPlane)&&!showFeeric) continue;
+                
+                counter=0;
+                //get and sort list of run for this RPC
+                list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC-1);
+                std::sort(list.begin(),list.end(),AliRPCRunStatistics::SortRunStatistics);
+                
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]=new TGraph();
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetFillColor(0);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetLineColor(fColors[iRPC-1]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerColor(fColors[iRPC-1]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerStyle(fStyles[iPlane]);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerSize(0.15);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->GetXaxis()->SetTitle("timestamp [s]");
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->GetYaxis()->SetTitle("");
+                
+                for(auto iter:list){
+                    if(isDarkGraph&&!iter->GetIsCalib()) continue;
+                    PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetPoint(counter++, iter->GetTimeStampStart(), (iter->*Yptr)()/(iSNormalizedGraph?fRPCAreas[iRPC][iPlane]:1.));
+                }
+                
+                planeGraphs[iPlane]->Add(PlotsIntegratedCharge[iSide][iPlane][iRPC-1]);
+
+                
+                fPlotContainer->cd(dirName);
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->Write(Form("%s_plot_MTR_%s_MT_%d_RPC%d",observableName.Data(),fSides[iSide].Data(),fPlanes[iPlane],iRPC),TObject::kSingleKey|TObject::kOverwrite);
+
+            }
+        }
+        planeGraphs[iPlane]->Write(Form("MT%d",fPlanes[iPlane]),TObject::kSingleKey|TObject::kOverwrite);
+    }
+    
+    fPlotContainer->Flush();
+}
+
 void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea, Bool_t onlyDarkPoints){
     Int_t counter=0;
     Graph->SetLineColor(0);
@@ -2524,8 +2596,10 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         
         Bool_t isDarkGraph=kFALSE;
         Bool_t isNormalizedGraph=kFALSE;
+        Bool_t FEERICIsOK=kFALSE;
         
         if(options.Contains("dark")) isDarkGraph=kTRUE;
+        if(options.Contains("FEERIC")) FEERICIsOK=kTRUE;
         if(options.Contains("normalized")) isNormalizedGraph=kTRUE;
         if(options.Contains("fit"))  fitFunction=new TF1("linear fit","[0]+[1]*x");
 
@@ -2534,6 +2608,7 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
             PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis, isDarkGraph, isNormalizedGraph, fitFunction, options);
+            SomethingPerRun(yaxsis, isDarkGraph, isNormalizedGraph, FEERICIsOK);
         }else if(plotType.Contains("distribution")){
             graphBuffer=new TH1F();
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);

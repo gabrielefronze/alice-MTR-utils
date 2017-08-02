@@ -2638,6 +2638,12 @@ void AliRPCAutoIntegrator::PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane){
   return;
 }
 
+void AliRPCAutoIntegrator::PrintWhichRPC(RPC RPC){
+    PrintWhichRPC(RPC.RPC, RPC.Side, RPC.Plane);
+    return;
+}
+
+//check if RunNumber is a member of RunList
 Bool_t AliRPCAutoIntegrator::IsRunInList(std::vector<UInt_t> RunList, UInt_t RunNumber) {
     return std::find(RunList.begin(), RunList.end(), RunNumber) != RunList.end();
 }

@@ -231,6 +231,7 @@ private:
         else return kFALSE;
     }
     static void PrintWhichRPC(Int_t iRPC, Int_t iSide, Int_t iPlane);
+    static void PrintWhichRPC(RPC RPC);
     Bool_t IsRunInList(std::vector<UInt_t> vector, UInt_t number);
 
 

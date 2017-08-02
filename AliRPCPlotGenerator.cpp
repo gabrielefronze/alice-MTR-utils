@@ -128,7 +128,7 @@ AliRPCPlotGenerator::AliRPCPlotGenerator(TString filename){
         }
         
     }else{
-        cout<<"File not found"<<endl;
+        cout<<"File " <<filename<<" not found"<<endl;
         fAliRPCDataObject=new AliRPCData();
         fGlobalDataContainer=new TFile();
     }

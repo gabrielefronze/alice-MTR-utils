@@ -192,39 +192,14 @@ public:
     void Aggregator();
     void Subtractor();
     void Integrator();
-    void IntegratorPerRun(Bool_t showFeeric=kFALSE);
-    void SomethingPerRun(TString observableName, Bool_t isDarkGraph=kFALSE, Bool_t isNormalizedGraph=kFALSE, Bool_t showFeeric=kFALSE);
-    TGraph* GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane);
-    void PlotRPCPerMT(Bool_t showFeeric=kFALSE);
     void AMANDASetDataMembers();
 
-    void GeneratePlots();
-    void GeneratePlotFromFile(TString filename = "plots.txt");
-    void VoltagePlotter(TGraph *Graph, TString ObjectName, UInt_t RunNumber);
-    void VoltagePlotter(TGraph *Graph, TString ObjectName, std::vector<UInt_t> RunNumberList);
-    void VoltagePlotter(TGraph *Graph, TString ObjectName);
-    
     
 private:
     inline Bool_t checkFileExistance(TString fileName) {
         ifstream f(fileName.Data());
         return f.good();
     }
-    
-    void CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, vector<AliOCDBRun*> RunNumberList, Int_t whichValue);
-    void CreateDistributionSomething(TH1 *Graph, TString label, TString ObjectName, vector <AliOCDBRun*> RunNumberList);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, std::vector<UInt_t> RunNumberList, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TString ObjectName, UInt_t RunNumber, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TString ObjectName, std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue=0);
-    void PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)()const, TString ObjectName, Int_t whichValue=0);
-
-    void PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea=kFALSE,Bool_t onlyDarkPoints=kFALSE);
-    void PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const, Bool_t normalizedToArea=kTRUE);
-    void PlotVariationVsIntegratedCharge(TGraph *Graph, Double_t (AliRPCRunStatistics::*funky)()const);
-    
-    void PlotVariationSomething(TGraph *Graph, TString, TString);
-    void PlotSomethingVersusSomethingElse(TGraph *Graph, const TString x, const TString y, Bool_t onlyDarkPoints=kFALSE, Bool_t normalizedToArea=kFALSE,  TF1 *fitFunc=nullptr, TString ObjectName="");
-    
     
     Bool_t IsFEERIC(Int_t iRPC, Int_t iSide, Int_t iPlane){
         if(iPlane==3&&iSide==0&&iRPC==3) return kTRUE;

@@ -22,4 +22,5 @@ void CompileAllClasses(TString myopt="fast"){
   gSystem->CompileMacro("AliRPCRunStatistics.cpp",opt);
   gSystem->CompileMacro("AliRPCData.cpp",opt);
   gSystem->CompileMacro("AliRPCAutoIntegrator.cpp",opt);
+  gSystem->CompileMacro("AliRPCPlotGenerator.cpp",opt);
 }

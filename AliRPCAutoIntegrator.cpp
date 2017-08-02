@@ -512,12 +512,19 @@ void AliRPCAutoIntegrator::Aggregator(){
     fGlobalDataContainer->Flush();
 }
 
+
+/*Method to generate default useful plots.
+ it generates iTot, iDark, Voltage plots vs time
+ Note that plots are stored in GlobalDataContainer
+ In order to reduce size of GlobalDataContainer, use of GeneratePlotFromFile is suggested
+ */
 void AliRPCAutoIntegrator::GeneratePlots() {
     TGraph *PlotsITot[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsIDark[kNSides][kNPlanes][kNRPC];
     TGraph *PlotsVoltage[kNSides][kNPlanes][kNRPC];
     TString ObjectName;
     
+    //Chech if directory are already there
     TObject *IsDirThere;
     fGlobalDataContainer->GetObject("iTot_Graphs",IsDirThere);
     if(!IsDirThere) {
@@ -533,6 +540,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
             for(Int_t iRPC=0;iRPC<kNRPC;iRPC++){
                 ObjectName=Form("Global_Data_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1);
 
+                //Plot iTot, getting data from TSmartTree named ObjectName
                 PlotsITot[iSide][iPlane][iRPC] = new TGraph();
                 PlotsITot[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
                 PlotsITot[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
@@ -544,6 +552,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 fGlobalDataContainer->cd("iTot_Graphs");
                 PlotsITot[iSide][iPlane][iRPC]->Write(Form("iTot_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
+                //Plot iDark, getting data from TSmartTree named ObjectName
                 PlotsIDark[iSide][iPlane][iRPC]=new TGraph();
                 PlotsIDark[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
                 PlotsIDark[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
@@ -556,6 +565,7 @@ void AliRPCAutoIntegrator::GeneratePlots() {
                 PlotsIDark[iSide][iPlane][iRPC]->Fit("pol1","Q");
                 PlotsIDark[iSide][iPlane][iRPC]->Write(Form("iDark_Graph_MTR_%s_MT%d_RPC%d",(fSides[iSide]).Data(),fPlanes[iPlane],iRPC+1),TObject::kSingleKey|TObject::kOverwrite);
 
+                //Plot Voltage, getting data from TSmartTree named ObjectName
                 PlotsVoltage[iSide][iPlane][iRPC]=new TGraph();
                 PlotsVoltage[iSide][iPlane][iRPC]->SetLineColor(fColors[iRPC]);
                 PlotsVoltage[iSide][iPlane][iRPC]->SetMarkerColor(fColors[iRPC]);
@@ -633,7 +643,7 @@ void AliRPCAutoIntegrator::Subtractor(){
 
                     fGlobalDataTree[iSide][iPlane][iRPC]->GetSortedEntry(iGlobalData);
 
-                    //skip if is not current
+                    //skip if value is not a current
                     if ( !bufferValue->IsCurrent() ) continue;
 
                     // if the read value is an AMANDA or OCDB with run reading, then the dark
@@ -838,11 +848,19 @@ void AliRPCAutoIntegrator::Integrator(){
     fGlobalDataContainer->Flush();
 }
 
+/*
+ This method integrates iNet from AliRPCRunStatistics in order to have
+ one integratdecharge plot per RPC;
+ each plot has one point per run.
+ Plots are stored in plot container
+ */
+
 void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
     cout<<"\nGenerating integrated charge graphs"<<endl;
     TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
     TString dirName("integrated_charge_Graphs");
     
+    //check if graphs are already there
     TObject *check=0x0;
     fPlotContainer->GetObject(dirName,check);
     if(!check){
@@ -853,9 +871,14 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
     RPC LessExposedRPC;
     RPC MostExposedRPC;
     Double_t maxcharge=0.;
+    //note that every Double_t is minor than max(), so it is sure that at least one RPC has minCharge
     Double_t minCharge=std::numeric_limits<Double_t>::max();
     
-    //Plot the best and the worst chamber
+    //Plot the most exposed and the less exposed RPC
+    //For each plane it is generated a multigraph with most exposed, less exposed and mean
+    //Most and less exposed TGraph are pointer to graph already generated
+    //MeanGraph is generated apart
+    
     TMultiGraph *MostAndLessExposedRPCMultiGraph[kNPlanes];
     TGraph *MeanGraph[kNPlanes];
     TGraph *MostGraph[kNPlanes], *LessGraph[kNPlanes];
@@ -864,21 +887,27 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
     Double_t IntegratedCharge=0.;
     Double_t MeanIntegratedCharge=0.;
     
+    // Data are stored in AliRPCData as vector of AliRPCRunStatistics*
+    // note that is stored one vector per RPC
     vector<AliRPCRunStatistics*> list;
     
     for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
         MostAndLessExposedRPCMultiGraph[iPlane]=new TMultiGraph();
         MeanGraph[iPlane]=new TGraph();
         
+        //reset values to calculate max and min per each plane
         minCharge=std::numeric_limits<Double_t>::max();
         maxcharge=0.;
         
         for(Int_t iSide=0;iSide<kNSides;iSide++){
             for(Int_t iRPC=1;iRPC<=kNRPC;iRPC++){
+                
+                //user can ask to skip RPC equipped with FEERIC
                 if(IsFEERIC(iRPC, iSide, iPlane)&&!showFeeric) continue;
                 
                 counter=0;
                 IntegratedCharge=0.;
+                
                 //get and sort list of run for this RPC
                 list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC);
                 std::sort(list.begin(),list.end(),AliRPCRunStatistics::SortRunStatistics);
@@ -898,12 +927,15 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
                 Double_t iNet0=0.;
                 Double_t iNet1=iNet0;
                 
-                
+                //iter over runs and integrate
+                //integral is calculated between two runs as (iNet first+iNet second)*deltaTime/2
                 for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end();iter++){
                     Double_t IntChargeBuffer=(iNet0+iNet1)*(timestamp1-timestamp0)/2;
+                    
+                    //check that integaral is effective positive
                     if(!(IntChargeBuffer>0)) IntChargeBuffer=0.;
 
-                    //if timestamps differe for more than 3 days (eg shutdown)
+                    //if timestamps differe for more than 3 days (e.g. shutdown)
                     //integrated charge should not be incremented
                     if((timestamp1-timestamp0)>3*24*60*60) {
                         timestamp0=timestamp1;
@@ -914,14 +946,17 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
                     //sum integrated charge for new run
                     IntegratedCharge+=IntChargeBuffer;
                     
+                    //x value is set as the mean timestampStart of the two runs
                     PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetPoint(counter++,(timestamp0+timestamp1)/2,IntegratedCharge);
+                    
+                    //reset values
                     timestamp0=timestamp1;
                     iNet0=iNet1;
                     timestamp1=(*iter)->GetTimeStampStart();
                     iNet1=(*iter)->GetMeanNetCurrent()/fRPCAreas[iPlane][iRPC-1];
                 }
                 
-                //estimate max and min RPC
+                //estimate most and less exposed RPC
                 if(IntegratedCharge<minCharge){
                     LessExposedRPC.Plane=iPlane;
                     LessExposedRPC.Side=iSide;
@@ -945,9 +980,14 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
         
         MeanIntegratedCharge=0.;
         
-        //calculate mean integratedcharge
+        //populate meangraph plot.
+        //mean integratedcharge is the sum of mean integratedcharge got from AliRPCRunStatistics
+        //note that the run list is retrieved from the last RPC in previous cycle,
+        //it's possible that not all RPCs have data for the same runs
         for(std::vector<AliRPCRunStatistics*>::iterator iter=list.begin();iter!=list.end()-1;iter++){
             Double_t value=((AliRPCData*)(fAliRPCDataObject))->GetMeanIntegratedCharge((*iter)->GetRunNumber(),kTRUE);
+            
+            //skip if run was too long
             if((*iter)->GetElapsedTime()>3*24*60*60) continue;
             MeanIntegratedCharge+=value;
             MeanGraph[iPlane]->SetPoint(meanCounter++,(*iter)->GetTimeStampStart(),MeanIntegratedCharge);
@@ -956,6 +996,8 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
         TString LessString(Form("Less exposed RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[LessExposedRPC.Side]).Data(),fPlanes[LessExposedRPC.Plane],LessExposedRPC.RPC,minCharge));
         TString MostString(Form("Most exposed RPC: MTR_%s_MT%d_RPC%d\t charge:%f \n",(fSides[MostExposedRPC.Side]).Data(),fPlanes[MostExposedRPC.Plane],MostExposedRPC.RPC,maxcharge));
         
+        
+        //print resume for this plane
         printf("\n\n###########\n");
         printf("Plane: MT_%d\n",fPlanes[iPlane]);
         printf("%s",MostString.Data());
@@ -985,11 +1027,15 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
 }
 
 
+//this method returns a pointer to a TGraph of integrated charge for a specific RPC
 TGraph* AliRPCAutoIntegrator::GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane){
     TString sourceDir("integrated_charge_Graphs");
+    
+    //check if plot are already stored
     TObject *check=0x0;
     fPlotContainer->GetObject(sourceDir,check);
     
+    //if plot are not there they have to be generated
     if(!check){
         IntegratorPerRun();
     }
@@ -999,6 +1045,8 @@ TGraph* AliRPCAutoIntegrator::GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, I
     TGraph *graphBuffer=0x0;
     
     fPlotContainer->GetObject(source,graphBuffer);
+    
+    //check that object was correctly retrieved
     if(!graphBuffer){
         return nullptr;
     }
@@ -1006,9 +1054,15 @@ TGraph* AliRPCAutoIntegrator::GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, I
     return graphBuffer;
 }
 
-
+// This method create a canvas with plot of integratedcharge
+// shown as they are physically mounted in planes.
+// canvas is divided in 18 (kNSides*kNRPC) pads one per RPC position
+// in each pads there are 4 (kNPlanes) TGraph, one per plane
 void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
+    
+    //it is useful to show all graph with same scale
     //{min X, max X}{min Y, max Y}
+    //X=timestamp, Y=integratedcharge
     Long64_t limits[][2]={{1460000000,1470000000},{0,10000}};
     
     TMultiGraph *PlotsIntegratedCharge[kNSides][kNRPC];
@@ -1016,6 +1070,8 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
     
     TString outputDirName("integrated_charge_SamePosition");
     
+    
+    //Check if graphs are already there
     TObject *check=0x0;
     fPlotContainer->GetObject(outputDirName,check);
     
@@ -1029,9 +1085,12 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
             //PlotsIntegratedCharge[iSide][iRPC-1]->SetTitle(Form("MTR_%s_RPC%d",(fSides[iSide]).Data(),iRPC-1));
             
             for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
+                //user can ask to skip RPC with FEERIC electronics
                 if(IsFEERIC(iRPC, iSide, iPlane)&&!showFeeric) continue;
                 
                 graphBuffer=GetIntegratedChargePlot(iRPC,iSide,iPlane);
+                
+                //skip if GetIntegratedChargePlot returns nullptr
                 if(!graphBuffer){
                     continue;
                 }
@@ -1052,8 +1111,13 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
     
     
     TCanvas *planeCanvas=new TCanvas("planeCanvas","planeCanvas",0,0,1280,960);
+    
+    //divide canvas in pads
+    //Divide(columns, rows, margins)
+    //note that one row is for labels that's why second argoument has +1
     planeCanvas->Divide(kNSides,kNRPC+1,0,0);
     
+    //put labels for the sides
     planeCanvas->cd(1);
     auto *outsideLabel = new TText(0.5,0.5,"OUTSIDE");
     outsideLabel->SetTextAlign(22);
@@ -1066,25 +1130,33 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
     insideLabel->SetTextSize(0.9);
     insideLabel->Draw();
     
-    
+    //RPC are numbered from down to top so indexs start from KNRPC and decrease to 1
     Int_t iRPCInside=kNRPC;
     Int_t iRPCOutside=kNRPC;
 
-    
+    //iter over remaning pads to put there the correct TMultiGraph
     for(Int_t iPad=3;iPad<=kNRPC*kNSides+2;iPad++){
         
+        //even pads are INSIDE
         if(iPad%2==0){
-                //INSIDE
                 planeCanvas->cd(iPad);
+            
+            //Note that TMultiGraph must be Drawn before call Get*axis()
+            //line color differs for each position
+            //point color and style differ for each plane
                 PlotsIntegratedCharge[0][iRPCInside-1]->Draw("AL");
+            //Note that limits on X and Y axses are set differently ( https://root.cern.ch/doc/master/classTMultiGraph.html )
+            //Ndivisions is set to have graph grids aligned
                 PlotsIntegratedCharge[0][iRPCInside-1]->GetXaxis()->SetLimits(limits[0][0],limits[0][1]);
-                PlotsIntegratedCharge[0][iRPCInside-1]->SetMinimum(0);
+                PlotsIntegratedCharge[0][iRPCInside-1]->SetMinimum(limits[1][0]);
                 PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetLabelSize(0.13);
                 PlotsIntegratedCharge[0][iRPCInside-1]->GetYaxis()->SetNdivisions(5);
                 PlotsIntegratedCharge[0][iRPCInside-1]->SetMaximum(limits[1][1]);
+            
+            //index should be decremented fo this side
                 iRPCInside--;
         }else{
-                //OUTSIDE
+            //odd pads are OUTSIDE
                 planeCanvas->cd(iPad);
                 PlotsIntegratedCharge[1][iRPCOutside-1]->Draw("AL");
                 PlotsIntegratedCharge[1][iRPCOutside-1]->GetXaxis()->SetLimits(limits[0][0],limits[0][1]);
@@ -1092,6 +1164,7 @@ void AliRPCAutoIntegrator::PlotRPCPerMT(Bool_t showFeeric){
                 PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetLabelSize(0.13);
                 PlotsIntegratedCharge[1][iRPCOutside-1]->GetYaxis()->SetNdivisions(5);
                 PlotsIntegratedCharge[1][iRPCOutside-1]->SetMaximum(limits[1][1]);
+            //index should be decremented fo this side
                 iRPCOutside--;
         }
     }
@@ -1363,7 +1436,7 @@ bool AliRPCAutoIntegrator::OCDBDataToCParserBlocks(Int_t blockNumber, UInt_t blo
                 for (Int_t RPC=1; RPC<=kNRPC; RPC++) {
 
                     Int_t dummyIndex = 0;
-                    if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC-1,runIterator->fRunNumber,dummyIndex)) {
+                    if(fAliRPCDataObject->IsThereThisRun(plane,side,RPC,runIterator->fRunNumber,dummyIndex)) {
                         printf("Run %d already there for ", runIterator->fRunNumber);
                         PrintWhichRPC(RPC, side, plane);
                         continue;
@@ -1677,7 +1750,11 @@ void AliRPCAutoIntegrator::OCDBDarkCurrentSetter() {
     }
 }
 
-
+/*
+ This method create an object AliRPCData with average values for each observable.
+ 
+ It is created an AliRPCRunStatistics object for each RPC for each run
+ */
 void AliRPCAutoIntegrator::FillAliRPCData(){
 
 //    TObjArray *sortedListData[kNSides][kNPlanes][kNRPC];
@@ -1718,9 +1795,11 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 Double_t RPCTotalRatePerArea[2] = {0., 0.};
                 ULong64_t totalScalerCounts[2] = {0, 0};
                 
+                
                 UInt_t AMANDAActualRunNumber=0;
                 ULong64_t AMANDATimeStampStart = 0;
                 ULong64_t AMANDATimeStampStop = 0;
+                //AMANDAFakeRunTime represent how often an object is created with mean AMANDA data
                 ULong64_t AMANDAFakeRunTime=3*24*60*60;
                 Double_t AMANDAMeanTotalCurrent = 0.;
                 UInt_t AMANDANTotalCurrent = 0;
@@ -1728,6 +1807,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                 //printf("Beginning MT%d %s RPC%d -> ",fPlanes[iPlane],fSides[iSide].Data(),iRPC);
 //                fGlobalDataTree[iSide][iPlane][iRPC]->Sort("fTimeStamp");
 //                fGlobalDataTree[iSide][iPlane][iRPC]->SetBranchAddress(fGlobalDataTree[iSide][iPlane][iRPC]->GetName(),&fGlobalDataTreeBufferW[iSide][iPlane][iRPC]);
+                
+                //Generic entry of the tree
                 AliRPCValueDCS *valueDCS = fGlobalDataTreeBufferW[iSide][iPlane][iRPC-1];
 
                 auto NEntries = fGlobalDataTree[iSide][iPlane][iRPC-1]->GetEntries();
@@ -1736,7 +1817,6 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
                     cout << (Double_t)iGlobal/(Double_t)NEntries << "\r";
 
-                    //generica entry della sorted list
                     //AliRPCValueDCS *valueDCS = ((AliRPCValueDCS*)sortedListData[iSide][iPlane][iRPC-1]->At(iDataList));
                     if ( fGlobalDataTree[iSide][iPlane][iRPC-1]->GetSortedEntry(iGlobal) == 0 ) continue;
 
@@ -1753,9 +1833,9 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         actualYear = valueDCS->GetYear();
                     }
 
-                   
+                   //check if run was already elebarated for this RPC/run
                     Int_t dummyIndex = 0;
-                    if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC-1,actualRunNumber,dummyIndex)) {
+                    if(fAliRPCDataObject->IsThereThisRun(iPlane,iSide,iRPC,actualRunNumber,dummyIndex)) {
 //                        printf("Run %d already there for ",actualRunNumber);
                         //PrintWhichRPC(iRPC,iSide,iPlane);
                             continue;
@@ -1766,24 +1846,31 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                     
                     //store AMANDA as negative run numbers;
                     
+                    //AMANDA run numbers are set to zero when created
                     if(actualRunNumber==0){
                         
                         if(AMANDAActualRunNumber==0)
                         {
+                            //got the very first data, from now on AMANDAActualRunNumber will differ from zero and be negative
                             AMANDAActualRunNumber--;
                             AMANDATimeStampStart=valueDCS->GetTimeStamp();
                         }else {
+                            //run continue
                             AMANDATimeStampStop=valueDCS->GetTimeStamp();
                         }
                         
                         ULong64_t AMANDAdeltaT= AMANDATimeStampStop - AMANDATimeStampStart;
                         
                         if(AMANDAdeltaT<=AMANDAFakeRunTime){
+                            //run continue and data are added
 //                            cout<<"new AMANDA value"<<endl;
                             AliRPCValueCurrent *currentBuffer= reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
                             AMANDAMeanTotalCurrent+=currentBuffer->GetITot();
                             AMANDANTotalCurrent++;
                         }else{
+                            //run ends and data have to saved
+                            
+                            //calculate mean current
                             if(AMANDANTotalCurrent!=0) AMANDAMeanTotalCurrent/=AMANDANTotalCurrent;
                             else AMANDAMeanTotalCurrent=0.;
 //                            cout<<"new AMANDA Run"<<endl<<endl;
@@ -1792,6 +1879,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 //                            cout<<"current "<<AMANDAMeanTotalCurrent;
 //                            cout<<"RunNumber"<<AMANDAActualRunNumber;
 //                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
+                            
+                            //object is created, note that only current values are stored
                             AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kNONE, knone, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
                             fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
                             
@@ -1804,16 +1893,21 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         }
                     }
                     
-
+                    
+                    
+                    //at the same time real run are elaborated
+                    //data are got from OCDB
                     if (actualRunNumber == previousRunNumber && valueDCS) {
+                        //still be in same OCDB run
+                        //valueDCS sholud be current/voltage
                         if (valueDCS->IsVoltage()){
-                            //cast a tensione
+                            //cast to voltage
                             AliRPCValueVoltage *voltageBuffer=reinterpret_cast<AliRPCValueVoltage*>(valueDCS);
                             meanHV+=voltageBuffer->GetVSupp();
                             nHV++;
                             timeStampStop=valueDCS->GetTimeStamp();
                         } else if(valueDCS->IsCurrent()){
-                            //cast a corrente
+                            //cast to current
                             AliRPCValueCurrent *currentBuffer=reinterpret_cast<AliRPCValueCurrent*>(valueDCS);
                             meanTotalCurrent+=currentBuffer->GetITot();
                             nTotalCurrent++;
@@ -1822,8 +1916,12 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                             timeStampStop=valueDCS->GetTimeStamp();
                         }
                     } else if (actualRunNumber < previousRunNumber && valueDCS) {
+                        //actualRunNumber could be 0 (AMANDA value)
                         continue;
                     } else if (actualRunNumber > previousRunNumber || !valueDCS){
+                        //a new run was found
+                        //rates have to be elaborated
+                        
                         Double_t ratesTimesLBArea[2] = {0., 0.};
                         Double_t LBRateSum[2] = {0., 0.};
                         Double_t notOverflowLBTotalArea[2] = {0., 0.};
@@ -1912,6 +2010,8 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         if(RPCTotalRatePerArea[0]<0) totalScalerCounts[0]=0;
                         if(RPCTotalRatePerArea[1]<0) totalScalerCounts[1]=0;
                         
+                        
+                        //object is created and added to AliRPCData
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, LHCStatus, beamType, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
                         fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
 
@@ -1959,6 +2059,9 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 
 };
 
+
+//this method create a file and copy in that new file data from a specific year
+//note that only data from AliRPCRunStatistics are copied, trees will be lost!
 void AliRPCAutoIntegrator::FillAliRPCData(UInt_t year){
     TFile *yearContainer=new TFile(Form("AllData_%i.root",year),"UPDATE");
     AliRPCData *AliObjSpecificYear=new AliRPCData();
@@ -1982,6 +2085,10 @@ void AliRPCAutoIntegrator::FillAliRPCData(UInt_t year){
     yearContainer->Close();
 }
 
+
+//This method is useful to use AMANDA data got during runs as they were from OCDB
+//The basic ides is that there is an AMANDA between two different OCDB got in the exact same conditions (aka same run)
+//then AMANDA was read at that conditions too
 void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
     TSmartTree *AMANDADataTree;
@@ -2096,7 +2203,7 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
                                 }
                             }
 
-                            // FIlling the TTree copy with updated (or not!) data
+                            // Filling the TTree copy with updated (or not!) data
                             //cout<<nCallAMANDA<<endl;
                         }
 
@@ -2147,6 +2254,11 @@ void AliRPCAutoIntegrator::AMANDASetDataMembers(){
 
 }
 
+//This method fills *Graph with one point per reading
+//data are retrieved from trees in GlobalDataContiner
+//only data whose run is in runNumerList are considered
+//ObjectName should be in format MTR_fSides[].Data()_MT_fPlanes[].Data()_RPC# (e.g. MTR_INSIDE_MT11_RPC1)
+//at this point *Graph must be instantiated
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, std::vector<UInt_t> RunNumberList, Int_t whichValue) {
     Int_t counter=0;
     
@@ -2161,6 +2273,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
+    //iter over tree so that iterValue assume all values
     for(Int_t i=0; i<tree->GetEntries(); i++) {
         tree->GetSortedEntry(i);
         if(IsRunInList(RunNumberList,iterValue->GetRunNumber())){
@@ -2173,6 +2286,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
+
+//This method fills *Graph with one point per reading for a specific RPC
+//data are retrieved from trees in GlobalDataContiner
+//only data with specific RunNumber are considered
+//ObjectName specify which RPC and should be in format MTR_fSides[].Data()_MT_fPlanes[].Data()_RPC# (e.g. MTR_INSIDE_MT11_RPC1)
+//you can generate that string with:
+// Form("MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC)
+//at this point *Graph must be instantiated
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, UInt_t RunNumber, Int_t whichValue){
     std::vector<AliOCDBRun*> RunDummyList;
     RunDummyList.push_back(new AliOCDBRun(RunNumber,0));
@@ -2180,6 +2301,14 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
+
+//This method fills *Graph with one point per reading for a specific RPC
+//data are retrieved from trees in GlobalDataContiner
+//only data whose run is in runNumerList are considered
+//ObjectName specify which RPC and should be in format MTR_fSides[].Data()_MT_fPlanes[].Data()_RPC# (e.g. MTR_INSIDE_MT11_RPC1)
+//you can generate that string with:
+// Form("MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC)
+//at this point *Graph must be instantiated
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName,std::vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
     std::vector<UInt_t> RunDummyList;
     for(AliOCDBRun* iter :RunNumberList){
@@ -2190,6 +2319,12 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
+//This method fills *Graph with one point per reading for a specific RPC
+//data are retrieved from trees in GlobalDataContiner
+//ObjectName specify which RPC and should be in format MTR_fSides[].Data()_MT_fPlanes[].Data()_RPC# (e.g. MTR_INSIDE_MT11_RPC1)
+//you can generate that string with:
+// Form("MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC)
+//at this point *Graph must be instantiated
 void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, Int_t whichValue){
     Int_t counter=0;
     
@@ -2204,6 +2339,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
+    //iter over the tree so tha iterValue will assume every value stored and added to the graph
     for (Int_t i=0; i<tree->GetEntries(); i++) {
         tree->GetSortedEntry(i);
         if (((iterValue->*funky)()) &&
@@ -2214,10 +2350,15 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
     return;
 }
 
-
+//This method creates 72 (kNPlanes*kNSides*kNRPC) graphs, one per RPC using
+//data retrieved from AliRPCData for a specific observable
+//each graph has one point per run
+//on X axis is shown the timestamp
+//observableName should contain current/voltage/rate and eventually dark/net/total bending/not bending
 void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDarkGraph, Bool_t isNormalizedGraph, Bool_t showFeeric){
     cout<<"\nGenerating "<<observableName<<" plots"<<endl;
     
+    //set a pointer Yptr to the correct function of AliRPCRunStatistics to get the correct observable
     Double_t (AliRPCRunStatistics::*Yptr)() const;
     if(observableName.Contains("current")) {
         if(observableName.Contains("total")) Yptr =&AliRPCRunStatistics::GetMeanTotalCurrent;
@@ -2230,6 +2371,8 @@ void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDark
         else Yptr =&AliRPCRunStatistics::GetMeanRateBending;
     }
     
+    
+    //check and eventually create a folder for the plot in plotcontainer
     TString dirName(observableName);
     
     TObject *check=0x0;
@@ -2239,11 +2382,10 @@ void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDark
     }
     
     TGraph *PlotsIntegratedCharge[kNSides][kNPlanes][kNRPC];
+    //planeGraphs contains all graph of the same plane
     TMultiGraph *planeGraphs[4];
     Int_t counter=0;
     vector<AliRPCRunStatistics*> list;
-    
-    
     
     for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
         
@@ -2266,10 +2408,12 @@ void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDark
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerStyle(fStyles[iPlane]);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetMarkerSize(0.15);
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->GetXaxis()->SetTitle("timestamp [s]");
-                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->GetYaxis()->SetTitle("");
+                PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->GetYaxis()->SetTitle(observableName);
                 
+                //iter over data and add point to graph
                 for(auto iter:list){
                     if(isDarkGraph&&!iter->GetIsCalib()) continue;
+                    //note that data are eventually normalized
                     PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetPoint(counter++, iter->GetTimeStampStart(), (iter->*Yptr)()/(isNormalizedGraph?fRPCAreas[iRPC][iPlane]:1.));
                 }
                 
@@ -2287,28 +2431,46 @@ void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDark
     fPlotContainer->Flush();
 }
 
-void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t)const, Bool_t normalizedToArea, Bool_t onlyDarkPoints){
+//This method fills Graph using
+//data retrieved from AliRPCData for a specific observable
+//each graph has one point per run
+//each point is the mean over RPC for that specific run
+//on X axis is shown the timestamp
+//at this point *Graph must be instantiated
+//funky is a function ( GetMean* ) of AliRPCData
+void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRPCData::*funky)(UInt_t, Bool_t) const, Bool_t normalizedToArea, Bool_t onlyDarkPoints){
     Int_t counter=0;
+    
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
     Graph->SetMarkerStyle(24);
+    
+    //we need a list of all run available for this analysis
+    //we must be sure to cath all possible runs
     vector<UInt_t> OCDBRunListComplete;
+    
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
                 vector<AliRPCRunStatistics*> bufferList=fAliRPCDataObject->GetRunStatistics(iPlane,iSide,iRPC);
                 for(auto iter=bufferList.begin(); iter!=bufferList.end(); iter++){
                     auto run=(*iter)->GetRunNumber();
+                    
+                    //if this runs are not skipped the program bump into seg violation for obscure reasons
                     if(run==267165) continue;
                     if(run ==262492) continue;
+                    
                     //skip if onlyDrak is true and iter is not dark
                     if(onlyDarkPoints&&!(*iter)->GetIsCalib()) continue;
+                    
+                    //if that run is not already there is added to the list
                     if(!IsRunInList(OCDBRunListComplete, run)) OCDBRunListComplete.push_back(run);
                 }
             }
         }
     }
 
+    //iter over the list and add point to graph
     for(UInt_t iter:OCDBRunListComplete){
         Double_t time=(fAliRPCDataObject->GetMeanTimeStampStart(iter));
         Double_t y=(fAliRPCDataObject->*funky)(iter, normalizedToArea);
@@ -2316,71 +2478,117 @@ void AliRPCAutoIntegrator::PlotSomethingVersusRun(TGraph *Graph, Double_t (AliRP
     }
 }
 
+//This method fills Graph using
+//data retrieved from AliRPCData for two specific observables
+//each graph has one point per RPC
+//each point is the average over time for that specific RPC
+//funky is a function ( GetAverage* ) of AliRPCData
+//at this point *Graph must be instantiated
+//the plot obtained from this plot is a "correlation plot" between funkyX and funkyY
 void AliRPCAutoIntegrator::PlotSomethingVersusRPC(TGraph *Graph, Double_t (AliRPCData::*funkyX)(Int_t, Int_t, Int_t, Bool_t)const, Double_t (AliRPCData::*funkyY)(Int_t, Int_t, Int_t, Bool_t)const, Bool_t normalizedToArea){
     Int_t counter=0;
+    
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
     Graph->SetMarkerStyle(24);
+    
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 0; iRPC < kNRPC; iRPC++) {
                 Double_t x=(fAliRPCDataObject->*funkyX)(iPlane,iSide,iRPC,normalizedToArea);
                 Double_t y=(fAliRPCDataObject->*funkyY)(iPlane,iSide,iRPC,normalizedToArea);
                 //                printf("I read x: %f, y: %f\n",x,y);
-                //                printf("totalcurrent: %f",((fAliRPCDataObject->GetAverageTotalCurrent(iPlane, iSide, iRPC))));
+                
+                //all observables make sense for positive values, so negatives are skipped
                 if(x>0&&y>0) Graph->SetPoint(counter++,x,y);
             }
         }
     }
 }
 
-
+//This method fills Graph using
+//data retrieved from AliRPCData for one specific observables
+//each graph has one point per RPC
+//point is created so that is abscissa is the total integrated charge
+//and the ordinate is the deltaY/Y,
+//delta Y is the difference between the mean of firsts 10 (NData) data and lasts 10 data
+//Y is the mean of firsts
+//at this point *Graph must be instantiated
+//funky is a function ( GetMean* ) of AliRPCRunStatistics
 void AliRPCAutoIntegrator::PlotVariationVsIntegratedCharge(TGraph *Graph, Double_t (AliRPCRunStatistics::*funky)()const){
     TGraph *graphBuffer;
     Int_t counter=0;
+    
     Graph->SetLineColor(0);
     Graph->SetMarkerSize(1.5);
     Graph->SetMarkerStyle(24);
+    
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 1; iRPC <= kNRPC; iRPC++) {
+                
+                //get the list of data and the integrtedcharge plot
+                //from the plot I get the last integratedcharge value elaborated before
+                
                 std::vector<AliRPCRunStatistics*> list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC);
                 graphBuffer=GetIntegratedChargePlot(iRPC, iSide, iPlane);
                 
+                //skip if GetIntegratedChargePlot returns nullptr
                 if(!graphBuffer) continue;
                 
+                //calculate mean for first NData and lasts NData
+                //x(First/Lasts)Cumulus
                 Double_t xFCumulus=0.;
                 Double_t xLCumulus=0.;
                 Int_t NData=10;
+                
+                //iter over lists to get correct data
                 for(auto iter=list.begin();iter!=list.end();iter++){
+                   
                     Double_t xValue=((*iter)->*funky)();
-                    Double_t yValue=(*iter)->GetIntegratedCharge();
                     if(xValue!=0&&iter<list.begin()+NData) {
+                        //sum only if values is in first NData positions
                         xFCumulus+=xValue;
                     }
                     
                     if(xValue!=0&&iter>=list.end()-NData) {
+                        //sum only if values is in lastst NData positions
                         xLCumulus+=xValue;
                     }
                     
                 }
                 
+                //calculate means
+                //note that surely NData!=0
                 Double_t firstX=xFCumulus/NData;
                 Double_t lastX=xLCumulus/NData;
+                
+                //calculate variation
                 Double_t x=TMath::Abs(firstX-lastX)/firstX;
+                
+                //get integrated charge
                 Double_t y, dummyX;
                 graphBuffer->GetPoint(graphBuffer->GetN()-1, dummyX, y);
+                
+                //all observables make sense for positive values, so negatives are skipped
                 if(x>0&&y>0) Graph->SetPoint(counter++,y,x);
+                
                 PrintWhichRPC(iRPC, iSide, iPlane);
             }
         }
     }
     
     Graph->GetXaxis()->SetTitle("integrated charge [#mu C/cm^{2}]");
-    Graph->GetYaxis()->SetTitle("#frac{#Delta i Dark}{iDark} [%]");
+    Graph->GetYaxis()->SetTitle("#frac{#Delta y}{y} [%]");
 }
 
-
+//the idea is that this method calls the correct PlotVariationVs* function
+//Graph is propagated to the next method
+//at this point *Graph must be instantiated
+//x and y should contain current/voltage/rate total/dark/net bending/notbending
+//NOTE THAT AT THIS POINT IT ONLY WORKS IF y IS integratedcharge
+//a method PlotVariationVsSomething should be implemented!!
+//method PlotVariationVsIntegratedCharge was implemented because integratedcharge is got from graph and not from data
 void AliRPCAutoIntegrator::PlotVariationSomething(TGraph *Graph, TString x, TString y){
     Double_t (AliRPCRunStatistics::*fPtr)()const;
     
@@ -2398,13 +2606,24 @@ void AliRPCAutoIntegrator::PlotVariationSomething(TGraph *Graph, TString x, TStr
             }
     }else return;
     
+    //TO DO
+    //PlotVariationVsSomething(Graph,fPtr, Xptr)
+    
     if(x.Contains("charge")||x.Contains("integrated")){
         PlotVariationVsIntegratedCharge(Graph, fPtr);
     }else return;
 }
 
-
+//the idea is that this method calls the correct Plot*Vs* method based on x and y strings
+//this method is the key to let GeneratePlotFromFile() working
+//Graph is propagated to the next method
+//*Graph must be istantiated at this point
+//x and y should contain current/voltage/rate total/dark/net bending/notbending
+//if TF1::fitFunc is not null Graph is fitted
+//ObjectName must be passed for PlotSomethingVsTime(), format is specified there
 void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const TString y, const TString x,  Bool_t onlyDarkPoints, Bool_t normalizedToArea, TF1 *fitFunc, TString ObjectName){
+    
+    //in case the user asks for PlotSomethingVsTime, tree must be there
     if(x.Contains("time")){
         TSmartTree *check=0x0;
         fGlobalDataContainer->GetObject(ObjectName,check);
@@ -2417,6 +2636,8 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
             if(y.Contains("dark")) PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kIDark);
             else  PlotSomethingVersusTime(Graph,&AliRPCValueDCS::IsCurrent,ObjectName,AliRPCValueCurrent::kITot);
         }
+        
+    //calls for PlotSomethingVsRun()
     }else if(x.Contains("run")){
         if(y.Contains("current")) {
             if(y.Contains("total")) PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanTotalCurrent,normalizedToArea,onlyDarkPoints);
@@ -2430,9 +2651,12 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         }else if(y.Contains("integrated")||y.Contains("charge")){
             PlotSomethingVersusRun(Graph, &AliRPCData::GetMeanIntegratedCharge,normalizedToArea,onlyDarkPoints);
         }
+        
+    //call for a correlation plot with PlotSomethingVsRPC()
     }else{
         Double_t (AliRPCData::*Xptr)(Int_t, Int_t, Int_t, Bool_t)const;
         Double_t (AliRPCData::*Yptr)(Int_t, Int_t, Int_t, Bool_t)const;
+        
         if(y.Contains("current")) {
             if(y.Contains("total")) Yptr =&AliRPCData::GetAverageTotalCurrent;
             if(y.Contains("net")) Yptr =&AliRPCData::GetAverageNetCurrent;
@@ -2461,20 +2685,31 @@ void AliRPCAutoIntegrator::PlotSomethingVersusSomethingElse(TGraph *Graph, const
         PlotSomethingVersusRPC(Graph,Xptr,Yptr,normalizedToArea);
     }
     
+    //if Graph was created somewhere axis are set
     if(Graph){
         Graph->GetXaxis()->SetTitle(x);
         Graph->GetYaxis()->SetTitle(y);
         
+        //if user asks for a fit fit is done
         if(fitFunc) {
             cout<<"Fit of "<<y.Data()<<" vs "<<x.Data()<<":";
             Graph->Fit(fitFunc,"M+");
             //cout<<"\n\n##########\n\n";
         }
+        
     }
 };
 
+//this method fills Graph retrieving data
+//from trees in GlobalDataContainer
+//Graph is filled with every entrys whose runnumber is in RunList for a specifc RPC
+//ObjectName specify which RPC and should be in format MTR_fSides[].Data()_MT_fPlanes[].Data()_RPC# (e.g. MTR_INSIDE_MT11_RPC1)
+//you can generate that string with:
+// Form("MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC)
+//at this point *Graph must be instantiated
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRPCValueDCS::*funky)() const, TString ObjectName, vector<AliOCDBRun*> RunNumberList, Int_t whichValue){
     
+    //check if tree is there
     TSmartTree *tree;
     TBranch *branch;
     AliRPCValueDCS *iterValue=new AliRPCValueDCS();
@@ -2486,34 +2721,37 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, Bool_t (AliRP
     branch = tree->GetBranch(ObjectName);
     tree->SetBranchAddress(ObjectName,&iterValue);
     
-    
-    
+
+//create a list with runnumbers
+//note that user passes a list of AliOCDBRun*
   vector<UInt_t> RunNumberInTObjArray;
   for(auto iter=RunNumberList.begin();iter!=RunNumberList.end();iter++){
       //cout<<(*iter)->GetRunNumber()<<endl<<flush;
       RunNumberInTObjArray.push_back((*iter)->GetRunNumber());
   }
 
+    //fill the histogram with data in tree
+    //data must have a runnumber in runlist
+    //iterValue assume all values
   for (Int_t i=0; i<tree->GetEntries(); i++) {
     tree->GetSortedEntry(i);
+      
     UInt_t run=iterValue->GetRunNumber();
     if(!IsRunInList(RunNumberInTObjArray,run)) continue;
       if (iterValue->GetTimeStamp() > 8000 && (iterValue->*funky)()) {
           ((TH1F*)Graph)->Fill(iterValue->GetValue(whichValue));
       }
     }
-
-//operator * is overloaded correctly for TH1F not for TH1
-if (strcmp(Graph->ClassName(),"TH1F")==0)
-{
-    //normalize to 72 RPC
-    Double_t Normfactor=(Double_t)kNRPC/Graph->GetEntries();
-    TH1F *GraphF=(TH1F*)Graph;
-    TH1F GraphNorm=Normfactor*(*GraphF);
-    Graph=&GraphNorm;
-    }
-
 }
+
+//the idea is that this method calls correctly CreateDistributionSomething based on what label contains
+//Graph is propagated to the next method
+//*Graph must be istantiated at this point
+//label should contain current/voltage/rate total/dark/net bending/notbending
+//histos are filled only with data in runNumberList
+//ObjectName specify wich RPC is being analyzed
+//you can generate an ObjectName string with:
+// Form("MTR_%s_MT%d_RPC%d", (fSides[side]).Data(), fPlanes[plane], RPC)
 
 void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label, TString ObjectName, vector <AliOCDBRun*> RunNumberList){
         if(label.Contains("current")) {
@@ -2528,6 +2766,8 @@ void AliRPCAutoIntegrator::CreateDistributionSomething(TH1 *Graph, TString label
         }
 }
 
+//Default graphs generator for voltage
+//this methods are called in GeneratePlot()
 void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TString ObjectName, UInt_t RunNumber){
     AliRPCAutoIntegrator::PlotSomethingVersusTime(Graph, &AliRPCValueDCS::IsVoltage, ObjectName, RunNumber, 0);
     return;
@@ -2543,14 +2783,26 @@ void AliRPCAutoIntegrator::VoltagePlotter(TGraph *Graph, TString ObjectName){
     return;
 }
 
+
+/*
+This method is useful to create a plot with simple specification written on a textfile
+ 
+
+format for file is
+[plot/distribution/delta], [darkcurrent, netcurrent, voltage, ratenotbending....], [time, run, totalcurrent...], [fit, normalized, dark, MTR_INSIDE_MT11_RPC1...]
+
+example
+plot, netcurrent, ratebending, all&normalized&fit
+
+ more examples at https://github.com/gabrielefronze/alice-MTR-utils/blob/devel-filippo/plots.txt
+ */
+//note that this method closes fPlotContainer
+//so it cannot be called twice, but this is useful to let a user inside root
+//to analyze results just opening a TBrowser
+//before recall this please recall the AliRPCAutoIntegrator::Constuctor
 void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
-    /*
-     * format for file is
-     * [plot/distribution], [darcurrent, netcurrent, voltage, ratenotbending....], [time, run, ...], [fit, normalized, dark, MTR_INSIDE_MT11_RPC1...]
-     *
-     * example
-     * plot, netcurrent, ratebending, all&normalized&fit
-     */
+    
+    //open the file with specifications
     ifstream file;
     file.open(filename.Data(), ios::in);
     
@@ -2563,16 +2815,27 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
     TObject *graphBuffer=0x0;
     TF1 *fitFunction=0x0;
 
+    //read file line per line
     while(getline(file,line)){
+        
+        //exit if line is empty
         if(line.empty()) continue;
+        cout<<"Reading new line"<<endl;
+        
         //convert string to TString
         TString Tline(line);
-        cout<<"Reading new line"<<endl;
-        //separate string when find ,
+        
+        //separate string when find ','
+        //TSTring::Tokenize() documentation at
+        // https://root.cern.ch/doc/master/classTString.html#a14f461641af875f6bd042d4c1216cbbe
         TObjArray *commands;
         commands=Tline.Tokenize(", ");
         Int_t commandsSize=commands->GetEntries();
         TString plotType, yaxsis, xaxsis, options;
+        
+        //plottype, xasxis and yaxsis are mandatory
+        //specification are optional
+        //so we expect 3 or 4 argouments
         if(commandsSize<3) {
             printf("Too few argouments");
         }else if(commandsSize<=4){
@@ -2588,10 +2851,13 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
             printf("Too many argouments");
             continue;
         }
+        
+        //print a resume of command read
         cout<<"Plot type:\t"<<plotType.Data()<<endl;
         cout<<yaxsis.Data()<<"\tversus\t"<<xaxsis.Data()<<"\t"<<options.Data()<<endl;
         
-        //Get List useful on vs time plots
+        //get List useful on vs time plots
+        //tree names are "Global_Data_MTR_INSIDE_MT...." user is requested onlyessential "MTR_INSIDE_MT...."
         options.Prepend("Global_Data_");
         
         Bool_t isDarkGraph=kFALSE;
@@ -2601,21 +2867,48 @@ void AliRPCAutoIntegrator::GeneratePlotFromFile(TString filename){
         if(options.Contains("dark")) isDarkGraph=kTRUE;
         if(options.Contains("FEERIC")) FEERICIsOK=kTRUE;
         if(options.Contains("normalized")) isNormalizedGraph=kTRUE;
+        
+        //create a defalut linear function if fit is requested
+        //TODO
+        //it should be useful to create fitFunction based on specification in options
+        
         if(options.Contains("fit"))  fitFunction=new TF1("linear fit","[0]+[1]*x");
 
         
-        //call correct function plot or distribution
+        //call correct function plot, distribution or delta
+        //note that objects are instanziated here
+        
         if(plotType.Contains("plot")){
             graphBuffer=new TGraph();
             PlotSomethingVersusSomethingElse((TGraph*)graphBuffer, yaxsis, xaxsis, isDarkGraph, isNormalizedGraph, fitFunction, options);
+        
+            //by default is created a plot for each RPC after the mean plot created by PlotSomethingVersusSomethingElse
             SomethingPerRun(yaxsis, isDarkGraph, isNormalizedGraph, FEERICIsOK);
+        
         }else if(plotType.Contains("distribution")){
             graphBuffer=new TH1F();
+            
+            //By default run list is got from first RPC
             vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);
+            
             CreateDistributionSomething((TH1*)graphBuffer,yaxsis, options, RunList);
+            
+            if(isNormalizedGraph){
+                //check that *Graph is a TH1F
+                //operator * is overloaded correctly for TH1F not for TH1
+                if (strcmp(graphBuffer->ClassName(),"TH1F")==0)
+                {
+                    //normalize to 72 (kNPlanes*kNSides*kNRPC) RPC
+                    Double_t Normfactor=(Double_t)kNRPC/((TH1*)graphBuffer)->GetEntries();
+                    //GraphF is a TH1F* which point to TH1::*Graph
+                    TH1F *GraphF=(TH1F*)graphBuffer;
+                    TH1F GraphNorm=Normfactor*(*GraphF);
+                    graphBuffer=&GraphNorm;
+                }
+            }
+            
         }else if(plotType.Contains("delta")){
             graphBuffer=new TGraph();
-            cout<<"ok"<<endl;
             PlotVariationSomething((TGraph*)graphBuffer,xaxsis,yaxsis);
         }
         

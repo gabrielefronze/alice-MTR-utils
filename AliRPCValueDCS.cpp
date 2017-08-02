@@ -76,6 +76,7 @@ AliRPCValueDCS::AliRPCValueDCS(UInt_t runNumber, ULong64_t timeStamp, UInt_t run
     }
 };
 
+//IsEqual and Compare are useful to sort TLists
 Bool_t AliRPCValueDCS::IsEqual (const TObject *obj) const {
     return fTimeStamp == ((AliRPCValueDCS*)obj)->GetTimeStamp();
 };

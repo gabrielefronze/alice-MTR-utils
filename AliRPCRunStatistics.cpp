@@ -24,6 +24,7 @@
 #include "AliRPCRunStatistics.h"
 #include "TClass.h"
 
+//Default constructor
 AliRPCRunStatistics::AliRPCRunStatistics() : TObject(){
     fRunNumber=0;
     fTimeStampStart=0;
@@ -39,6 +40,7 @@ AliRPCRunStatistics::AliRPCRunStatistics() : TObject(){
     fTotalScalerCountsNotBending=0.;
 };
 
+//Class constructor
 AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampStart, ULong64_t timeStampStop, UInt_t year, Bool_t isCalib, TLHCStatus LHCStatus, TBeamType beamType, Double_t meanDarkCurrent, Double_t meanTotalCurrent, Double_t meanHV, ULong64_t totalScalerCountsBending, ULong64_t totalScalerCountsNotBending): TObject(){
     fRunNumber=runNumber;
     fTimeStampStart=timeStampStart;
@@ -55,6 +57,7 @@ AliRPCRunStatistics::AliRPCRunStatistics(UInt_t runNumber, ULong64_t timeStampSt
     fTotalScalerCountsNotBending=totalScalerCountsNotBending;
 };
 
+//IsEqual and Compare are useful to sort TLists
 Bool_t AliRPCRunStatistics::IsEqual (const TObject *obj) const {
     return fTimeStampStart == ((AliRPCRunStatistics*)obj)->GetTimeStampStart();
 };

@@ -82,9 +82,9 @@ Bool_t AliRPCData::AddRunStatistics(Int_t plane, Int_t side, Int_t RPC, AliRPCRu
     if(!stats) return kFALSE;
     Int_t index=0;
     if(IsThereThisRun(plane,side,RPC,stats->GetRunNumber(),index)) return kFALSE;
-    (fRunStatistics[plane][side][RPC]).push_back(stats);
-    (fRunNumbers[plane][side][RPC]).push_back(new AliOCDBRun(stats->GetRunNumber(),stats->GetYear()));
-    std::sort(fRunStatistics[plane][side][RPC].begin(),fRunStatistics[plane][side][RPC].end(),AliRPCRunStatistics::SortRunStatistics);
+    (fRunStatistics[plane][side][RPC-1]).push_back(stats);
+    (fRunNumbers[plane][side][RPC-1]).push_back(new AliOCDBRun(stats->GetRunNumber(),stats->GetYear()));
+    std::sort(fRunStatistics[plane][side][RPC-1].begin(),fRunStatistics[plane][side][RPC-1].end(),AliRPCRunStatistics::SortRunStatistics);
     //printf("added run:%u\n",stats->GetRunNumber());
     return kTRUE;
 };
@@ -210,7 +210,7 @@ UInt_t AliRPCData::GetTotalEntries(){
 Bool_t AliRPCData::IsThereThisRun(Int_t plane, Int_t side, Int_t RPC, UInt_t runNumber,  Int_t &index) const {
     index = 0;
 
-    for(auto it = fRunStatistics[plane][side][RPC].begin(); it != fRunStatistics[plane][side][RPC].end(); ++it){
+    for(auto it = fRunStatistics[plane][side][RPC-1].begin(); it != fRunStatistics[plane][side][RPC-1].end(); ++it){
         index++;
         if((*it)->GetRunNumber()==runNumber){
             return kTRUE;

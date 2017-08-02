@@ -44,7 +44,7 @@ public:
 	Double_t GetMeanTimeStampStart(UInt_t runNumber, Bool_t normalizeToArea=kFALSE) const;
 
 	inline vector<AliOCDBRun*> GetRunList(Int_t plane, Int_t side, Int_t RPC) const {return fRunNumbers[plane][side][RPC];};
-    inline vector<AliRPCRunStatistics*> GetRunStatistics(Int_t plane, Int_t side, Int_t RPC){return fRunStatistics[plane][side][RPC];}
+    inline vector<AliRPCRunStatistics*> GetRunStatistics(Int_t plane, Int_t side, Int_t RPC){return fRunStatistics[plane][side][RPC-1];}
 	Double_t GetAverageTotalCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE)const;
 	Double_t GetAverageNetCurrent(Int_t plane, Int_t side, Int_t RPC, Bool_t normalizeToArea=kFALSE) const;
 	Double_t GetAverageHV(Int_t plane, Int_t side, Int_t RPC) const;

@@ -880,7 +880,7 @@ void AliRPCAutoIntegrator::IntegratorPerRun(Bool_t showFeeric){
                 counter=0;
                 IntegratedCharge=0.;
                 //get and sort list of run for this RPC
-                list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC-1);
+                list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC);
                 std::sort(list.begin(),list.end(),AliRPCRunStatistics::SortRunStatistics);
                 
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]=new TGraph();
@@ -1793,7 +1793,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
 //                            cout<<"RunNumber"<<AMANDAActualRunNumber;
 //                            cout<<"N data "<<AMANDANTotalCurrent<<endl;
                             AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(AMANDAActualRunNumber, AMANDATimeStampStart, AMANDATimeStampStop, actualYear, kFALSE, kNONE, knone, 0., AMANDAMeanTotalCurrent, 0., 0, 0);
-                            fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
+                            fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
                             
                             AMANDAActualRunNumber-=1;
                             AMANDATimeStampStart=AMANDATimeStampStop;
@@ -1913,7 +1913,7 @@ void AliRPCAutoIntegrator::FillAliRPCData(){
                         if(RPCTotalRatePerArea[1]<0) totalScalerCounts[1]=0;
                         
                         AliRPCRunStatistics *statsBuffer=new AliRPCRunStatistics(previousRunNumber, timeStampStart, timeStampStop, actualYear, isCalib, LHCStatus, beamType, meanDarkCurrent, meanTotalCurrent, meanHV, totalScalerCounts[0], totalScalerCounts[1]);
-                        fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC-1, statsBuffer);
+                        fAliRPCDataObject->AddRunStatistics(iPlane, iSide, iRPC, statsBuffer);
 
 //                        statsBuffer->PrintHumanReadable();
                         
@@ -1966,10 +1966,10 @@ void AliRPCAutoIntegrator::FillAliRPCData(UInt_t year){
     for(Int_t iSide=0;iSide<kNSides;iSide++){
         for(Int_t iPlane=0;iPlane<kNPlanes;iPlane++){
             for(Int_t iRPC=1;iRPC<=kNRPC;iRPC++){
-                auto list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC-1);
+                auto list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC);
                 for(auto iter:list){
                     if(iter->GetYear()==year){
-                        AliObjSpecificYear->AddRunStatistics(iPlane, iSide, iRPC-1, iter);
+                        AliObjSpecificYear->AddRunStatistics(iPlane, iSide, iRPC, iter);
                     }
                 }
                 PrintWhichRPC(iRPC, iSide, iPlane);
@@ -2256,7 +2256,7 @@ void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDark
                 
                 counter=0;
                 //get and sort list of run for this RPC
-                list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC-1);
+                list=((AliRPCData*)fAliRPCDataObject)->GetRunStatistics(iPlane,iSide,iRPC);
                 std::sort(list.begin(),list.end(),AliRPCRunStatistics::SortRunStatistics);
                 
                 PlotsIntegratedCharge[iSide][iPlane][iRPC-1]=new TGraph();
@@ -2344,7 +2344,7 @@ void AliRPCAutoIntegrator::PlotVariationVsIntegratedCharge(TGraph *Graph, Double
     for(Int_t iSide=0;iSide<kNSides;iSide++) {
         for (Int_t iPlane = 0; iPlane < kNPlanes; iPlane++) {
             for (Int_t iRPC = 1; iRPC <= kNRPC; iRPC++) {
-                std::vector<AliRPCRunStatistics*> list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC-1);
+                std::vector<AliRPCRunStatistics*> list=fAliRPCDataObject->GetRunStatistics(iPlane, iSide, iRPC);
                 graphBuffer=GetIntegratedChargePlot(iRPC, iSide, iPlane);
                 
                 if(!graphBuffer) continue;

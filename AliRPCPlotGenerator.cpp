@@ -1172,7 +1172,7 @@ void AliRPCPlotGenerator::GeneratePlotFromFile(TString filename){
             graphBuffer=new TH1F();
             
             //By default run list is got from first RPC
-            vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,0);
+            vector<AliOCDBRun*> RunList=fAliRPCDataObject->GetRunList(0,0,1);
             
             CreateDistributionSomething((TH1*)graphBuffer,yaxsis, options, RunList);
             

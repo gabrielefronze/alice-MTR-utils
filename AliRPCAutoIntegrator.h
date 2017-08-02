@@ -193,7 +193,7 @@ public:
     void Subtractor();
     void Integrator();
     void IntegratorPerRun(Bool_t showFeeric=kFALSE);
-    void SomethingPerRun(TString observableName, Bool_t isDarkGraph=kFALSE, Bool_t iSNormalizedGraph=kFALSE, Bool_t showFeeric=kFALSE);
+    void SomethingPerRun(TString observableName, Bool_t isDarkGraph=kFALSE, Bool_t isNormalizedGraph=kFALSE, Bool_t showFeeric=kFALSE);
     TGraph* GetIntegratedChargePlot(Int_t iRPC, Int_t iSide, Int_t iPlane);
     void PlotRPCPerMT(Bool_t showFeeric=kFALSE);
     void AMANDASetDataMembers();

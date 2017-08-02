@@ -2215,7 +2215,7 @@ void AliRPCAutoIntegrator::PlotSomethingVersusTime(TGraph *Graph, Bool_t (AliRPC
 }
 
 
-void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDarkGraph, Bool_t iSNormalizedGraph, Bool_t showFeeric){
+void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDarkGraph, Bool_t isNormalizedGraph, Bool_t showFeeric){
     cout<<"\nGenerating "<<observableName<<" plots"<<endl;
     
     Double_t (AliRPCRunStatistics::*Yptr)() const;
@@ -2270,7 +2270,7 @@ void AliRPCAutoIntegrator::SomethingPerRun(TString observableName, Bool_t isDark
                 
                 for(auto iter:list){
                     if(isDarkGraph&&!iter->GetIsCalib()) continue;
-                    PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetPoint(counter++, iter->GetTimeStampStart(), (iter->*Yptr)()/(iSNormalizedGraph?fRPCAreas[iRPC][iPlane]:1.));
+                    PlotsIntegratedCharge[iSide][iPlane][iRPC-1]->SetPoint(counter++, iter->GetTimeStampStart(), (iter->*Yptr)()/(isNormalizedGraph?fRPCAreas[iRPC][iPlane]:1.));
                 }
                 
                 planeGraphs[iPlane]->Add(PlotsIntegratedCharge[iSide][iPlane][iRPC-1]);
